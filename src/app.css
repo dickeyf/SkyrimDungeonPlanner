@@ -32,3 +32,23 @@ a {
 code {
   font-family: var(--mono);
 }
+
+.ok {
+  color: #8fd18f;
+}
+
+.warn {
+  color: #d9c27a;
+}
+
+.err {
+  color: #e07a7a;
+}
+
+button,
+select,
+input {
+  font: inherit;
+  padding: 0.3rem 0.6rem;
+  margin: 0.15rem 0.3rem 0.15rem 0;
+}

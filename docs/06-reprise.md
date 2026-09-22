@@ -20,9 +20,10 @@ est prouvée (D12), 15 groupes sur 304 faces. Étape 3 (R14a) faite et validée 
 contre MO2. Étape 4 (R14b) faite et validée dans Chrome.
 Étape 5 (R14c) faite et validée le 22 sept. 2026
 (aller-retour identique, REFR ajoutée acceptée par xEdit et le CK). Étape 6 (R10) faite et validée le 22 sept. 2026 :
-**phase 0 terminée** (seul R2, manuel et propre à la phase 3, reste ouvert). Prochaine action =
-**phase 1, étape 8** : extraction des STAT impériaux et page catalogue dans la SPA, puis
-étape 9 (portage TypeScript de l'analyse de mesh R5 + R3) et étape 10 (validation). Ordre d'origine de la phase 0, pour mémoire :
+**phase 0 terminée** (seul R2, manuel et propre à la phase 3, reste ouvert). Étape 8 faite et vérifiée dans l'app (111 pièces
+structurelles sur 525 STAT impériaux). Prochaine action = **étape 9** : portage TypeScript de
+l'analyse de mesh (R5 pivot/cells + R3 signatures) sur les NIF lus dans les archives, comparé
+aux rapports Python de `tools/out/` ; puis étape 10 (page de validation). Ordre d'origine de la phase 0, pour mémoire :
 1. **R2** – test manuel dans le CK, sans code : deux NavMesh dans une cellule intérieure, Finalize, pathing d'un PNJ à travers la couture. Valide ou invalide le bake partiel.
 2. **R5** – script Python + pynifly : module XY/Z et pivots des pièces impériales.
 3. **R3** – script Python + pynifly : signatures par arêtes ouvertes sur 10–15 pièces de compatibilité connue.

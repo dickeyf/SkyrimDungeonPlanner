@@ -1,14 +1,14 @@
 /**
- * Persist File System Access handles across sessions (D43).
- *
- * Handles are structured-cloneable, so they can be stored in IndexedDB but not in
- * localStorage. Restoring a handle does not restore permission: call
+ * IndexedDB persistence (D43): File System Access handles (structured-cloneable, so they fit
+ * in IndexedDB but not in localStorage) and a small key-value store for caches such as
+ * extracted catalogue data. Restoring a handle does not restore permission: call
  * `ensureAccess()` (in a user gesture) before using it.
  */
 
 const DB_NAME = 'skyrim-dungeon-planner';
-const DB_VERSION = 1;
-const STORE = 'handles';
+const DB_VERSION = 2;
+const HANDLES = 'handles';
+const KV = 'kv';
 
 export const HANDLE_KEYS = {
   gameFolder: 'gameFolder',
@@ -29,7 +29,9 @@ function openDb(): Promise<IDBDatabase> {
   dbPromise ??= new Promise((resolve, reject) => {
     const req = indexedDB.open(DB_NAME, DB_VERSION);
     req.onupgradeneeded = () => {
-      if (!req.result.objectStoreNames.contains(STORE)) req.result.createObjectStore(STORE);
+      for (const store of [HANDLES, KV]) {
+        if (!req.result.objectStoreNames.contains(store)) req.result.createObjectStore(store);
+      }
     };
     req.onsuccess = () => resolve(req.result);
     req.onerror = () => reject(req.error ?? new Error('IndexedDB open failed'));
@@ -39,12 +41,13 @@ function openDb(): Promise<IDBDatabase> {
 }
 
 async function withStore<T>(
+  store: string,
   mode: IDBTransactionMode,
-  fn: (store: IDBObjectStore) => IDBRequest<T>,
+  fn: (s: IDBObjectStore) => IDBRequest<T>,
 ): Promise<T> {
   const db = await openDb();
-  const tx = db.transaction(STORE, mode);
-  const result = await request(fn(tx.objectStore(STORE)));
+  const tx = db.transaction(store, mode);
+  const result = await request(fn(tx.objectStore(store)));
   await new Promise<void>((resolve, reject) => {
     tx.oncomplete = () => resolve();
     tx.onerror = () => reject(tx.error ?? new Error('IndexedDB transaction failed'));
@@ -54,17 +57,30 @@ async function withStore<T>(
 }
 
 export function saveHandle(key: string, handle: FileSystemHandle): Promise<IDBValidKey> {
-  return withStore('readwrite', (store) => store.put(handle, key));
+  return withStore(HANDLES, 'readwrite', (s) => s.put(handle, key));
 }
 
 export async function loadHandle<T extends FileSystemHandle = FileSystemHandle>(
   key: string,
 ): Promise<T | undefined> {
-  return (await withStore('readonly', (store) => store.get(key))) as T | undefined;
+  return (await withStore(HANDLES, 'readonly', (s) => s.get(key))) as T | undefined;
 }
 
 export function deleteHandle(key: string): Promise<undefined> {
-  return withStore('readwrite', (store) => store.delete(key));
+  return withStore(HANDLES, 'readwrite', (s) => s.delete(key));
+}
+
+/** Cache any structured-cloneable value under a key. */
+export function kvSet(key: string, value: unknown): Promise<IDBValidKey> {
+  return withStore(KV, 'readwrite', (s) => s.put(value, key));
+}
+
+export async function kvGet<T>(key: string): Promise<T | undefined> {
+  return (await withStore(KV, 'readonly', (s) => s.get(key))) as T | undefined;
+}
+
+export function kvDelete(key: string): Promise<undefined> {
+  return withStore(KV, 'readwrite', (s) => s.delete(key));
 }
 
 /** Test hook: forget the cached connection so a fresh database can be opened. */

@@ -1,60 +1,99 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { APP_NAME, APP_VERSION } from '$lib/version';
+  import { supportsFileSystemAccess } from '$lib/fs';
+  import { session } from '$lib/session/session.svelte';
+  import CataloguePage from './pages/CataloguePage.svelte';
+  import HomePage from './pages/HomePage.svelte';
+  import SetupPage from './pages/SetupPage.svelte';
 
-  const supportsFileSystemAccess = typeof window !== 'undefined' && 'showDirectoryPicker' in window;
+  const supported = supportsFileSystemAccess();
+  let route = $state(currentRoute());
+
+  function currentRoute(): string {
+    const hash = location.hash.replace(/^#/, '');
+    return hash === '' ? '/' : hash;
+  }
+
+  onMount(() => {
+    const onHash = () => (route = currentRoute());
+    window.addEventListener('hashchange', onHash);
+    if (supported) void session.restore();
+    return () => window.removeEventListener('hashchange', onHash);
+  });
+
+  const links = [
+    ['/', 'Home'],
+    ['/setup', 'Setup'],
+    ['/catalogue', 'Catalogue'],
+  ] as const;
 </script>
 
+<header>
+  <span class="brand">{APP_NAME} <small>v{APP_VERSION}</small></span>
+  <nav>
+    {#each links as [path, label] (path)}
+      <a href={`#${path}`} class:active={route === path}>{label}</a>
+    {/each}
+  </nav>
+  <span class="status {session.status}">
+    {#if session.status === 'ready' && session.view}
+      {session.view.game.picked.name}{session.view.mo2
+        ? ` / ${session.view.mo2.layout.profile.name}`
+        : ''}
+    {:else}
+      {session.status}
+    {/if}
+  </span>
+</header>
+
 <main>
-  <h1>{APP_NAME} <small>v{APP_VERSION}</small></h1>
-  <p>
-    Project skeleton. See <code>docs/07-plan-v1.md</code> for the steps toward V1 (Imperial kit, single
-    Z level).
-  </p>
-  {#if !supportsFileSystemAccess}
-    <p class="warn">
-      This browser does not expose the File System Access API. Use Chrome or Edge (see D43).
-    </p>
+  {#if !supported}
+    <p class="err">This browser does not expose the File System Access API. Use Chrome or Edge.</p>
+  {:else if route === '/setup'}
+    <SetupPage />
+  {:else if route === '/catalogue'}
+    <CataloguePage />
+  {:else}
+    <HomePage />
   {/if}
-  <h2>Proof-of-concept pages</h2>
-  <p>The <code>poc/*.html</code> pages are served under <code>/poc/</code> (phase 0).</p>
-  <ul>
-    <li>
-      <a href="/poc/r14a-fs.html">R14a - disk access</a>: pick the game folder, restore it after a
-      reload, ranged read, write in place.
-    </li>
-    <li>
-      <a href="/poc/r15-mo2.html">R15 - MO2 overlay</a>: rebuild the virtual Data folder from an MO2
-      instance, resolve plugins and archives.
-    </li>
-    <li>
-      <a href="/poc/r14b-bsa-nif.html">R14b - BSA + NIF + WebGL</a>: read a tile straight from the
-      archive (ranged reads, LZ4) and draw it on the 128 grid.
-    </li>
-    <li>
-      <a href="/poc/r14c-esp.html">R14c - plugin in place</a>: parse a plugin, write it back
-      byte-identical, add a reference to a copy for xEdit / CK checks.
-    </li>
-    <li>
-      <a href="/poc/r10-grid.html">R10 - grid derivation</a>: recognize kit tiles in an existing
-      cell, find the grid anchor, list what stays opaque.
-    </li>
-  </ul>
 </main>
 
 <style>
-  main {
-    max-width: 48rem;
-    margin: 0 auto;
-    padding: 2rem 1rem;
+  header {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 0.5rem 1rem;
+    background: var(--bg-panel);
+    border-bottom: 1px solid var(--border);
   }
-  h1 small {
+  .brand small {
     color: var(--fg-muted);
     font-weight: normal;
-    font-size: 0.6em;
   }
-  .warn {
-    border: 1px solid var(--accent);
-    padding: 0.5rem 0.75rem;
-    border-radius: 4px;
+  nav a {
+    margin-right: 1rem;
+    color: var(--fg);
+    text-decoration: none;
+  }
+  nav a.active {
+    color: var(--accent);
+    border-bottom: 2px solid var(--accent);
+  }
+  .status {
+    margin-left: auto;
+    color: var(--fg-muted);
+    font-size: 13px;
+  }
+  .status.ready {
+    color: #8fd18f;
+  }
+  .status.error,
+  .status.needs-permission {
+    color: #e07a7a;
+  }
+  main {
+    padding: 1rem;
   }
 </style>

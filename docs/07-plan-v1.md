@@ -180,7 +180,22 @@ CK) reste ouvert ; il ne concerne que la phase 3.
 
 ## Phase 1 – Catalogue Impérial
 
-### Étape 8 – Extraction des STAT impériaux depuis Skyrim.esm
+### Étape 8 – Extraction des STAT impériaux depuis Skyrim.esm — FAIT (22 sept. 2026)
+Première structure de l'application (plus une page de test) : `src/App.svelte` avec navigation
+par hash, `src/pages/{Home,Setup,Catalogue}Page.svelte`, session en runes Svelte 5
+(`src/lib/session/session.svelte.ts`) au-dessus de la vue Data virtuelle déplacée dans
+`src/lib/session/dataView.ts`. Catalogue : `src/lib/catalogue/kits.ts` (définition du kit
+Impérial, module 128 comme donnée), `extract.ts` (classification par sous-dossier et nom :
+hall / room / door / other, props reconnus par nom), `build.ts` (lecture ciblée du groupe STAT
+de `Skyrim.esm`, cache IndexedDB clé sur taille + date du master). Page Catalogue : compteurs
+par catégorie et par sous-dossier, filtre, tableau EditorID / sous-dossier / catégorie / bounds
+/ modèle. **Mesuré dans l'app** : 9720 STAT dans `Skyrim.esm`, 525 impériaux, extraits en
+110 ms ; **111 pièces structurelles** = 48 hall + 35 room + 28 door (`largeroom` 34,
+`largehall` 31, `smallhall` 25, `smallroom` 21), exactement les 111 tuiles mesurées par R5 ;
+414 « other » (exteriorice 154, clutterkits 110, exterior 91, tower 19, stablekit 15,
+exteriorhelgen 9, jail 6, portcullis 6, door 1). `largeroom` a 36 STAT pour 35 NIF : deux
+objets de base partagent un mesh, d'où l'indexation par FormKey.
+
 - **Pourquoi** : c'est la liste de pièces de référence ; tout le reste de la phase la
   consomme.
 - **Quoi** : décodage STAT (EDID, MODL, OBND) dans `src/lib/format/esp` ; filtre par

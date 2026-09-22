@@ -1,7 +1,16 @@
 import 'fake-indexeddb/auto';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { IDBFactory } from 'fake-indexeddb';
-import { HANDLE_KEYS, deleteHandle, loadHandle, resetHandleStore, saveHandle } from './handleStore';
+import {
+  HANDLE_KEYS,
+  deleteHandle,
+  kvDelete,
+  kvGet,
+  kvSet,
+  loadHandle,
+  resetHandleStore,
+  saveHandle,
+} from './handleStore';
 
 // Real handles are structured-cloneable browser objects; any cloneable value stands in here.
 const fakeHandle = {
@@ -31,5 +40,13 @@ describe('handleStore', () => {
     const other = { kind: 'directory', name: 'Data' } as unknown as FileSystemHandle;
     await saveHandle(HANDLE_KEYS.gameFolder, other);
     expect(await loadHandle(HANDLE_KEYS.gameFolder)).toEqual(other);
+  });
+
+  it('caches values in the key-value store', async () => {
+    expect(await kvGet('stats')).toBeUndefined();
+    await kvSet('stats', { pieces: [1, 2, 3], when: 42 });
+    expect(await kvGet<{ pieces: number[] }>('stats')).toEqual({ pieces: [1, 2, 3], when: 42 });
+    await kvDelete('stats');
+    expect(await kvGet('stats')).toBeUndefined();
   });
 });
