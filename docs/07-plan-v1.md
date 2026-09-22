@@ -206,7 +206,24 @@ objets de base partagent un mesh, d'où l'indexation par FormKey.
 - **Fini quand** : la liste s'affiche dans une page de la SPA avec compteurs par
   catégorie ; le nombre de pièces est noté dans les docs.
 
-### Étape 9 – Portage TypeScript de l'analyse de mesh (R5 + R3)
+### Étape 9 – Portage TypeScript de l'analyse de mesh (R5 + R3) — FAIT (22 sept. 2026, vérifié dans l'app)
+`src/lib/mesh` : géométrie soudée et arêtes ouvertes (`geometry.ts`), détection des ouvertures
+(`openings.ts`), empreinte, phase de grille, cellules normalisées et pivot (`footprint.ts`),
+profils de faces en coordonnées locales (`profiles.ts`), comparaison avec tolérance, miroir et
+regroupement (`signatures.ts`) : ports fidèles de `tools/kit_geometry.py`, `r5_module_pivots.py`
+et `r3_face_signatures.py`, testés sur un couloir synthétique (9 tests). `src/lib/vfs/archiveIndex.ts`
+trouve chaque mesh (fichier libre, sinon dernière archive de l'ordre de chargement).
+`src/lib/catalogue/analyze.ts` orchestre : lecture des 111 NIF structurels, analyse, groupes de
+signatures → `ConnectionType`, `Piece` avec `pivot`, `cells` et `faces` par cellule (une face par
+cellule couverte, même type ; les demi-profils gauche/droite viendront à l'étape 10 si utile).
+Page Catalogue : « Analyze meshes » avec progression, types de connexion, correspondances
+« presque », tableau par pièce, et **comparaison automatique avec les mesures Python**
+(`poc/data/imperial-pieces.json`). Le catalogue est sauvé dans IndexedDB (`catalogue:Imperial`).
+**Mesuré dans l'app** : 111 pièces analysées, 0 échec, 304 faces en 15 types de connexion,
+384 correspondances « presque », en 9,2 s (Python : 17 s) ; **111 empreintes et pivots sur 111
+identiques aux mesures Python**, mêmes groupes et mêmes miroirs que R3. Catalogue sauvé dans
+IndexedDB. Le catalogue se construit donc entièrement dans le navigateur (D46 validé).
+
 - **Pourquoi** : les algorithmes sont prouvés en Python (V7) ; ils doivent tourner dans le
   navigateur de chaque utilisateur (D46).
 - **Quoi** : `src/lib/catalogue/analyze.ts` : NIF → `pivot`, `cells`, profils de faces →

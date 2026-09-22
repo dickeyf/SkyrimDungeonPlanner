@@ -54,7 +54,7 @@ Statuts : **Décidé** (tranché), **Proposé** (suggéré, à confirmer), **Ouv
 | D43 | Accès disque par la File System Access API (Chromium : Chrome/Edge). Les handles de dossier se conservent dans IndexedDB, pas dans localStorage ; localStorage pour les préférences simples | Décidé (validé par R14a le 21 sept. 2026) |
 | D44 | Rendu 3D WebGL dans le canvas ; la vue 2D de dessus = caméra orthographique sur la scène 3D ; tranches Z = plans de coupe ; vue transverse = caméra orthographique de côté | Proposé |
 | D45 | Parseurs maison ciblés plutôt que librairies complètes : ESP (records opaques, seuls STAT/CELL/REFR/NAVM décodés), BSA v105 + LZ4, NIF SSE (noeuds, BSTriShape, collision) | Décidé (BSA + LZ4 + NIF validés par R14b, ESP validé par R14c) |
-| D46 | Le catalogue se construit **dans le navigateur de l'utilisateur** à partir de son installation ; seules nos annotations (noms de types, validations) sont distribuées | Proposé (règle R13) |
+| D46 | Le catalogue se construit **dans le navigateur de l'utilisateur** à partir de son installation ; seules nos annotations (noms de types, validations) sont distribuées | Décidé (validé par l'étape 9 le 22 sept. 2026 : 111 pièces analysées en 9 s, identiques aux mesures Python) |
 | D47 | Copie de sauvegarde du plugin avant toute écriture | Proposé |
 | D48 | Limite Chromium acceptée ; mode dégradé (import/export de fichier) plus tard, si ajoutable | Décidé |
 | D49 | ~~Pièces custom / VFS MO2 : après une bonne couverture du jeu de base~~ **Révisé le 21 sept. 2026** : la vue « Data virtuel » MO2 est nécessaire dès la V1, parce que les DLC et le plugin de travail vivent dans `mods/*`, pas dans le `Data` du jeu (installation « Game Root » stock + MO2). Les pièces custom restent pour plus tard | Décidé |

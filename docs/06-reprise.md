@@ -21,9 +21,11 @@ contre MO2. Étape 4 (R14b) faite et validée dans Chrome.
 Étape 5 (R14c) faite et validée le 22 sept. 2026
 (aller-retour identique, REFR ajoutée acceptée par xEdit et le CK). Étape 6 (R10) faite et validée le 22 sept. 2026 :
 **phase 0 terminée** (seul R2, manuel et propre à la phase 3, reste ouvert). Étape 8 faite et vérifiée dans l'app (111 pièces
-structurelles sur 525 STAT impériaux). Prochaine action = **étape 9** : portage TypeScript de
-l'analyse de mesh (R5 pivot/cells + R3 signatures) sur les NIF lus dans les archives, comparé
-aux rapports Python de `tools/out/` ; puis étape 10 (page de validation). Ordre d'origine de la phase 0, pour mémoire :
+structurelles sur 525 STAT impériaux). Étape 9 faite et vérifiée : l'analyse de mesh
+tourne dans le navigateur, 111 pièces identiques aux mesures Python, 15 types. Prochaine
+action = **étape 10** : page de validation du catalogue (nommer les types, corriger,
+marquer validé, traiter les « presque » et les profils composites D56, exporter les
+annotations par EditorID). Ordre d'origine de la phase 0, pour mémoire :
 1. **R2** – test manuel dans le CK, sans code : deux NavMesh dans une cellule intérieure, Finalize, pathing d'un PNJ à travers la couture. Valide ou invalide le bake partiel.
 2. **R5** – script Python + pynifly : module XY/Z et pivots des pièces impériales.
 3. **R3** – script Python + pynifly : signatures par arêtes ouvertes sur 10–15 pièces de compatibilité connue.

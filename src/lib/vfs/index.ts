@@ -3,6 +3,7 @@
  * the resulting plugin and archive load orders. Vortex deploys into Data, so it needs no
  * overlay.
  */
+export * from './archiveIndex';
 export * from './archives';
 export * from './mo2';
 export * from './overlay';

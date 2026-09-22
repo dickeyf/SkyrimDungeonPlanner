@@ -1,11 +1,21 @@
 <script lang="ts">
+  import { analyseKit, type AnalysisResult } from '$lib/catalogue/analyze';
   import { loadKitStats, type KitStatsResult } from '$lib/catalogue/build';
+  import { kvSet } from '$lib/fs';
+  import { ArchiveIndex } from '$lib/vfs';
   import { summarize, type KitStat } from '$lib/catalogue/extract';
   import { IMPERIAL_KIT } from '$lib/catalogue/kits';
   import type { PieceCategory } from '$lib/catalogue/types';
   import { session } from '$lib/session/session.svelte';
 
-  let result = $state<KitStatsResult | null>(null);
+  // Large immutable results: raw state, so IndexedDB can clone them and no deep proxy is built.
+  let result = $state.raw<KitStatsResult | null>(null);
+  let analysis = $state.raw<AnalysisResult | null>(null);
+  let analysing = $state(false);
+  let progress = $state('');
+  let reference = $state.raw<Record<string, { pivot: number[]; cells: number[][] }> | null>(null);
+  let referenceNote = $state('');
+  let saveNote = $state('');
   let busy = $state(false);
   let error = $state('');
   let filter = $state('');
@@ -37,6 +47,77 @@
     } finally {
       busy = false;
     }
+  }
+
+  async function analyse(): Promise<void> {
+    if (!session.view || !result) return;
+    analysing = true;
+    error = '';
+    try {
+      const index = await ArchiveIndex.build(session.view.overlay, session.view.plugins);
+      analysis = await analyseKit(result.stats, IMPERIAL_KIT, index, (done, total, current) => {
+        progress = `${done}/${total} ${current}`;
+      });
+      try {
+        const response = await fetch('/poc/data/imperial-pieces.json');
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const table = (await response.json()) as {
+          pieces: Record<string, { pivot: number[]; cells: number[][] }>;
+        };
+        reference = table.pieces;
+        referenceNote = `${Object.keys(reference).length} reference pieces loaded`;
+      } catch (e) {
+        reference = null;
+        referenceNote = `reference measurements not loaded: ${(e as Error).message}`;
+      }
+      try {
+        await kvSet(`catalogue:${IMPERIAL_KIT.kit}`, analysis.catalogue);
+        saveNote = 'Catalogue saved in this browser.';
+      } catch (e) {
+        saveNote = `catalogue not saved: ${(e as Error).message}`;
+      }
+    } catch (e) {
+      error = (e as Error).message;
+    } finally {
+      analysing = false;
+      progress = '';
+    }
+  }
+
+  function cellsKey(cells: readonly (readonly number[])[]): string {
+    return cells
+      .map((c) => `${c[0]},${c[1]}`)
+      .sort()
+      .join(';');
+  }
+
+  /** Compare a piece with the Python R5 measurement of the same mesh file. */
+  function referenceCheck(p: AnalysisResult['pieces'][number]): 'same' | 'differs' | 'none' {
+    if (!reference) return 'none';
+    const file = p.stat.modelPath.slice(p.stat.modelPath.lastIndexOf('/') + 1);
+    const ref = reference[file];
+    if (!ref) return 'none';
+    const samePivot =
+      ref.pivot[0] === p.footprint.pivot[0] && ref.pivot[1] === p.footprint.pivot[1];
+    return samePivot && cellsKey(ref.cells) === cellsKey(p.footprint.cells) ? 'same' : 'differs';
+  }
+
+  const referenceSummary = $derived.by(() => {
+    if (!analysis || !reference) return null;
+    const counts = { same: 0, differs: 0, none: 0 };
+    for (const p of analysis.pieces) if (!p.error) counts[referenceCheck(p)]++;
+    return counts;
+  });
+
+  function faceLabel(fi: number): string {
+    const f = analysis!.faces[fi]!;
+    return `${f.opening.dir}:G${f.group}`;
+  }
+
+  function cellSpan(p: AnalysisResult['pieces'][number]): string {
+    const xs = new Set(p.footprint.cells.map((c) => c[0]));
+    const ys = new Set(p.footprint.cells.map((c) => c[1]));
+    return `${xs.size}x${ys.size}`;
   }
 
   function bounds(s: KitStat): string {
@@ -93,6 +174,104 @@
       </table>
     </div>
 
+    <h3>Mesh analysis (step 9)</h3>
+    <p>
+      <button disabled={analysing} onclick={analyse}>Analyze meshes</button>
+      {#if analysing}<span>{progress}</span>{/if}
+    </p>
+    {#if analysis}
+      <p class="ok">
+        {analysis.pieces.filter((p) => !p.error).length} pieces analysed,
+        {analysis.pieces.filter((p) => p.error).length} failed, {analysis.faces.length} faces in
+        {analysis.grouping.groups.length} connection types, {analysis.grouping.near.length} near matches,
+        {(analysis.elapsedMs / 1000).toFixed(1)} s. {saveNote}
+      </p>
+      <p class={reference ? 'hint' : 'warn'}>{referenceNote}</p>
+      {#if referenceSummary}
+        <p class={referenceSummary.differs === 0 ? 'ok' : 'warn'}>
+          Against the Python R5 reference: {referenceSummary.same} same footprint and pivot,
+          {referenceSummary.differs} differ, {referenceSummary.none} not in the reference.
+        </p>
+      {/if}
+      <div class="counters">
+        <table>
+          <thead>
+            <tr
+              ><th>Type</th><th>Faces</th><th>Mate</th><th>Width</th><th>Height</th><th>v min</th
+              ></tr
+            >
+          </thead>
+          <tbody>
+            {#each analysis.grouping.groups as g (g.id)}
+              <tr>
+                <td>G{g.id}</td>
+                <td class="num">{g.members.length}</td>
+                <td>{g.mate === undefined ? 'none' : g.mate === g.id ? 'self' : `G${g.mate}`}</td>
+                <td class="num">{g.width.toFixed(0)}</td>
+                <td class="num">{g.height.toFixed(0)}</td>
+                <td class="num">{g.vMin.toFixed(0)}</td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+        {#if analysis.grouping.near.length}
+          <table>
+            <thead><tr><th>Near match</th><th>Score</th></tr></thead>
+            <tbody>
+              {#each analysis.grouping.near.slice(0, 20) as n (`${n.a}-${n.b}`)}
+                <tr>
+                  <td>
+                    {analysis.faces[n.a]!.piece}
+                    {faceLabel(n.a)} ~ {analysis.faces[n.b]!.piece}
+                    {faceLabel(n.b)}
+                  </td>
+                  <td class="num">{n.score.toFixed(3)}</td>
+                </tr>
+              {/each}
+            </tbody>
+          </table>
+        {/if}
+      </div>
+      <table class="pieces">
+        <thead>
+          <tr>
+            <th>Piece</th><th>Source</th><th>Cells</th><th>Pivot</th><th>Faces (dir:type)</th><th
+              >Fits</th
+            ><th>vs R5</th>
+          </tr>
+        </thead>
+        <tbody>
+          {#each analysis.pieces as p (p.stat.formKey)}
+            <tr class={p.error ? 'err' : ''}>
+              <td>{p.stat.editorId}</td>
+              <td class="model">{p.error ?? p.source}</td>
+              <td class="num">{cellSpan(p)}</td>
+              <td class="num"
+                >{p.footprint.pivot
+                  .slice(0, 2)
+                  .map((v) => v.toFixed(0))
+                  .join(',')}</td
+              >
+              <td>{p.faces.map(faceLabel).join('  ')}</td>
+              <td class={p.footprint.fits ? 'ok' : 'warn'}>
+                {p.footprint.fits ? 'yes' : p.footprint.notes.join('; ')}
+              </td>
+              <td
+                class={referenceCheck(p) === 'same'
+                  ? 'ok'
+                  : referenceCheck(p) === 'differs'
+                    ? 'err'
+                    : ''}
+              >
+                {referenceCheck(p)}
+              </td>
+            </tr>
+          {/each}
+        </tbody>
+      </table>
+    {/if}
+
+    <h3>Base objects (step 8)</h3>
     <p class="filters">
       <input placeholder="filter by EditorID or model" bind:value={filter} />
       <select bind:value={category}>
