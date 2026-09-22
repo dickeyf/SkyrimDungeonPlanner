@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>R10 - grid derivation</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <style>
+      :root {
+        color-scheme: dark;
+        font:
+          14px/1.45 system-ui,
+          sans-serif;
+        background: #1e1d24;
+        color: #e8e6ef;
+      }
+      body {
+        margin: 0;
+        display: grid;
+        grid-template-columns: 26rem 1fr;
+        grid-template-rows: 100vh;
+      }
+      aside {
+        padding: 1rem;
+        overflow: auto;
+        border-right: 1px solid #3d3b47;
+      }
+      h1 {
+        font-size: 1.1rem;
+        margin: 0 0 0.5rem;
+      }
+      button,
+      select,
+      input {
+        font: inherit;
+        margin: 0.2rem 0.3rem 0.2rem 0;
+        padding: 0.3rem 0.5rem;
+        max-width: 100%;
+      }
+      label {
+        display: block;
+        margin-top: 0.4rem;
+      }
+      .ok {
+        color: #8fd18f;
+      }
+      .warn {
+        color: #d9c27a;
+      }
+      .err {
+        color: #e07a7a;
+      }
+      pre {
+        background: #2b2a33;
+        padding: 0.5rem;
+        border-radius: 4px;
+        font-size: 12px;
+        white-space: pre-wrap;
+        max-height: 30vh;
+        overflow: auto;
+      }
+      table {
+        border-collapse: collapse;
+        font-size: 12px;
+        width: 100%;
+      }
+      td,
+      th {
+        padding: 0.1rem 0.4rem;
+        text-align: left;
+      }
+      td.num {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+      #map {
+        display: block;
+        width: 100%;
+        height: 100%;
+        background: #16151b;
+      }
+    </style>
+  </head>
+  <body>
+    <aside>
+      <h1>R10 - derive the grid of an existing cell</h1>
+      <p id="status">Restoring saved folders...</p>
+      <label
+        >MO2 profile
+        <select id="profile"></select
+      ></label>
+      <label
+        >Source
+        <select id="source">
+          <option value="plugin">Working plugin (interior cells)</option>
+          <option value="vanilla">Skyrim.esm (interior cells, filtered)</option>
+        </select>
+      </label>
+      <label
+        >Plugin
+        <select id="plugin"></select
+      ></label>
+      <label
+        >Filter vanilla cells by EditorID
+        <input id="filter" value="Imp" />
+      </label>
+      <button id="list" disabled>List cells</button>
+      <label
+        >Cell
+        <select id="cell"></select
+      ></label>
+      <button id="derive" disabled>Derive grid</button>
+      <div id="result"></div>
+      <pre id="log"></pre>
+    </aside>
+    <canvas id="map"></canvas>
+    <script type="module" src="./r10-grid.ts"></script>
+  </body>
+</html>

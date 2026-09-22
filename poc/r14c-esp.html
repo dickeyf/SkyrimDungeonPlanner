@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>R14c - plugin in place</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <style>
+      :root {
+        color-scheme: dark;
+        font:
+          14px/1.45 system-ui,
+          sans-serif;
+        background: #1e1d24;
+        color: #e8e6ef;
+      }
+      body {
+        max-width: 60rem;
+        margin: 0 auto;
+        padding: 1.5rem 1rem;
+      }
+      h1 {
+        font-size: 1.3rem;
+      }
+      section {
+        border: 1px solid #3d3b47;
+        border-radius: 6px;
+        padding: 0.75rem 1rem;
+        margin: 0.75rem 0;
+      }
+      section h2 {
+        font-size: 1rem;
+        margin: 0 0 0.5rem;
+      }
+      button,
+      select,
+      input {
+        font: inherit;
+        margin: 0.2rem 0.4rem 0.2rem 0;
+        padding: 0.35rem 0.6rem;
+      }
+      .ok {
+        color: #8fd18f;
+      }
+      .warn {
+        color: #d9c27a;
+      }
+      .err {
+        color: #e07a7a;
+      }
+      pre,
+      .box {
+        background: #2b2a33;
+        padding: 0.5rem;
+        border-radius: 4px;
+        max-height: 18rem;
+        overflow: auto;
+        font-size: 12px;
+      }
+      table {
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      td,
+      th {
+        padding: 0.1rem 0.6rem;
+        text-align: left;
+      }
+      td.num {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+      code {
+        color: #d9c27a;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>R14c - read, rewrite and edit a plugin in place</h1>
+    <p id="status">Restoring saved folders...</p>
+
+    <section>
+      <h2>1. Plugin</h2>
+      <label
+        >MO2 profile
+        <select id="profile"></select
+      ></label>
+      <label
+        >Plugin
+        <select id="plugin"></select
+      ></label>
+      <button id="parse" disabled>Parse</button>
+      <div id="header" class="box">-</div>
+    </section>
+
+    <section>
+      <h2>2. Round trip</h2>
+      <button id="roundtrip" disabled>Write back and compare</button>
+      <p>Success criterion: the rewritten bytes are identical to the file, byte for byte.</p>
+      <p id="roundtrip-result">-</p>
+    </section>
+
+    <section>
+      <h2>3. Cells</h2>
+      <div id="cells" class="box">-</div>
+    </section>
+
+    <section>
+      <h2>4. Add a reference, saved to a COPY</h2>
+      <p>
+        Duplicates the first reference of the chosen cell whose base comes from a master (a kit
+        tile), raised by 512 units so it floats visibly, and writes the result to
+        <code>&lt;plugin&gt;.r14c.esp</code> next to the original. The original is never touched.
+        Open the copy in xEdit (no errors expected) and in the CK (the floating tile must show).
+      </p>
+      <label
+        >Cell
+        <select id="cell"></select
+      ></label>
+      <button id="add" disabled>Add reference and write copy</button>
+      <button id="remove-copy" disabled>Delete the copy</button>
+      <p id="add-result">-</p>
+    </section>
+
+    <section>
+      <h2>Log</h2>
+      <pre id="log"></pre>
+    </section>
+
+    <script type="module" src="./r14c-esp.ts"></script>
+  </body>
+</html>

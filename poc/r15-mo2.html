@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>R15 - MO2 overlay</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <style>
+      :root {
+        color-scheme: dark;
+        font:
+          14px/1.45 system-ui,
+          sans-serif;
+        background: #1e1d24;
+        color: #e8e6ef;
+      }
+      body {
+        max-width: 60rem;
+        margin: 0 auto;
+        padding: 1.5rem 1rem;
+      }
+      h1 {
+        font-size: 1.3rem;
+      }
+      section {
+        border: 1px solid #3d3b47;
+        border-radius: 6px;
+        padding: 0.75rem 1rem;
+        margin: 0.75rem 0;
+      }
+      section h2 {
+        font-size: 1rem;
+        margin: 0 0 0.5rem;
+      }
+      button,
+      input,
+      select {
+        margin: 0.2rem 0.4rem 0.2rem 0;
+        padding: 0.35rem 0.6rem;
+        font: inherit;
+      }
+      input {
+        width: 28rem;
+        max-width: 100%;
+      }
+      .ok {
+        color: #8fd18f;
+      }
+      .warn {
+        color: #d9c27a;
+      }
+      .err {
+        color: #e07a7a;
+      }
+      pre,
+      .box {
+        background: #2b2a33;
+        padding: 0.5rem;
+        border-radius: 4px;
+        max-height: 18rem;
+        overflow: auto;
+        font-size: 12px;
+      }
+      table {
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      td,
+      th {
+        padding: 0.1rem 0.6rem;
+        text-align: left;
+        vertical-align: top;
+      }
+      code {
+        color: #d9c27a;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>R15 - rebuild the MO2 virtual Data folder</h1>
+    <p id="support"></p>
+
+    <section>
+      <h2>1. Folders</h2>
+      <p id="game-status">
+        Game folder: not set. Pick it here or on the R14a page (same saved handle).
+      </p>
+      <button id="pick-game">Choose game folder...</button>
+      <p id="mo2-status">
+        MO2 instance: not set. Pick the folder that contains <code>mods/</code> and
+        <code>profiles/</code>.
+      </p>
+      <button id="pick-mo2">Choose MO2 instance...</button>
+      <button id="reauth" hidden>Re-authorize</button>
+      <label
+        >Profile
+        <select id="profile"></select
+      ></label>
+      <button id="load" disabled>Load overlay</button>
+    </section>
+
+    <section>
+      <h2>2. Priority check</h2>
+      <p>
+        The tool assumes the <em>first</em> mod in <code>modlist.txt</code> wins conflicts. Compare
+        with MO2's left pane: the mods listed first below must be the ones at the <em>bottom</em> of
+        the pane (highest priority number).
+      </p>
+      <div id="mods" class="box">-</div>
+    </section>
+
+    <section>
+      <h2>3. Plugins and archives</h2>
+      <div id="plugins" class="box">-</div>
+      <div id="archives" class="box">-</div>
+    </section>
+
+    <section>
+      <h2>4. Resolve a Data-relative path</h2>
+      <input id="path" value="Skyrim.esm" />
+      <button id="resolve" disabled>Resolve</button>
+      <div id="resolved"></div>
+    </section>
+
+    <section>
+      <h2>Log</h2>
+      <pre id="log"></pre>
+    </section>
+
+    <script type="module" src="./r15-mo2.ts"></script>
+  </body>
+</html>
