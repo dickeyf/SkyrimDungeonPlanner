@@ -251,6 +251,15 @@ faces composites par inclusion de contour), aperçu SVG des profils (`src/compon
 superposition cyan large / magenta fin). Vérifié dans l'app : 15 types, 3 paires « presque »
 (G9/G10, G9/G12, G10/G12), 2 faces composites.
 
+**Livraison 3 faite (22 sept. 2026)** : édition sur la page Validation, **sans nommage des
+types** (décision du 22 sept. : les types de connexion sont internes, le designer manipule des
+pièces par EditorID et ne voit jamais les types). Chaque type reçoit un identifiant stable
+calculé (`Kit/<plus petite face EditorID:dir>`), jamais stocké. Les annotations ne contiennent
+que les décisions humaines, référencées par face : « presque » tranchés (même type /
+différent), faces composites (`{ face, accepts }` au niveau du type, D56), pièces validées,
+exclues ou recatégorisées. Opérations pures testées (`annotationEdits.ts`), store
+`annotationStore.svelte.ts` (modifications non sauvées, annuler, télécharger le JSON).
+
 - **Pourquoi** : l'analyse propose, un humain dispose (D12) ; sans validation, l'assistant
   contextuel proposera des pièces fausses.
 - **Quoi** : page de la SPA (V8) : liste des pièces, vignette three.js, faces avec type
@@ -302,6 +311,9 @@ Ordre pensé pour avoir quelque chose de visible tôt, puis d'éditable, puis d'
 - **Quoi** : faces ouvertes libres = faces `conn` dont la cellule voisine est vide ;
   surbrillance ; au clic, liste des pièces dont une face `mate` peut se placer là
   (toutes rotations testées), aperçu fantôme au survol, pose au clic.
+- **Idée retenue (22 sept. 2026)** : dans la liste des pièces compatibles, montrer le dessin
+  du profil de la jonction concernée (composant `ProfileView` de l'étape 10), pour voir d'un
+  coup d'œil quelle ouverture la pièce proposée présente.
 - **Fini quand** : sur une cellule vide, on enchaîne couloir → coin → salle → porte sans
   jamais choisir une pièce incompatible ; tests unitaires sur la recherche de candidats.
 

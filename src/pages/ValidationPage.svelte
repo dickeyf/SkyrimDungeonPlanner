@@ -1,44 +1,51 @@
 <script lang="ts">
   /**
-   * Step 10, part 2: read-only review of the automatic catalogue with the committed
-   * annotations applied. Editing comes in part 3.
+   * Step 10: review the automatic catalogue and record the few human decisions (near
+   * matches, composite faces, pieces). Types are internal and never named by hand; this page
+   * labels them G<n> for the session only. Writing into the repository is part 4.
    */
-  import annotationsJson from '../../data/annotations/imperial.json';
   import ProfileView from '../components/ProfileView.svelte';
-  import { applyAnnotations, parseAnnotations } from '$lib/catalogue/annotations';
+  import {
+    analysisFaceKey,
+    isComposite,
+    mergeDecision,
+    setComposite,
+    setMergeDecision,
+    setPiece,
+  } from '$lib/catalogue/annotationEdits';
+  import { applyAnnotations, serializeAnnotations } from '$lib/catalogue/annotations';
   import { buildReview } from '$lib/catalogue/review';
+  import type { Piece } from '$lib/catalogue/types';
+  import { annotationStore as ann } from '$lib/session/annotationStore.svelte';
   import { catalogueStore as store } from '$lib/session/catalogueStore.svelte';
   import { session } from '$lib/session/session.svelte';
 
-  const annotations = parseAnnotations(annotationsJson);
   const analysis = $derived(store.analysis);
   const review = $derived(analysis ? buildReview(analysis) : null);
-  const annotated = $derived(analysis ? applyAnnotations(analysis.catalogue, annotations) : null);
+  const annotated = $derived(analysis ? applyAnnotations(analysis.catalogue, ann.current) : null);
 
-  let tab = $state<'types' | 'near' | 'composite' | 'pieces'>('types');
+  /** Final type id -> smallest G label among the groups it covers (display only). */
+  const labelOf = $derived.by((): ReadonlyMap<string, string> => {
+    if (!annotated) return new Map();
+    const entries = [...annotated.renamed].sort(
+      (x, y) => Number(x[0].split(':G')[1]) - Number(y[0].split(':G')[1]),
+    );
+    // reversed so the smallest G label is the one kept for each final id
+    return new Map(
+      entries.reverse().map(([autoId, final]) => [final, `G${autoId.split(':G')[1]}`]),
+    );
+  });
+
+  let tab = $state<'types' | 'near' | 'composite' | 'pieces'>('near');
   let openType = $state<number | null>(null);
 
   // wide cyan underneath, thin magenta on top: coinciding lines show magenta on cyan
   const COLORS = ['#3fb8c9', '#e0409a'];
 
+  /** Label of a group after merges: merged groups show the same label. */
   function typeName(group: number): string {
-    const id = `${analysis!.kit.kit}:G${group}`;
-    const name = annotated?.renamed.get(id);
-    return name && name !== id ? name : `G${group}`;
-  }
-
-  /** Display name of a final connection id: annotated names as is, automatic ids as G<n>. */
-  function connLabel(conn: string): string {
-    const m = /:G(\d+)$/.exec(conn);
-    return m ? `G${m[1]}` : conn;
-  }
-
-  /** One face per direction (a face covers several cells with the same types). */
-  function pieceFaces(p: import('$lib/catalogue/types').Piece): string {
-    const byDir = new Map(p.faces.map((f) => [f.dir, f]));
-    return [...byDir.values()]
-      .map((f) => `${f.dir}:${connLabel(f.conn)}${f.extraConn ? `+${f.extraConn.join('+')}` : ''}`)
-      .join('  ');
+    const final = annotated?.renamed.get(`${analysis!.kit.kit}:G${group}`);
+    return (final && labelOf.get(final)) ?? `G${group}`;
   }
 
   function faceLabel(fi: number): string {
@@ -50,18 +57,92 @@
     return analysis!.faces[fi]!.profile;
   }
 
+  function pieceFaces(p: Piece): string {
+    const byDir = new Map(p.faces.map((f) => [f.dir, f]));
+    return [...byDir.values()]
+      .map((f) => {
+        const extra = (f.extraConn ?? []).map((c) => labelOf.get(c) ?? c);
+        return `${f.dir}:${labelOf.get(f.conn) ?? f.conn}${extra.length ? `+${extra.join('+')}` : ''}`;
+      })
+      .join('  ');
+  }
+
+  const piecesView = $derived.by(() => {
+    if (!analysis || !annotated) return [];
+    const finalPieces = new Map(annotated.catalogue.pieces.map((p) => [p.editorId, p]));
+    const notes = new Map(analysis.pieces.map((p) => [p.stat.editorId, p.footprint.notes]));
+    return analysis.catalogue.pieces.map((p) => ({
+      editorId: p.editorId,
+      final: finalPieces.get(p.editorId),
+      annotation: ann.current.pieces[p.editorId],
+      notes: notes.get(p.editorId) ?? [],
+    }));
+  });
+
+  function excludeNonFitting(): void {
+    ann.update((a) => {
+      let next = a;
+      for (const p of piecesView) {
+        if (p.notes.length && !p.annotation?.exclude) {
+          next = setPiece(next, p.editorId, { exclude: p.notes.join('; ') });
+        }
+      }
+      return next;
+    });
+  }
+
+  function validateAll(): void {
+    ann.update((a) => {
+      let next = a;
+      for (const p of piecesView) {
+        if (!p.annotation?.exclude && !p.annotation?.validated) {
+          next = setPiece(next, p.editorId, { validated: true });
+        }
+      }
+      return next;
+    });
+  }
+
+  function download(): void {
+    const blob = new Blob([serializeAnnotations(ann.current)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'imperial.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  const pairOf = (n: { faceA: number; faceB: number }): [string, string] => [
+    analysisFaceKey(analysis!, n.faceA),
+    analysisFaceKey(analysis!, n.faceB),
+  ];
+  const compositeOf = (c: { inner: number; outer: number }) => ({
+    face: analysisFaceKey(analysis!, review!.types[c.outer]!.representative),
+    accepts: analysisFaceKey(analysis!, review!.types[c.inner]!.representative),
+  });
+
   const validatedPieces = $derived(
     annotated ? annotated.catalogue.pieces.filter((p) => p.review.validated).length : 0,
+  );
+  const decidedNear = $derived(
+    review ? review.near.filter((n) => mergeDecision(ann.current, pairOf(n))).length : 0,
+  );
+  const acceptedComposites = $derived(
+    review
+      ? review.containment.filter((c) => {
+          const { face, accepts } = compositeOf(c);
+          return isComposite(ann.current, face, accepts);
+        }).length
+      : 0,
   );
 </script>
 
 <section>
   <h2>Validation: {store.kit.kit} kit</h2>
   <p class="hint">
-    Review the connection types proposed by the mesh analysis. Each type is shown by the profile of
-    its opening, seen from outside the piece (u to the right, v up, origin at the centre of the
-    covered cells and on the cell floor). Annotations come from
-    <code>data/annotations/imperial.json</code>; editing arrives in the next part.
+    Decide what the analysis cannot decide alone: near matches, composite faces, pieces to leave
+    out. Connection types are internal: they are never named, and G numbers only label them on this
+    page.
   </p>
 
   {#if !session.ready}
@@ -75,15 +156,25 @@
   {/if}
 
   {#if analysis && review && annotated}
-    <p class="ok">
-      {review.types.length} connection types ({annotated.unnamedTypes} unnamed),
-      {review.near.length} near-match pairs, {review.containment.length} containment candidates,
-      {validatedPieces}/{annotated.catalogue.pieces.length} pieces validated,
-      {annotated.excludedPieces.length} excluded.
-    </p>
+    <div class="bar">
+      <span>
+        {decidedNear}/{review.near.length} near matches decided,
+        {acceptedComposites}/{review.containment.length} composites accepted,
+        {validatedPieces}/{annotated.catalogue.pieces.length} pieces validated,
+        {annotated.excludedPieces.length} excluded, {annotated.catalogue.connectionTypes.length} types
+      </span>
+      {#if ann.dirty}
+        <span class="warn">unsaved changes</span>
+        <button onclick={() => ann.revert()}>Revert</button>
+        <button onclick={download}>Download JSON</button>
+      {:else}
+        <span class="ok">no changes</span>
+      {/if}
+    </div>
+
     {#if annotated.issues.length}
       <div class="warn">
-        <b>Annotation issues</b>
+        <b>Annotations that no longer match the analysis</b>
         <ul>
           {#each annotated.issues as issue, i (i)}
             <li>{JSON.stringify(issue)}</li>
@@ -93,7 +184,6 @@
     {/if}
 
     <nav class="tabs">
-      <button class:active={tab === 'types'} onclick={() => (tab = 'types')}>Types</button>
       <button class:active={tab === 'near'} onclick={() => (tab = 'near')}
         >Near matches ({review.near.length})</button
       >
@@ -101,6 +191,9 @@
         >Composite faces ({review.containment.length})</button
       >
       <button class:active={tab === 'pieces'} onclick={() => (tab = 'pieces')}>Pieces</button>
+      <button class:active={tab === 'types'} onclick={() => (tab = 'types')}
+        >Types (read-only)</button
+      >
     </nav>
 
     {#if tab === 'types'}
@@ -108,7 +201,7 @@
         {#each review.types as t (t.group)}
           <article>
             <header>
-              <b>{typeName(t.group)}</b>
+              <b>G{t.group}</b>
               <span class="hint">
                 {t.faces.length} faces, mate {t.mate === undefined
                   ? 'none'
@@ -117,13 +210,13 @@
                     : typeName(t.mate)}
               </span>
             </header>
+            {#if typeName(t.group) !== `G${t.group}`}
+              <div class="hint">merged into {typeName(t.group)}</div>
+            {/if}
             <ProfileView layers={[{ segments: profile(t.representative), color: COLORS[0]! }]} />
             <div class="hint">
               {t.width.toFixed(0)} x {t.height.toFixed(0)}, floor {t.vMin.toFixed(0)}
             </div>
-            {#if t.mate !== undefined && t.mate !== t.group}
-              <div class="hint">mirror of {typeName(t.mate)}</div>
-            {/if}
             <button onclick={() => (openType = openType === t.group ? null : t.group)}>
               {openType === t.group ? 'hide faces' : 'show faces'}
             </button>
@@ -141,15 +234,18 @@
       <p class="hint">
         Two types whose openings are <b>almost</b> the same shape (similarity between 80 % and 97 %),
         so the analysis did not merge them on its own. Wide cyan line = first type, thin magenta line
-        = second type. Where magenta runs inside cyan, the two openings coincide; where they separate,
-        a gap would show between the pieces. Next part: you decide "same type" or "different".
+        = second type. Where magenta runs inside cyan, the openings coincide; where they separate, a gap
+        would show between the pieces.
       </p>
       <div class="grid">
         {#each review.near as n (`${n.a}-${n.b}`)}
-          <article>
+          {@const pair = pairOf(n)}
+          {@const decision = mergeDecision(ann.current, pair)}
+          <article class:done={decision !== undefined}>
             <header>
-              <b style:color={COLORS[0]}>{typeName(n.a)}</b> ~
-              <b style:color={COLORS[1]}>{typeName(n.b)}</b>
+              <span
+                ><b style:color={COLORS[0]}>G{n.a}</b> ~ <b style:color={COLORS[1]}>G{n.b}</b></span
+              >
             </header>
             <ProfileView
               size={220}
@@ -159,29 +255,47 @@
               ]}
             />
             <div class="hint">
-              best {n.bestScore.toFixed(3)} over {n.count} face pairs<br />
+              best {(n.bestScore * 100).toFixed(1)} % over {n.count} face pairs<br />
               {faceLabel(n.faceA)} / {faceLabel(n.faceB)}
+            </div>
+            <div class="choices">
+              <button
+                class:chosen={decision === 'same-type'}
+                onclick={() => ann.update((a) => setMergeDecision(a, pair, 'same-type'))}
+                >Same type</button
+              >
+              <button
+                class:chosen={decision === 'distinct'}
+                onclick={() => ann.update((a) => setMergeDecision(a, pair, 'distinct'))}
+                >Different</button
+              >
+              {#if decision}
+                <button onclick={() => ann.update((a) => setMergeDecision(a, pair, undefined))}
+                  >Undecide</button
+                >
+              {/if}
             </div>
           </article>
         {/each}
       </div>
     {:else if tab === 'composite'}
       <p class="hint">
-        A <b>composite face</b> carries two openings at once: for example the end of a large
-        corridor closed by a wall pierced with a small door. Its outline contains the whole outline
-        of the large corridor <i>and</i> the whole arch of the small corridor, so that face can join either
-        one. Wide cyan line = the simpler opening found inside, thin magenta line = the composite face.
-        Next part: you confirm "this face also accepts that type".
+        A <b>composite face</b> carries two openings at once: for example the end of a large corridor
+        closed by a wall pierced with a small door. Its outline contains the whole outline of the simpler
+        opening, so that face can also join it. Wide cyan line = the simpler opening found inside, thin
+        magenta line = the composite face.
       </p>
       <div class="grid">
         {#each review.containment as c (`${c.inner}-${c.outer}`)}
           {@const inner = review.types[c.inner]!}
           {@const outer = review.types[c.outer]!}
-          <article>
+          {@const link = compositeOf(c)}
+          {@const accepted = isComposite(ann.current, link.face, link.accepts)}
+          <article class:done={accepted}>
             <header>
               <span
-                ><b style:color={COLORS[1]}>{typeName(c.outer)}</b> also accepts
-                <b style:color={COLORS[0]}>{typeName(c.inner)}</b></span
+                ><b style:color={COLORS[1]}>G{c.outer}</b> also accepts
+                <b style:color={COLORS[0]}>G{c.inner}</b></span
               >
             </header>
             <ProfileView
@@ -192,26 +306,75 @@
               ]}
             />
             <div class="hint">
-              {(c.innerCoverage * 100).toFixed(0)} % of {typeName(c.inner)} lies on
-              {typeName(c.outer)}<br />
+              {(c.innerCoverage * 100).toFixed(0)} % of G{c.inner} lies on G{c.outer}<br />
               faces: {outer.faces.map(faceLabel).join(', ')}
             </div>
+            <label>
+              <input
+                type="checkbox"
+                checked={accepted}
+                onchange={(e) =>
+                  ann.update((a) =>
+                    setComposite(
+                      a,
+                      link.face,
+                      link.accepts,
+                      (e.currentTarget as HTMLInputElement).checked,
+                    ),
+                  )}
+              />
+              accept
+            </label>
           </article>
         {/each}
       </div>
     {:else}
+      <p>
+        <button onclick={excludeNonFitting}>Exclude pieces that do not fit the grid</button>
+        <button onclick={validateAll}>Validate all remaining</button>
+      </p>
       <table>
         <thead>
-          <tr><th>Piece</th><th>Category</th><th>Faces</th><th>Validated</th></tr>
+          <tr><th>Piece</th><th>Category</th><th>Faces</th><th>Validated</th><th>Excluded</th></tr>
         </thead>
         <tbody>
-          {#each annotated.catalogue.pieces as p (p.formKey)}
-            <tr>
+          {#each piecesView as p (p.editorId)}
+            <tr class:excluded={!p.final}>
               <td>{p.editorId}</td>
-              <td>{p.category}</td>
-              <td>{pieceFaces(p)}</td>
-              <td class={p.review.validated ? 'ok' : 'hint'}>{p.review.validated ? 'yes' : 'no'}</td
-              >
+              <td>{p.final?.category ?? ''}</td>
+              <td>{p.final ? pieceFaces(p.final) : p.annotation?.exclude}</td>
+              <td>
+                <input
+                  type="checkbox"
+                  disabled={!p.final}
+                  checked={p.annotation?.validated ?? false}
+                  onchange={(e) =>
+                    ann.update((a) =>
+                      setPiece(a, p.editorId, {
+                        validated: (e.currentTarget as HTMLInputElement).checked,
+                      }),
+                    )}
+                />
+              </td>
+              <td>
+                <input
+                  type="checkbox"
+                  checked={!!p.annotation?.exclude}
+                  title={p.notes.join('; ')}
+                  onchange={(e) =>
+                    ann.update((a) =>
+                      setPiece(a, p.editorId, {
+                        exclude: (e.currentTarget as HTMLInputElement).checked
+                          ? p.notes.join('; ') || 'excluded'
+                          : undefined,
+                      }),
+                    )}
+                />
+                {#if p.notes.length && !p.annotation?.exclude}<span
+                    class="warn"
+                    title={p.notes.join('; ')}>does not fit</span
+                  >{/if}
+              </td>
             </tr>
           {/each}
         </tbody>
@@ -225,11 +388,24 @@
     color: var(--fg-muted);
     font-size: 13px;
   }
+  .bar {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 1;
+  }
   .tabs {
     margin: 1rem 0;
   }
-  .tabs button.active {
+  .tabs button.active,
+  button.chosen {
     border-bottom: 2px solid var(--accent);
+    color: var(--accent);
   }
   .grid {
     display: grid;
@@ -241,6 +417,9 @@
     border-radius: 6px;
     padding: 0.5rem;
     background: var(--bg-panel);
+  }
+  article.done {
+    border-color: #4f7a4f;
   }
   article header {
     display: flex;
@@ -267,5 +446,9 @@
     padding: 0.15rem 0.6rem;
     text-align: left;
     border-bottom: 1px solid var(--border);
+  }
+  tr.excluded td {
+    color: var(--fg-muted);
+    text-decoration: line-through;
   }
 </style>
