@@ -4,6 +4,7 @@
   import { supportsFileSystemAccess } from '$lib/fs';
   import { session } from '$lib/session/session.svelte';
   import CataloguePage from './pages/CataloguePage.svelte';
+  import EditorPage from './pages/EditorPage.svelte';
   import HomePage from './pages/HomePage.svelte';
   import SetupPage from './pages/SetupPage.svelte';
   import ValidationPage from './pages/ValidationPage.svelte';
@@ -28,6 +29,7 @@
     ['/setup', 'Setup'],
     ['/catalogue', 'Catalogue'],
     ['/validation', 'Validation'],
+    ['/editor', 'Editor'],
   ] as const;
 </script>
 
@@ -58,6 +60,8 @@
     <CataloguePage />
   {:else if route === '/validation'}
     <ValidationPage />
+  {:else if route === '/editor'}
+    <EditorPage />
   {:else}
     <HomePage />
   {/if}

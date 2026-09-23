@@ -20,7 +20,10 @@
       <a href="#/validation">Validation</a>: review the connection types before naming and
       validating them.
     </li>
-    <li>Editor: coming with phase 2.</li>
+    <li>
+      <a href="#/editor">Editor</a>: open a cell of the working plugin (the 3D view and editing
+      tools come next).
+    </li>
   </ol>
   {#if session.status === 'needs-setup'}
     <p class="warn">{session.message}</p>

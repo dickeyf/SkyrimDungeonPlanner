@@ -1,6 +1,16 @@
 <script lang="ts">
+  import { editorStore as ed } from '$lib/editor/editorStore.svelte';
   import { session } from '$lib/session/session.svelte';
   import { describeView } from '$lib/session/dataView';
+
+  // list the plugins of the current Data view (and reopen the remembered one) when it changes
+  $effect(() => {
+    if (session.view) {
+      void ed.listPlugins().then(() => {
+        if (!ed.store && ed.rememberedPlugin) void ed.openPlugin();
+      });
+    }
+  });
 
   let busy = $state(false);
 
@@ -63,6 +73,26 @@
           {/each}
         </select>
       </label>
+    </div>
+  {/if}
+
+  {#if session.view}
+    <div class="row">
+      <label>
+        <b>Working plugin</b>
+        <select
+          disabled={busy || ed.busy}
+          value={ed.store?.name ?? ed.rememberedPlugin ?? ''}
+          onchange={(e) => ed.openPlugin((e.currentTarget as HTMLSelectElement).value)}
+        >
+          <option value="" disabled>choose the plugin to edit</option>
+          {#each ed.plugins as p (p.name)}
+            <option value={p.name}>{p.name} ({p.layer.name})</option>
+          {/each}
+        </select>
+      </label>
+      {#if ed.store}<span class="ok">{ed.message}</span>{/if}
+      {#if ed.error}<span class="err">{ed.error}</span>{/if}
     </div>
   {/if}
 

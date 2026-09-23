@@ -289,7 +289,17 @@ annotations versionnées dans `data/annotations/imperial.json`.
 
 Ordre pensé pour avoir quelque chose de visible tôt, puis d'éditable, puis d'écrit.
 
-### Étape 11 – Configuration et chargement d'une cellule
+### Étape 11 – Configuration et chargement d'une cellule — FAIT (22 sept. 2026)
+Magasin de niveau indépendant du format (`src/lib/level/store.ts`, D57) et son backend `.esp`
+(`espStore.ts` : cellules intérieures et REFR par FormKey, propriété du plugin vs override de
+master) ; `loadCell.ts` dérive la grille avec le catalogue validé (analyse + annotations) ;
+`summary.ts` pour les comptes. État de l'éditeur (`src/lib/editor/editorStore.svelte.ts`) ;
+choix du plugin de travail dans Setup (mémorisé) ; page Editor : liste des cellules, chargement,
+tuiles par catégorie, objets non éditables par raison et par base, carte SVG des cases occupées.
+5 tests. **Vérifié dans l'app** sur la cellule du mod de travail : 586 références, 205 tuiles
+sur la grille (comme R10), 381 objets non éditables, 8 cases partagées tolérées, ancre
+(−384, −128, −512).
+
 - **Pourquoi** : porte d'entrée de l'outil ; réutilise directement les étapes 3, 5 et 6.
 - **Quoi** : écran de configuration (dossier Data, plugin, mémorisés) ; liste des
   cellules intérieures du plugin ; chargement → `TilePlacement[]` + `OpaqueRef[]` +
