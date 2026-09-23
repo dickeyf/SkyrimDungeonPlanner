@@ -27,6 +27,8 @@ export interface Face {
   dir: FaceDir;
   /** Connection type id; see {@link ConnectionType}. */
   conn: string;
+  /** Composite profiles (D56): further types this face also mates with. */
+  extraConn?: string[];
 }
 
 export interface ReviewState {
@@ -94,8 +96,12 @@ export function cellsAreNormalized(cells: readonly CellIndex[]): boolean {
 
 /** Two faces mate when they look at each other and `conn` of one equals `mate` of the other. */
 export function facesMate(a: Face, b: Face, types: ReadonlyMap<string, ConnectionType>): boolean {
-  const ta = types.get(a.conn);
-  return ta !== undefined && ta.mate === b.conn && isOpposite(a.dir, b.dir);
+  if (!isOpposite(a.dir, b.dir)) return false;
+  const bConns = [b.conn, ...(b.extraConn ?? [])];
+  return [a.conn, ...(a.extraConn ?? [])].some((c) => {
+    const t = types.get(c);
+    return t !== undefined && bConns.includes(t.mate);
+  });
 }
 
 export function isOpposite(a: FaceDir, b: FaceDir): boolean {

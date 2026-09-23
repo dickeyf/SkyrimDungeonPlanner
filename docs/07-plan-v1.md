@@ -234,6 +234,16 @@ IndexedDB. Le catalogue se construit donc entièrement dans le navigateur (D46 v
   la suivante grossit.
 
 ### Étape 10 – Page de validation du catalogue
+Découpée en 4 livraisons : 1) format et moteur d'annotations, 2) page de validation en
+lecture avec aperçu des profils, 3) édition, 4) écriture dans le dépôt et passe de validation.
+**Livraison 1 faite (22 sept. 2026)** : `src/lib/catalogue/annotations.ts` ; fichier
+`data/annotations/imperial.json` (vide). Clés = EditorID et `EditorID:dir`, jamais les G de
+l'analyse ; noms de types via une face représentative, fusions de « presque », types
+supplémentaires des faces composites (`Face.extraConn`, D56, pris en compte par
+`facesMate`), exclusion / catégorie / validation par pièce ; problèmes signalés (faces ou
+pièces inconnues, conflits de noms) sans échec ; sérialisation triée pour des diffs lisibles.
+7 tests.
+
 - **Pourquoi** : l'analyse propose, un humain dispose (D12) ; sans validation, l'assistant
   contextuel proposera des pièces fausses.
 - **Quoi** : page de la SPA (V8) : liste des pièces, vignette three.js, faces avec type
