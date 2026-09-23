@@ -21,16 +21,11 @@ contre MO2. Étape 4 (R14b) faite et validée dans Chrome.
 Étape 5 (R14c) faite et validée le 22 sept. 2026
 (aller-retour identique, REFR ajoutée acceptée par xEdit et le CK). Étape 6 (R10) faite et validée le 22 sept. 2026 :
 **phase 0 terminée** (seul R2, manuel et propre à la phase 3, reste ouvert). Étape 8 faite et vérifiée dans l'app (111 pièces
-structurelles sur 525 STAT impériaux). Étape 9 faite et vérifiée : l'analyse de mesh
-tourne dans le navigateur, 111 pièces identiques aux mesures Python, 15 types. Prochaine
-action = **étape 10** : page de validation du catalogue (nommer les types, corriger,
-marquer validé, traiter les « presque » et les profils composites D56, exporter les
-annotations par EditorID). Ordre d'origine de la phase 0, pour mémoire :
-1. **R2** – test manuel dans le CK, sans code : deux NavMesh dans une cellule intérieure, Finalize, pathing d'un PNJ à travers la couture. Valide ou invalide le bake partiel.
-2. **R5** – script Python + pynifly : module XY/Z et pivots des pièces impériales.
-3. **R3** – script Python + pynifly : signatures par arêtes ouvertes sur 10–15 pièces de compatibilité connue.
-4. **R14a/b/c** – trois pages HTML de test : accès disque, tuile lue du BSA et affichée en WebGL, aller-retour ESP identique octet pour octet puis ajout d'une REFR.
-5. **R10** – dérivation de la grille sur une cellule vanilla et la cellule du mod de travail.
+structurelles sur 525 STAT impériaux). Phase 1 terminée le 22 sept. 2026 : catalogue Impérial construit
+dans le navigateur et validé (105 tuiles, annotations dans `data/annotations/imperial.json`).
+Prochaine action = **phase 2, étape 11** : configuration et chargement d'une cellule dans
+l'app (plugin de travail, cellules intérieures, dérivation de grille avec le catalogue
+annoté), en passant par une interface « magasin de niveau » (D57).
 
 Un échec de R3 ne tue pas le projet (repli : saisie manuelle). Un échec de R14b/c déplace l'extraction vers un utilitaire local ; l'éditeur reste une SPA.
 

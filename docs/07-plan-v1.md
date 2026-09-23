@@ -233,7 +233,7 @@ IndexedDB. Le catalogue se construit donc entièrement dans le navigateur (D46 v
 - **Si R3 a échoué** : cette étape devient « saisie manuelle assistée par EditorID » et
   la suivante grossit.
 
-### Étape 10 – Page de validation du catalogue
+### Étape 10 – Page de validation du catalogue — FAIT (22 sept. 2026)
 Découpée en 4 livraisons : 1) format et moteur d'annotations, 2) page de validation en
 lecture avec aperçu des profils, 3) édition, 4) écriture dans le dépôt et passe de validation.
 **Livraison 1 faite (22 sept. 2026)** : `src/lib/catalogue/annotations.ts` ; fichier
@@ -265,8 +265,8 @@ développement seulement, qui écrit `data/annotations/imperial.json` directemen
 de travail (dossier du projet choisi une fois, reconnu par son `package.json`, handle mémorisé ;
 `src/lib/fs/projectFolder.ts`). Première passe de validation enregistrée : les 3 paires
 « presque » des côtés 512 des grandes salles déclarées **différentes**, les 2 faces composites
-des `ImpLHallDoor*` acceptées. Reste : exclure les 6 variantes « 64 » et valider les pièces
-(onglet Pieces), puis sauver à nouveau.
+des `ImpLHallDoor*` acceptées. Passe complétée le même jour : les 6 variantes « 64 » exclues
+(grille de 128 conservée pour la V1, réévaluation à la phase 4), **105 pièces validées**.
 
 - **Pourquoi** : l'analyse propose, un humain dispose (D12) ; sans validation, l'assistant
   contextuel proposera des pièces fausses.
@@ -278,7 +278,10 @@ des `ImpLHallDoor*` acceptées. Reste : exclure les 6 variantes « 64 » et vali
   généré et rechargé sans re-analyse.
 - **Engage** : D46, V8, V9.
 
-**Jalon phase 1** : catalogue Impérial validé, chargeable en < 1 s depuis IndexedDB.
+**Jalon phase 1 — atteint le 22 sept. 2026** : catalogue Impérial construit dans le navigateur
+(111 pièces analysées en ~9 s, puis en cache IndexedDB), validé à la main : 105 tuiles,
+15 types de connexion (dont 3 côtés 512 de grande salle distincts et 1 profil composite),
+annotations versionnées dans `data/annotations/imperial.json`.
 
 ---
 

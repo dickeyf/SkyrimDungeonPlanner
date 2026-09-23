@@ -34,5 +34,339 @@
       "accepts": "ImpLRoomDoor01:+Y"
     }
   ],
-  "pieces": {}
+  "pieces": {
+    "ImpHall1Way01": {
+      "validated": true
+    },
+    "ImpHall1Way02": {
+      "validated": true
+    },
+    "ImpHall1Way03": {
+      "validated": true
+    },
+    "ImpHall1Way04": {
+      "validated": true
+    },
+    "ImpHall1Way128D01": {
+      "validated": true
+    },
+    "ImpHall1Way128L01": {
+      "validated": true
+    },
+    "ImpHall1Way128R01": {
+      "validated": true
+    },
+    "ImpHall1Way128Short01": {
+      "validated": true
+    },
+    "ImpHall1Way128U01": {
+      "validated": true
+    },
+    "ImpHall1Way64D01": {
+      "exclude": "-Y opening rise 64 is an ambiguous level for z-module 128"
+    },
+    "ImpHall1Way64L01": {
+      "validated": true
+    },
+    "ImpHall1Way64R01": {
+      "validated": true
+    },
+    "ImpHall1Way64Short01": {
+      "exclude": "Y openings at -32, 32 are not on a 128 grid"
+    },
+    "ImpHall1Way64U01": {
+      "exclude": "+Y opening rise 64 is an ambiguous level for z-module 128"
+    },
+    "ImpHall2Way01": {
+      "validated": true
+    },
+    "ImpHall2Way02": {
+      "validated": true
+    },
+    "ImpHall3Way01": {
+      "validated": true
+    },
+    "ImpHall3Way02": {
+      "validated": true
+    },
+    "ImpHall4Way01": {
+      "validated": true
+    },
+    "ImpHallDeadEnd01": {
+      "validated": true
+    },
+    "ImpHallDeadEnd02": {
+      "validated": true
+    },
+    "ImpHallDetwist01": {
+      "validated": true
+    },
+    "ImpHallDetwist02": {
+      "validated": true
+    },
+    "ImpHallStairs01": {
+      "validated": true
+    },
+    "ImpHallStairs02": {
+      "validated": true
+    },
+    "ImpLHall1Way01": {
+      "validated": true
+    },
+    "ImpLHall1Way128D01": {
+      "validated": true
+    },
+    "ImpLHall1Way128L01": {
+      "validated": true
+    },
+    "ImpLHall1Way128R01": {
+      "validated": true
+    },
+    "ImpLHall1Way128Short01": {
+      "validated": true
+    },
+    "ImpLHall1Way128U01": {
+      "validated": true
+    },
+    "ImpLHall1Way256Short01": {
+      "validated": true
+    },
+    "ImpLHall1Way64D01": {
+      "exclude": "-Y opening rise 64 is an ambiguous level for z-module 128"
+    },
+    "ImpLHall1Way64L01": {
+      "validated": true
+    },
+    "ImpLHall1Way64R01": {
+      "validated": true
+    },
+    "ImpLHall1Way64Short01": {
+      "exclude": "Y openings at -32, 32 are not on a 128 grid"
+    },
+    "ImpLHall1Way64U01": {
+      "exclude": "+Y opening rise 64 is an ambiguous level for z-module 128"
+    },
+    "ImpLHall2Way01": {
+      "validated": true
+    },
+    "ImpLHall2Way02": {
+      "validated": true
+    },
+    "ImpLHall3Way01": {
+      "validated": true
+    },
+    "ImpLHall3Way02": {
+      "validated": true
+    },
+    "ImpLHall4Way01": {
+      "validated": true
+    },
+    "ImpLHallDeadEnd01": {
+      "validated": true
+    },
+    "ImpLHallDeadEnd02": {
+      "validated": true
+    },
+    "ImpLHallDetwist01": {
+      "validated": true
+    },
+    "ImpLHallDetwist02": {
+      "validated": true
+    },
+    "ImpLHallDoor01": {
+      "validated": true
+    },
+    "ImpLHallDoor02": {
+      "validated": true
+    },
+    "ImpLHallDoorB01": {
+      "validated": true
+    },
+    "ImpLHallDoorBB01": {
+      "validated": true
+    },
+    "ImpLHallDoorL01": {
+      "validated": true
+    },
+    "ImpLHallDoorLB01": {
+      "validated": true
+    },
+    "ImpLHallDoorR01": {
+      "validated": true
+    },
+    "ImpLHallDoorRB01": {
+      "validated": true
+    },
+    "ImpLHallStairs01": {
+      "validated": true
+    },
+    "ImpLHallStairs02": {
+      "validated": true
+    },
+    "ImpLRoomCorner01": {
+      "validated": true
+    },
+    "ImpLRoomCorner01NoWall": {
+      "validated": true
+    },
+    "ImpLRoomCorner02": {
+      "validated": true
+    },
+    "ImpLRoomCorner02NoWall": {
+      "validated": true
+    },
+    "ImpLRoomCorner03": {
+      "validated": true
+    },
+    "ImpLRoomCorner03NoWall": {
+      "validated": true
+    },
+    "ImpLRoomCorner04": {
+      "validated": true
+    },
+    "ImpLRoomCorner04NoWall": {
+      "validated": true
+    },
+    "ImpLRoomDoor01": {
+      "validated": true
+    },
+    "ImpLRoomDoor02": {
+      "validated": true
+    },
+    "ImpLRoomDoor03": {
+      "validated": true
+    },
+    "ImpLRoomDoor04": {
+      "validated": true
+    },
+    "ImpLRoomDoorB01": {
+      "validated": true
+    },
+    "ImpLRoomDoorB02": {
+      "validated": true
+    },
+    "ImpLRoomDoorB03": {
+      "validated": true
+    },
+    "ImpLRoomDoorB04": {
+      "validated": true
+    },
+    "ImpLRoomDoorL01": {
+      "validated": true
+    },
+    "ImpLRoomDoorL02": {
+      "validated": true
+    },
+    "ImpLRoomDoorL03": {
+      "validated": true
+    },
+    "ImpLRoomDoorL04": {
+      "validated": true
+    },
+    "ImpLRoomICorner01": {
+      "validated": true
+    },
+    "ImpLRoomICorner02": {
+      "validated": true
+    },
+    "ImpLRoomICorner03": {
+      "validated": true
+    },
+    "ImpLRoomICorner04": {
+      "validated": true
+    },
+    "ImpLRoomMid01": {
+      "validated": true
+    },
+    "ImpLRoomMid02": {
+      "validated": true
+    },
+    "ImpLRoomWall01": {
+      "validated": true
+    },
+    "ImpLRoomWall01NoWall": {
+      "validated": true
+    },
+    "ImpLRoomWall02": {
+      "validated": true
+    },
+    "ImpLRoomWall02NoWall": {
+      "validated": true
+    },
+    "ImpLRoomWall03": {
+      "validated": true
+    },
+    "ImpLRoomWall03NoWall": {
+      "validated": true
+    },
+    "ImpLRoomWall04": {
+      "validated": true
+    },
+    "ImpLRoomWall04NoWall": {
+      "validated": true
+    },
+    "ImpRoomCorner01": {
+      "validated": true
+    },
+    "ImpRoomCorner02": {
+      "validated": true
+    },
+    "ImpRoomCorner03": {
+      "validated": true
+    },
+    "ImpRoomCorner04": {
+      "validated": true
+    },
+    "ImpRoomDoor01": {
+      "validated": true
+    },
+    "ImpRoomDoor02": {
+      "validated": true
+    },
+    "ImpRoomDoor03": {
+      "validated": true
+    },
+    "ImpRoomDoor04": {
+      "validated": true
+    },
+    "ImpRoomDoorB01": {
+      "validated": true
+    },
+    "ImpRoomDoorB02": {
+      "validated": true
+    },
+    "ImpRoomDoorB03": {
+      "validated": true
+    },
+    "ImpRoomDoorB04": {
+      "validated": true
+    },
+    "ImpRoomICorner01": {
+      "validated": true
+    },
+    "ImpRoomICorner02": {
+      "validated": true
+    },
+    "ImpRoomICorner03": {
+      "validated": true
+    },
+    "ImpRoomICorner04": {
+      "validated": true
+    },
+    "ImpRoomMid01": {
+      "validated": true
+    },
+    "ImpRoomWall01": {
+      "validated": true
+    },
+    "ImpRoomWall02": {
+      "validated": true
+    },
+    "ImpRoomWall03": {
+      "validated": true
+    },
+    "ImpRoomWall04": {
+      "validated": true
+    }
+  }
 }
