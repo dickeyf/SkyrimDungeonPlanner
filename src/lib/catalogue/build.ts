@@ -17,6 +17,8 @@ export interface KitStatsResult {
   totalStats: number;
   fromCache: boolean;
   elapsedMs: number;
+  /** Identifies the master file version; analysis caches derive their key from it. */
+  cacheKey: string;
 }
 
 export async function loadKitStats(
@@ -33,7 +35,13 @@ export async function loadKitStats(
   if (options.useCache !== false) {
     const cached = await kvGet<{ stats: KitStat[]; totalStats: number }>(cacheKey);
     if (cached) {
-      return { master, ...cached, fromCache: true, elapsedMs: performance.now() - started };
+      return {
+        master,
+        ...cached,
+        fromCache: true,
+        elapsedMs: performance.now() - started,
+        cacheKey,
+      };
     }
   }
   const source = await FileRangeSource.open(found.file);
@@ -51,5 +59,6 @@ export async function loadKitStats(
     totalStats: all.length,
     fromCache: false,
     elapsedMs: performance.now() - started,
+    cacheKey,
   };
 }

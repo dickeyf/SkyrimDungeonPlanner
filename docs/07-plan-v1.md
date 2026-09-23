@@ -244,6 +244,13 @@ supplémentaires des faces composites (`Face.extraConn`, D56, pris en compte par
 pièces inconnues, conflits de noms) sans échec ; sérialisation triée pour des diffs lisibles.
 7 tests.
 
+**Livraison 2 faite (22 sept. 2026)** : page Validation en lecture (`src/pages/ValidationPage.svelte`),
+store de catalogue partagé avec cache de l'analyse (`src/lib/session/catalogueStore.svelte.ts`),
+données de revue (`src/lib/catalogue/review.ts` : un type par groupe, « presque » agrégés par paire,
+faces composites par inclusion de contour), aperçu SVG des profils (`src/components/ProfileView.svelte`,
+superposition cyan large / magenta fin). Vérifié dans l'app : 15 types, 3 paires « presque »
+(G9/G10, G9/G12, G10/G12), 2 faces composites.
+
 - **Pourquoi** : l'analyse propose, un humain dispose (D12) ; sans validation, l'assistant
   contextuel proposera des pièces fausses.
 - **Quoi** : page de la SPA (V8) : liste des pièces, vignette three.js, faces avec type

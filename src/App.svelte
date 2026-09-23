@@ -6,6 +6,7 @@
   import CataloguePage from './pages/CataloguePage.svelte';
   import HomePage from './pages/HomePage.svelte';
   import SetupPage from './pages/SetupPage.svelte';
+  import ValidationPage from './pages/ValidationPage.svelte';
 
   const supported = supportsFileSystemAccess();
   let route = $state(currentRoute());
@@ -26,6 +27,7 @@
     ['/', 'Home'],
     ['/setup', 'Setup'],
     ['/catalogue', 'Catalogue'],
+    ['/validation', 'Validation'],
   ] as const;
 </script>
 
@@ -54,6 +56,8 @@
     <SetupPage />
   {:else if route === '/catalogue'}
     <CataloguePage />
+  {:else if route === '/validation'}
+    <ValidationPage />
   {:else}
     <HomePage />
   {/if}

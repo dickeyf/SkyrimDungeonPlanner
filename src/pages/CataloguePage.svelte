@@ -1,23 +1,15 @@
 <script lang="ts">
-  import { analyseKit, type AnalysisResult } from '$lib/catalogue/analyze';
-  import { loadKitStats, type KitStatsResult } from '$lib/catalogue/build';
-  import { kvSet } from '$lib/fs';
-  import { ArchiveIndex } from '$lib/vfs';
+  import type { AnalysisResult } from '$lib/catalogue/analyze';
   import { summarize, type KitStat } from '$lib/catalogue/extract';
   import { IMPERIAL_KIT } from '$lib/catalogue/kits';
   import type { PieceCategory } from '$lib/catalogue/types';
+  import { catalogueStore as store } from '$lib/session/catalogueStore.svelte';
   import { session } from '$lib/session/session.svelte';
 
-  // Large immutable results: raw state, so IndexedDB can clone them and no deep proxy is built.
-  let result = $state.raw<KitStatsResult | null>(null);
-  let analysis = $state.raw<AnalysisResult | null>(null);
-  let analysing = $state(false);
-  let progress = $state('');
+  const result = $derived(store.stats);
+  const analysis = $derived(store.analysis);
   let reference = $state.raw<Record<string, { pivot: number[]; cells: number[][] }> | null>(null);
   let referenceNote = $state('');
-  let saveNote = $state('');
-  let busy = $state(false);
-  let error = $state('');
   let filter = $state('');
   let category = $state<PieceCategory | 'all'>('all');
   let subkit = $state('all');
@@ -36,51 +28,19 @@
     );
   });
 
-  async function build(useCache: boolean): Promise<void> {
-    if (!session.view) return;
-    busy = true;
-    error = '';
+  async function analyse(force: boolean): Promise<void> {
+    if (!(await store.analyse(force))) return;
     try {
-      result = await loadKitStats(session.view.overlay, IMPERIAL_KIT, 'Skyrim.esm', { useCache });
+      const response = await fetch('/poc/data/imperial-pieces.json');
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const table = (await response.json()) as {
+        pieces: Record<string, { pivot: number[]; cells: number[][] }>;
+      };
+      reference = table.pieces;
+      referenceNote = `${Object.keys(reference).length} reference pieces loaded`;
     } catch (e) {
-      error = (e as Error).message;
-    } finally {
-      busy = false;
-    }
-  }
-
-  async function analyse(): Promise<void> {
-    if (!session.view || !result) return;
-    analysing = true;
-    error = '';
-    try {
-      const index = await ArchiveIndex.build(session.view.overlay, session.view.plugins);
-      analysis = await analyseKit(result.stats, IMPERIAL_KIT, index, (done, total, current) => {
-        progress = `${done}/${total} ${current}`;
-      });
-      try {
-        const response = await fetch('/poc/data/imperial-pieces.json');
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const table = (await response.json()) as {
-          pieces: Record<string, { pivot: number[]; cells: number[][] }>;
-        };
-        reference = table.pieces;
-        referenceNote = `${Object.keys(reference).length} reference pieces loaded`;
-      } catch (e) {
-        reference = null;
-        referenceNote = `reference measurements not loaded: ${(e as Error).message}`;
-      }
-      try {
-        await kvSet(`catalogue:${IMPERIAL_KIT.kit}`, analysis.catalogue);
-        saveNote = 'Catalogue saved in this browser.';
-      } catch (e) {
-        saveNote = `catalogue not saved: ${(e as Error).message}`;
-      }
-    } catch (e) {
-      error = (e as Error).message;
-    } finally {
-      analysing = false;
-      progress = '';
+      reference = null;
+      referenceNote = `reference measurements not loaded: ${(e as Error).message}`;
     }
   }
 
@@ -140,10 +100,12 @@
     <p class="warn">Configure the game folder first (Setup).</p>
   {:else}
     <p>
-      <button disabled={busy} onclick={() => build(true)}>Load pieces</button>
-      <button disabled={busy} onclick={() => build(false)}>Rebuild (ignore cache)</button>
-      {#if busy}<span>reading...</span>{/if}
-      {#if error}<span class="err">{error}</span>{/if}
+      <button disabled={store.busy} onclick={() => store.loadStats(true)}>Load pieces</button>
+      <button disabled={store.busy} onclick={() => store.loadStats(false)}
+        >Rebuild (ignore cache)</button
+      >
+      {#if store.busy}<span>{store.progress || 'working...'}</span>{/if}
+      {#if store.error}<span class="err">{store.error}</span>{/if}
     </p>
   {/if}
 
@@ -176,15 +138,15 @@
 
     <h3>Mesh analysis (step 9)</h3>
     <p>
-      <button disabled={analysing} onclick={analyse}>Analyze meshes</button>
-      {#if analysing}<span>{progress}</span>{/if}
+      <button disabled={store.busy} onclick={() => analyse(false)}>Analyze meshes</button>
+      <button disabled={store.busy} onclick={() => analyse(true)}>Re-analyze (ignore cache)</button>
     </p>
     {#if analysis}
       <p class="ok">
         {analysis.pieces.filter((p) => !p.error).length} pieces analysed,
         {analysis.pieces.filter((p) => p.error).length} failed, {analysis.faces.length} faces in
         {analysis.grouping.groups.length} connection types, {analysis.grouping.near.length} near matches,
-        {(analysis.elapsedMs / 1000).toFixed(1)} s. {saveNote}
+        {(analysis.elapsedMs / 1000).toFixed(1)} s{store.analysisFromCache ? ' (from cache)' : ''}.
       </p>
       <p class={reference ? 'hint' : 'warn'}>{referenceNote}</p>
       {#if referenceSummary}

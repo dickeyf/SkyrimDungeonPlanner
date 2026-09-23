@@ -16,6 +16,10 @@
       profile.
     </li>
     <li><a href="#/catalogue">Catalogue</a>: extract the Imperial kit pieces from Skyrim.esm.</li>
+    <li>
+      <a href="#/validation">Validation</a>: review the connection types before naming and
+      validating them.
+    </li>
     <li>Editor: coming with phase 2.</li>
   </ol>
   {#if session.status === 'needs-setup'}
