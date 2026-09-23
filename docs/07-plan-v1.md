@@ -260,6 +260,14 @@ différent), faces composites (`{ face, accepts }` au niveau du type, D56), piè
 exclues ou recatégorisées. Opérations pures testées (`annotationEdits.ts`), store
 `annotationStore.svelte.ts` (modifications non sauvées, annuler, télécharger le JSON).
 
+**Livraison 4 faite (22 sept. 2026)** : bouton « Save to repository », en mode
+développement seulement, qui écrit `data/annotations/imperial.json` directement dans la copie
+de travail (dossier du projet choisi une fois, reconnu par son `package.json`, handle mémorisé ;
+`src/lib/fs/projectFolder.ts`). Première passe de validation enregistrée : les 3 paires
+« presque » des côtés 512 des grandes salles déclarées **différentes**, les 2 faces composites
+des `ImpLHallDoor*` acceptées. Reste : exclure les 6 variantes « 64 » et valider les pièces
+(onglet Pieces), puis sauver à nouveau.
+
 - **Pourquoi** : l'analyse propose, un humain dispose (D12) ; sans validation, l'assistant
   contextuel proposera des pièces fausses.
 - **Quoi** : page de la SPA (V8) : liste des pièces, vignette three.js, faces avec type

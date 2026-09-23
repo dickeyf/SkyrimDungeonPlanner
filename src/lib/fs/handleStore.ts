@@ -13,6 +13,7 @@ const KV = 'kv';
 export const HANDLE_KEYS = {
   gameFolder: 'gameFolder',
   mo2Instance: 'mo2Instance',
+  projectFolder: 'projectFolder',
   pluginFile: 'pluginFile',
 } as const;
 

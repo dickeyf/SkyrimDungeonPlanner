@@ -16,6 +16,15 @@
   import { applyAnnotations, serializeAnnotations } from '$lib/catalogue/annotations';
   import { buildReview } from '$lib/catalogue/review';
   import type { Piece } from '$lib/catalogue/types';
+  import {
+    HANDLE_KEYS,
+    ensureAccess,
+    isProjectFolder,
+    loadHandle,
+    pickDirectory,
+    saveHandle,
+    writeProjectAnnotations,
+  } from '$lib/fs';
   import { annotationStore as ann } from '$lib/session/annotationStore.svelte';
   import { catalogueStore as store } from '$lib/session/catalogueStore.svelte';
   import { session } from '$lib/session/session.svelte';
@@ -103,6 +112,34 @@
     });
   }
 
+  /** Development only: the Vite dev server serves the working copy, so write into it. */
+  const canWriteRepo = import.meta.env.DEV;
+  let saveMessage = $state('');
+
+  async function saveToRepository(): Promise<void> {
+    saveMessage = '';
+    try {
+      let project = await loadHandle<FileSystemDirectoryHandle>(HANDLE_KEYS.projectFolder);
+      if (!project || !(await ensureAccess(project, 'readwrite'))) {
+        project = await pickDirectory('project-folder', 'readwrite');
+      }
+      if (!(await isProjectFolder(project))) {
+        saveMessage = `"${project.name}" is not a checkout of this project (package.json).`;
+        return;
+      }
+      await saveHandle(HANDLE_KEYS.projectFolder, project);
+      const path = await writeProjectAnnotations(
+        project,
+        ann.current.kit,
+        serializeAnnotations(ann.current),
+      );
+      ann.markSaved();
+      saveMessage = `Written to ${path}: review and commit it with git.`;
+    } catch (e) {
+      saveMessage = `Not saved: ${(e as Error).message}`;
+    }
+  }
+
   function download(): void {
     const blob = new Blob([serializeAnnotations(ann.current)], { type: 'application/json' });
     const a = document.createElement('a');
@@ -166,10 +203,14 @@
       {#if ann.dirty}
         <span class="warn">unsaved changes</span>
         <button onclick={() => ann.revert()}>Revert</button>
+        {#if canWriteRepo}
+          <button onclick={saveToRepository}>Save to repository</button>
+        {/if}
         <button onclick={download}>Download JSON</button>
       {:else}
         <span class="ok">no changes</span>
       {/if}
+      {#if saveMessage}<span class="hint">{saveMessage}</span>{/if}
     </div>
 
     {#if annotated.issues.length}

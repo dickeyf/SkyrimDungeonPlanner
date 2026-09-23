@@ -9,3 +9,4 @@ export * from './handleStore';
 export * from './paths';
 export * from './permissions';
 export * from './preferences';
+export * from './projectFolder';

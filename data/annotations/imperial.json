@@ -1,7 +1,38 @@
 {
   "version": 1,
   "kit": "Imperial",
-  "merges": [],
-  "composites": [],
+  "merges": [
+    {
+      "faces": [
+        "ImpLRoomDoor01:-Y",
+        "ImpLRoomDoor03:+Y"
+      ],
+      "decision": "distinct"
+    },
+    {
+      "faces": [
+        "ImpLRoomDoor01:-Y",
+        "ImpLRoomMid01:-X"
+      ],
+      "decision": "distinct"
+    },
+    {
+      "faces": [
+        "ImpLRoomDoor03:+Y",
+        "ImpLRoomMid01:-X"
+      ],
+      "decision": "distinct"
+    }
+  ],
+  "composites": [
+    {
+      "face": "ImpLHallDoor01:-Y",
+      "accepts": "ImpLHall1Way01:-Y"
+    },
+    {
+      "face": "ImpLHallDoor01:-Y",
+      "accepts": "ImpLRoomDoor01:+Y"
+    }
+  ],
   "pieces": {}
 }
