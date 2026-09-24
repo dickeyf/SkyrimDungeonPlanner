@@ -433,12 +433,13 @@ l'enregistrement la cellule est rechargée et l'historique repart du fichier.
 - **Fini quand** : dans une configuration en L, seules les pièces qui s'emboîtent avec les
   deux voisins sont proposées ; une modification s'affiche sans délai perceptible.
 
-**Fait en partie (24 sept. 2026)** : `checkCandidates` (`src/lib/grid/assist.ts`) simule la
+**FAIT (24 sept. 2026)** : `checkCandidates` (`src/lib/grid/assist.ts`) simule la
 pose de chaque candidat et juge toutes ses jonctions (`jointsOfTile`) : incompatible ou
 ouverture contre un mur = écarté, couture = gardé et signalé. **Cas en L vérifié dans
 l'app.** Délai : verdicts de profils mis en cache par paire de pièces et position relative ;
-mesures dans la console (`junctions checked in`, `scene updated in`) ; reste à confirmer que
-le délai a disparu.
+mesures dans la console (`junctions checked in`, `scene updated in`). Mesuré dans l'app :
+~300 ms au premier calcul (cache vide), puis 2 à 6 ms pour les jonctions et 1 à 6 ms pour la
+scène à chaque modification, au lieu de 1 à 2 s.
 
 ### Étape 16 – Jalon V1 : test du critère de réussite
 - **Quoi** : chronométrer la construction d'un donjon de 30 tuiles à partir d'une cellule
