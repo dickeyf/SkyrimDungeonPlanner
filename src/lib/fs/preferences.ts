@@ -5,6 +5,7 @@ const PREFIX = 'sdp.';
 export const PREF_KEYS = {
   mo2Profile: 'mo2Profile',
   workPlugin: 'workPlugin',
+  opaqueDisplay: 'opaqueDisplay',
 } as const;
 
 export function getPref(key: string): string | undefined {

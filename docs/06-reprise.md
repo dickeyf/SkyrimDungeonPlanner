@@ -24,9 +24,10 @@ contre MO2. Étape 4 (R14b) faite et validée dans Chrome.
 structurelles sur 525 STAT impériaux). Phase 1 terminée le 22 sept. 2026 : catalogue Impérial construit
 dans le navigateur et validé (105 tuiles, annotations dans `data/annotations/imperial.json`).
 Étape 11 faite le même jour (plugin de travail ouvert dans l'app, cellule chargée :
-205 tuiles reconnues). Prochaine action = **étape 12** : rendu three.js de la cellule (caméra
-orthographique de dessus, grille au module du kit, meshes réels non texturés, objets non
-éditables en gris, pan/zoom, sélection au clic).
+205 tuiles reconnues). Étape 12 faite le 23 sept. 2026 (rendu three.js de la cellule, 0,3 s). Prochaine action =
+**étape 13** : édition (occupation des cases, refus des chevauchements pour les nouveaux
+placements seulement (D58), rotation 90°, déplacement avec snap, suppression, undo/redo,
+palette de pièces), logique pure dans `src/lib/grid`.
 
 Un échec de R3 ne tue pas le projet (repli : saisie manuelle). Un échec de R14b/c déplace l'extraction vers un utilitaire local ; l'éditeur reste une SPA.
 

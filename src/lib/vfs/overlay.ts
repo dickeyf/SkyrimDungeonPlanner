@@ -3,7 +3,14 @@
  * the enabled MO2 mods (highest priority first) followed by the game's own Data folder.
  * With Vortex or no manager, the overlay has a single layer.
  */
-import { listFiles, tryResolveFile, type FileInfo, type FsDir, type FsFile } from '../fs/paths';
+import {
+  listFiles,
+  splitPath,
+  type FileInfo,
+  type FsDir,
+  type FsEntry,
+  type FsFile,
+} from '../fs/paths';
 import type { Mo2Layout } from './mo2';
 
 export interface Layer {
@@ -21,14 +28,54 @@ export interface OverlayFileInfo extends FileInfo {
 }
 
 export class Overlay {
+  /**
+   * Directory listings, read once per directory handle. Listing a directory through the File
+   * System Access API is slow, and a lookup walks up to ~70 MO2 layers, so lookups of many
+   * files under the same folders (all the meshes of a cell) share the listings.
+   */
+  private readonly listings = new Map<FsDir, Promise<Map<string, FsEntry>>>();
+
   constructor(readonly layers: readonly Layer[]) {
     if (layers.length === 0) throw new Error('overlay needs at least one layer');
+  }
+
+  /** Forget cached listings (after files were added or removed on disk). */
+  invalidate(): void {
+    this.listings.clear();
+  }
+
+  private listing(dir: FsDir): Promise<Map<string, FsEntry>> {
+    let p = this.listings.get(dir);
+    if (!p) {
+      p = (async () => {
+        const entries = new Map<string, FsEntry>();
+        for await (const entry of dir.values()) entries.set(entry.name.toLowerCase(), entry);
+        return entries;
+      })();
+      this.listings.set(dir, p);
+    }
+    return p;
+  }
+
+  /** Case-insensitive lookup through cached listings. */
+  private async lookup(root: FsDir, relPath: string): Promise<FsFile | undefined> {
+    const parts = splitPath(relPath);
+    const fileName = parts.pop();
+    if (fileName === undefined) return undefined;
+    let dir = root;
+    for (const part of parts) {
+      const entry = (await this.listing(dir)).get(part.toLowerCase());
+      if (entry?.kind !== 'directory') return undefined;
+      dir = entry;
+    }
+    const entry = (await this.listing(dir)).get(fileName.toLowerCase());
+    return entry?.kind === 'file' ? entry : undefined;
   }
 
   /** The winning copy of a Data-relative file, or undefined when no layer has it. */
   async resolveFile(relPath: string): Promise<ResolvedFile | undefined> {
     for (const layer of this.layers) {
-      const file = await tryResolveFile(layer.dir, relPath);
+      const file = await this.lookup(layer.dir, relPath);
       if (file) return { file, layer };
     }
     return undefined;
@@ -38,7 +85,7 @@ export class Overlay {
   async resolveAll(relPath: string): Promise<ResolvedFile[]> {
     const out: ResolvedFile[] = [];
     for (const layer of this.layers) {
-      const file = await tryResolveFile(layer.dir, relPath);
+      const file = await this.lookup(layer.dir, relPath);
       if (file) out.push({ file, layer });
     }
     return out;

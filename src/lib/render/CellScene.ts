@@ -1,0 +1,275 @@
+/**
+ * Imperative three.js view of a cell (D44), outside Svelte: top-down orthographic camera,
+ * kit grid, one mesh per placed object sharing cached geometries, pan/zoom, click picking.
+ * Renders on demand only (after a change or camera move).
+ */
+import {
+  AmbientLight,
+  BoxGeometry,
+  BufferGeometry,
+  Color,
+  DirectionalLight,
+  Float32BufferAttribute,
+  Group,
+  LineBasicMaterial,
+  LineSegments,
+  Mesh,
+  MeshLambertMaterial,
+  OrthographicCamera,
+  Raycaster,
+  Scene,
+  Vector2,
+  WebGLRenderer,
+  type Object3D,
+} from 'three';
+import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
+import type { Vec3 } from '../catalogue/types';
+import type { MeshCache } from './meshCache';
+import { gridLines, placementMatrix } from './transform';
+
+export interface SceneObject {
+  key: string;
+  /** Archive-style model path, or undefined when unknown (drawn as a marker). */
+  modelPath?: string;
+  pos: Vec3;
+  rot: Vec3;
+  scale: number;
+  color: string;
+  /** Tiles are pickable; other objects are shown as-is. */
+  pickable: boolean;
+}
+
+/** How objects that are not tiles (clutter, markers, custom pieces) are drawn. */
+export type OpaqueDisplay = 'visible' | 'faded' | 'hidden';
+
+export interface GridSpec {
+  origin: Vec3;
+  module: number;
+  /** Cell range to draw, [i0, i1) x [j0, j1). */
+  range: [number, number, number, number];
+}
+
+const MARKER = new BoxGeometry(24, 24, 24);
+const SELECTED_COLOR = '#ffffff';
+
+export class CellScene {
+  private readonly renderer: WebGLRenderer;
+  private readonly scene = new Scene();
+  private readonly camera = new OrthographicCamera(-1, 1, 1, -1, -100000, 100000);
+  private readonly controls: MapControls;
+  private readonly objects = new Group();
+  private grid: LineSegments | null = null;
+  private readonly materials = new Map<string, MeshLambertMaterial>();
+  private readonly byKey = new Map<string, Mesh>();
+  private selected: Mesh | null = null;
+  private opaqueDisplay: OpaqueDisplay = 'visible';
+  private frame = 0;
+  private readonly observer: ResizeObserver;
+  private downAt: { x: number; y: number } | null = null;
+
+  constructor(
+    private readonly canvas: HTMLCanvasElement,
+    private readonly onPick: (key: string | null) => void,
+  ) {
+    this.renderer = new WebGLRenderer({ canvas, antialias: true });
+    this.renderer.setPixelRatio(window.devicePixelRatio);
+    this.scene.background = new Color(0x16151b);
+    this.scene.add(new AmbientLight(0xffffff, 0.55));
+    const sun = new DirectionalLight(0xffffff, 1.1);
+    sun.position.set(0.4, -0.7, 1);
+    this.scene.add(sun);
+    this.scene.add(this.objects);
+
+    // Skyrim frame: Z up; looking down -Z with north (+Y) up on screen
+    this.camera.up.set(0, 1, 0);
+    this.camera.position.set(0, 0, 50000);
+    this.camera.lookAt(0, 0, 0);
+    this.controls = new MapControls(this.camera, canvas);
+    this.controls.enableRotate = false;
+    this.controls.screenSpacePanning = true;
+    this.controls.zoomToCursor = true;
+    this.controls.addEventListener('change', () => this.requestRender());
+
+    canvas.addEventListener('pointerdown', this.onPointerDown);
+    canvas.addEventListener('pointerup', this.onPointerUp);
+    this.observer = new ResizeObserver(() => this.resize());
+    this.observer.observe(canvas);
+    this.resize();
+  }
+
+  setGrid(spec: GridSpec | null): void {
+    if (this.grid) {
+      this.scene.remove(this.grid);
+      this.grid.geometry.dispose();
+      (this.grid.material as LineBasicMaterial).dispose();
+      this.grid = null;
+    }
+    if (spec) {
+      const [i0, i1, j0, j1] = spec.range;
+      const geometry = new BufferGeometry();
+      geometry.setAttribute(
+        'position',
+        new Float32BufferAttribute(gridLines(spec.origin, spec.module, i0, i1, j0, j1), 3),
+      );
+      this.grid = new LineSegments(geometry, new LineBasicMaterial({ color: 0x3d3b47 }));
+      this.grid.renderOrder = -1;
+      this.scene.add(this.grid);
+    }
+    this.requestRender();
+  }
+
+  /** Replace the placed objects; meshes appear as their geometries load. */
+  async setObjects(
+    list: readonly SceneObject[],
+    cache: MeshCache,
+    onProgress?: (done: number, total: number) => void,
+  ): Promise<{ drawn: number; markers: number }> {
+    this.clearObjects();
+    let done = 0;
+    let markers = 0;
+    await Promise.all(
+      list.map(async (o) => {
+        const geometry = o.modelPath ? await cache.get(o.modelPath) : null;
+        const mesh = new Mesh(geometry ?? MARKER);
+        if (!geometry) markers++;
+        mesh.matrixAutoUpdate = false;
+        mesh.matrix.copy(placementMatrix(o.pos, o.rot, geometry ? o.scale : 1));
+        mesh.userData = { key: o.key, pickable: o.pickable, color: o.color };
+        this.styleMesh(mesh);
+        this.objects.add(mesh);
+        this.byKey.set(o.key, mesh);
+        onProgress?.(++done, list.length);
+        this.requestRender();
+      }),
+    );
+    return { drawn: list.length - markers, markers };
+  }
+
+  /** Frame the whole cell. */
+  fit(): void {
+    const box = { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity };
+    for (const child of this.objects.children) {
+      const m = (child as Mesh).matrix.elements;
+      box.minX = Math.min(box.minX, m[12]!);
+      box.maxX = Math.max(box.maxX, m[12]!);
+      box.minY = Math.min(box.minY, m[13]!);
+      box.maxY = Math.max(box.maxY, m[13]!);
+    }
+    if (!Number.isFinite(box.minX)) return;
+    const cx = (box.minX + box.maxX) / 2;
+    const cy = (box.minY + box.maxY) / 2;
+    this.camera.position.set(cx, cy, 50000);
+    this.controls.target.set(cx, cy, 0);
+    const { clientWidth: w, clientHeight: h } = this.canvas;
+    const span = Math.max(box.maxX - box.minX + 1024, (box.maxY - box.minY + 1024) * (w / h));
+    this.camera.zoom = (2 * this.halfWidth()) / span;
+    this.camera.updateProjectionMatrix();
+    this.controls.update();
+    this.requestRender();
+  }
+
+  setOpaqueDisplay(display: OpaqueDisplay): void {
+    this.opaqueDisplay = display;
+    for (const child of this.objects.children) this.styleMesh(child as Mesh);
+    this.requestRender();
+  }
+
+  /** Material and visibility of a mesh from its colour, pickability and the display mode. */
+  private styleMesh(mesh: Mesh): void {
+    const { color, pickable } = mesh.userData as { color: string; pickable: boolean };
+    if (mesh === this.selected) {
+      mesh.material = this.material(SELECTED_COLOR);
+      mesh.visible = true;
+      return;
+    }
+    const faded = !pickable && this.opaqueDisplay === 'faded';
+    mesh.material = this.material(color, faded ? 0.12 : 1);
+    mesh.visible = pickable || this.opaqueDisplay !== 'hidden';
+  }
+
+  select(key: string | null): void {
+    const previous = this.selected;
+    this.selected = key ? (this.byKey.get(key) ?? null) : null;
+    if (previous) this.styleMesh(previous);
+    if (this.selected) this.styleMesh(this.selected);
+    this.requestRender();
+  }
+
+  dispose(): void {
+    cancelAnimationFrame(this.frame);
+    this.observer.disconnect();
+    this.canvas.removeEventListener('pointerdown', this.onPointerDown);
+    this.canvas.removeEventListener('pointerup', this.onPointerUp);
+    this.controls.dispose();
+    this.clearObjects();
+    this.setGrid(null);
+    for (const m of this.materials.values()) m.dispose();
+    this.renderer.dispose();
+  }
+
+  private material(color: string, opacity = 1): MeshLambertMaterial {
+    const key = `${color}/${opacity}`;
+    let m = this.materials.get(key);
+    if (!m) {
+      m = new MeshLambertMaterial({
+        color,
+        transparent: opacity < 1,
+        opacity,
+        depthWrite: opacity === 1,
+      });
+      this.materials.set(key, m);
+    }
+    return m;
+  }
+
+  private clearObjects(): void {
+    this.objects.clear();
+    this.byKey.clear();
+    this.selected = null;
+  }
+
+  private halfWidth(): number {
+    return this.canvas.clientWidth / 2;
+  }
+
+  private resize(): void {
+    const w = this.canvas.clientWidth || 1;
+    const h = this.canvas.clientHeight || 1;
+    this.renderer.setSize(w, h, false);
+    // one unit per pixel at zoom 1; zoom scales the view
+    this.camera.left = -w / 2;
+    this.camera.right = w / 2;
+    this.camera.top = h / 2;
+    this.camera.bottom = -h / 2;
+    this.camera.updateProjectionMatrix();
+    this.requestRender();
+  }
+
+  private requestRender(): void {
+    if (this.frame) return;
+    this.frame = requestAnimationFrame(() => {
+      this.frame = 0;
+      this.renderer.render(this.scene, this.camera);
+    });
+  }
+
+  private readonly onPointerDown = (e: PointerEvent): void => {
+    this.downAt = { x: e.clientX, y: e.clientY };
+  };
+
+  /** A click that did not move is a pick; a drag is a pan. */
+  private readonly onPointerUp = (e: PointerEvent): void => {
+    if (!this.downAt || Math.hypot(e.clientX - this.downAt.x, e.clientY - this.downAt.y) > 4)
+      return;
+    const rect = this.canvas.getBoundingClientRect();
+    const ndc = new Vector2(
+      ((e.clientX - rect.left) / rect.width) * 2 - 1,
+      -((e.clientY - rect.top) / rect.height) * 2 + 1,
+    );
+    const ray = new Raycaster();
+    ray.setFromCamera(ndc, this.camera);
+    const hits = ray.intersectObjects(this.objects.children, false);
+    const hit = hits.find((h) => (h.object as Object3D).userData.pickable);
+    this.onPick(hit ? (hit.object.userData.key as string) : null);
+  };
+}

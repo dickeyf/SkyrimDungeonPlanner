@@ -102,3 +102,23 @@ describe('summarizeCell', () => {
     });
   });
 });
+
+describe('scene objects', () => {
+  it('draws own tiles in category colours, master tiles and other objects apart', async () => {
+    const { sceneObjects, sceneGrid, CATEGORY_COLORS } = await import('../render/sceneObjects');
+    const c = catalogue();
+    const loaded = await loadCell(store(), '0x00000D62:MyDungeon.esp', c);
+    const objects = sceneObjects(
+      loaded,
+      c,
+      new Map([['0x000ABCDE:Skyrim.esm', 'Clutter/Pot.nif']]),
+    );
+    expect(objects.map((o) => [o.color, o.pickable, o.modelPath])).toEqual([
+      [CATEGORY_COLORS.hall, true, 'meshes/dungeons/imperial/smallhall/imphall1way01.nif'],
+      [CATEGORY_COLORS.hall, true, 'meshes/dungeons/imperial/smallhall/imphall1way01.nif'],
+      [CATEGORY_COLORS.foreign, true, 'meshes/dungeons/imperial/smallhall/imphall1way01.nif'],
+      [CATEGORY_COLORS.opaque, false, 'meshes/clutter/pot.nif'],
+    ]);
+    expect(sceneGrid(loaded, 1)!.range).toEqual([-1, 3, -1, 7]);
+  });
+});

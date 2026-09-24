@@ -15,7 +15,8 @@ import {
 import { annotationStore } from '$lib/session/annotationStore.svelte';
 import { catalogueStore } from '$lib/session/catalogueStore.svelte';
 import { session } from '$lib/session/session.svelte';
-import type { OverlayFileInfo } from '$lib/vfs';
+import { MeshCache } from '$lib/render';
+import { ArchiveIndex, type OverlayFileInfo } from '$lib/vfs';
 
 class EditorStore {
   plugins = $state.raw<OverlayFileInfo[]>([]);
@@ -23,7 +24,10 @@ class EditorStore {
   cells = $state.raw<LevelCell[]>([]);
   loaded = $state.raw<LoadedCell | null>(null);
   catalogue = $state.raw<Catalogue | null>(null);
+  selected = $state<string | null>(null);
   busy = $state(false);
+  private meshCache: MeshCache | null = null;
+  private meshCacheView: unknown = null;
   message = $state('');
   error = $state('');
 
@@ -53,6 +57,18 @@ class EditorStore {
     });
   }
 
+  /** Mesh cache for the current Data view; rebuilt when the view (profile) changes. */
+  async meshes(): Promise<MeshCache> {
+    if (!session.view) throw new Error('no Data view');
+    if (!this.meshCache || this.meshCacheView !== session.view) {
+      this.meshCache?.dispose();
+      const index = await ArchiveIndex.build(session.view.overlay, session.view.plugins);
+      this.meshCache = new MeshCache(index);
+      this.meshCacheView = session.view;
+    }
+    return this.meshCache;
+  }
+
   /** The analysed catalogue with the committed annotations applied. */
   async finalCatalogue(): Promise<Catalogue> {
     const analysis = catalogueStore.analysis ?? (await catalogueStore.analyse(false));
@@ -67,6 +83,7 @@ class EditorStore {
       const catalogue = await this.finalCatalogue();
       const started = performance.now();
       this.loaded = await loadCell(this.store, key, catalogue);
+      this.selected = null;
       this.message = `cell loaded in ${(performance.now() - started).toFixed(0)} ms`;
     });
   }

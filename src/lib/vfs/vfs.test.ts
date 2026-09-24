@@ -195,3 +195,25 @@ describe('archiveLoadOrder', () => {
     ]);
   });
 });
+
+describe('Overlay listing cache', () => {
+  it('lists each directory once across many lookups, and forgets on invalidate', async () => {
+    const layout = await loadMo2Instance(instance());
+    const data = stockData();
+    const overlay = new Overlay(mo2Layers(layout, data));
+    let calls = 0;
+    const original = data.values.bind(data);
+    data.values = () => {
+      calls++;
+      return original();
+    };
+    for (let i = 0; i < 10; i++) {
+      expect((await overlay.resolveFile('Skyrim.esm'))?.layer.name).toBe('Data (game)');
+      expect(await overlay.resolveFile('meshes/missing.nif')).toBeUndefined();
+    }
+    expect(calls).toBe(1);
+    overlay.invalidate();
+    await overlay.resolveFile('Skyrim.esm');
+    expect(calls).toBe(2);
+  });
+});

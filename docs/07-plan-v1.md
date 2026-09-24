@@ -309,7 +309,21 @@ sur la grille (comme R10), 381 objets non éditables, 8 cases partagées tolér�
 - **Fini quand** : la cellule du mod de travail se charge et la liste des refs reconnues / opaques
   s'affiche.
 
-### Étape 12 – Rendu : grille, tuiles, pan/zoom
+### Étape 12 – Rendu : grille, tuiles, pan/zoom — FAIT (23 sept. 2026)
+`src/lib/render` : `transform.ts` (placement Skyrim → matrice three.js, testé contre la
+dérivation de grille pour les 4 rotations), `meshCache.ts` (un mesh par modèle, lu une fois
+via la vue Data), `sceneObjects.ts` (tuiles en couleur de catégorie, tuiles de master en violet,
+autres objets en gris ou en marqueur si leur modèle est inconnu), `CellScene.ts` (caméra
+orthographique de dessus, grille du kit ancrée comme la dérivation, pan/zoom sans rotation,
+rendu à la demande, sélection au clic sans glisser). Composant `CellView.svelte` dans la page
+Editor, panneau de sélection (EditorID, case, rotation, override de master). Limite connue :
+seuls les objets du kit Impérial ont leur modèle connu ; les autres (marqueurs, clutter hors
+kit, pièces custom) sont des marqueurs en attendant la lecture des STAT de tous les masters.
+**Vérifié dans l'app** : les tuiles se raccordent exactement sur la grille ; 311 meshes (44
+modèles distincts) et 275 marqueurs chargés en **0,3 s**, après ajout d'un cache des listings
+de dossiers dans la vue Data (`Overlay`, chaque dossier de chaque couche MO2 lu une fois ;
+14 s avant). Réglage « Other objects » : visibles / très transparents / cachés, mémorisé.
+
 - **Pourquoi** : le designer doit voir le niveau avant de le modifier.
 - **Quoi** : `src/lib/render` : scène three.js, caméra orthographique de dessus, grille
   au module, meshes réels non texturés ombrés (V3) chargés du BSA avec cache par modèle,

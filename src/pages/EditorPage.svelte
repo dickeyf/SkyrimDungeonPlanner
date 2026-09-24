@@ -4,7 +4,9 @@
    * The 3D view and the editing tools come with steps 12 to 14.
    */
   import { onMount } from 'svelte';
+  import CellView from '../components/CellView.svelte';
   import { editorStore as ed } from '$lib/editor/editorStore.svelte';
+  import { CATEGORY_COLORS } from '$lib/render';
   import type { Catalogue } from '$lib/catalogue/types';
   import { piecesByFormKey, summarizeCell } from '$lib/level';
   import { catalogueStore } from '$lib/session/catalogueStore.svelte';
@@ -27,31 +29,19 @@
   );
   const summary = $derived(ed.loaded ? summarizeCell(ed.loaded, pieceOf) : null);
 
-  /** Occupied cells as SVG squares, +Y up, one unit per grid cell. */
-  const map = $derived.by(() => {
-    const l = ed.loaded;
-    if (!l || l.grid.tiles.length === 0) return null;
-    const rects: { x: number; y: number; category: string }[] = [];
-    for (const t of l.grid.tiles) {
-      const category = pieceOf.get(t.ref.base)?.category ?? '?';
-      for (const c of t.occupied) rects.push({ x: c[0], y: c[1], category });
-    }
-    const xs = rects.map((r) => r.x);
-    const ys = rects.map((r) => r.y);
-    const minX = Math.min(...xs) - 1;
-    const maxX = Math.max(...xs) + 2;
-    const minY = Math.min(...ys) - 1;
-    const maxY = Math.max(...ys) + 2;
-    const overlap = new Set(l.grid.overlaps.map((o) => `${o.cell[0]},${o.cell[1]}`));
-    return { rects, minX, minY, w: maxX - minX, h: maxY - minY, maxY, overlap };
-  });
+  const models = $derived(
+    new Map((catalogueStore.stats?.stats ?? []).map((st) => [st.formKey, st.model])),
+  );
+  const selectedTile = $derived(
+    ed.loaded && ed.selected
+      ? ed.loaded.grid.tiles.find((t) => t.ref.refFormKey === ed.selected)
+      : undefined,
+  );
+  const selectedOwn = $derived(
+    selectedTile ? ed.loaded!.refs.find((r) => r.key === selectedTile.ref.refFormKey)?.own : false,
+  );
 
-  const COLORS: Record<string, string> = {
-    hall: '#6fa8dc',
-    room: '#93c47d',
-    door: '#d9c27a',
-    other: '#999',
-  };
+  const COLORS: Record<string, string> = CATEGORY_COLORS;
 </script>
 
 <section>
@@ -98,6 +88,16 @@
 
       <div class="cols">
         <div>
+          <div class="selection">
+            {#if selectedTile}
+              <b>{pieceOf.get(selectedTile.ref.base)?.editorId ?? selectedTile.ref.base}</b><br />
+              cell {selectedTile.cell.join(', ')}, rotation {selectedTile.rotation * 90}°<br />
+              {selectedTile.ref.refFormKey}
+              {selectedOwn ? '' : '(master override, read-only)'}
+            {:else}
+              <span class="hint">Click a tile to select it. Drag to pan, wheel to zoom.</span>
+            {/if}
+          </div>
           <table>
             <thead><tr><th>Tiles by category</th><th></th></tr></thead>
             <tbody>
@@ -127,26 +127,14 @@
           </table>
         </div>
 
-        {#if map}
-          <svg
-            viewBox={`${map.minX} 0 ${map.w} ${map.h}`}
-            preserveAspectRatio="xMidYMid meet"
-            role="img"
-            aria-label="occupied cells"
-          >
-            {#each map.rects as r, i (i)}
-              <rect
-                x={r.x + 0.05}
-                y={map.maxY - r.y - 1 + 0.05}
-                width="0.9"
-                height="0.9"
-                fill={COLORS[r.category] ?? '#999'}
-                opacity="0.7"
-                stroke={map.overlap.has(`${r.x},${r.y}`) ? '#e07a7a' : 'none'}
-                stroke-width="0.12"
-              />
-            {/each}
-          </svg>
+        {#if ed.catalogue}
+          <CellView
+            loaded={ed.loaded}
+            catalogue={ed.catalogue}
+            {models}
+            meshes={() => ed.meshes()}
+            bind:selected={ed.selected}
+          />
         {/if}
       </div>
     {/if}
@@ -164,13 +152,6 @@
     gap: 1rem;
     align-items: start;
   }
-  svg {
-    width: 100%;
-    height: 70vh;
-    background: #16151b;
-    border: 1px solid var(--border);
-    border-radius: 4px;
-  }
   table {
     border-collapse: collapse;
     font-size: 13px;
@@ -185,6 +166,14 @@
   }
   td.num {
     text-align: right;
+  }
+  .selection {
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+    font-size: 13px;
+    min-height: 4.5rem;
   }
   .swatch {
     display: inline-block;
