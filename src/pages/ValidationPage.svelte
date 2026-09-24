@@ -4,6 +4,7 @@
    * matches, composite faces, pieces). Types are internal and never named by hand; this page
    * labels them G<n> for the session only. Writing into the repository is part 4.
    */
+  import SessionNotice from '../components/SessionNotice.svelte';
   import ProfileView from '../components/ProfileView.svelte';
   import {
     analysisFaceKey,
@@ -183,7 +184,7 @@
   </p>
 
   {#if !session.ready}
-    <p class="warn">Configure the game folder first (Setup).</p>
+    <SessionNotice />
   {:else if !analysis}
     <p>
       <button disabled={store.busy} onclick={() => store.analyse(false)}>Load the analysis</button>

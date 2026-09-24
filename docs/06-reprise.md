@@ -27,5 +27,6 @@ dans le navigateur et validé (105 tuiles, annotations dans `data/annotations/im
 205 tuiles reconnues). Étape 12 faite le 23 sept. 2026 (rendu three.js de la cellule, 0,3 s). Étape 13 faite le 23 sept. 2026 (édition : ajout, déplacement, rotation, suppression,
 undo/redo). Étape 14 faite le 24 sept. 2026 (assistant : faces ouvertes, pièces compatibles,
 jonctions jugées sur leurs profils (D60), niveaux des pentes (D59), cellules partagées).
-Prochaine action = **étape 15** : sauvegarde en place dans le plugin (copie de sauvegarde,
-avertissement CK, refus ESL). L'étape 14b (continuité des textures) est prévue après.
+Étape 15 faite le 24 sept. 2026 (sauvegarde en place, copie horodatée, refus si le fichier a
+changé sur disque). Prochaine action = **étape 16** (critère V1), l'étape 14b (continuité
+des textures) et les améliorations d'ergonomie listées dans `07-plan-v1.md`.

@@ -395,6 +395,16 @@ découverte, plus aucun faux positif. Annotations corrigées au passage : couple
   tests unitaires sur la comparaison des UV.
 
 ### Étape 15 – Sauvegarde en place dans le plugin
+
+**FAIT, vérifié dans l'app (24 sept. 2026) :** les changements s'enregistrent dans le plugin. `src/lib/level/edits.ts` (changements de
+la grille → éditions : ajout, déplacement, suppression par FormKey), `EspLevelStore.applyEdits`
+(tout ou rien : refus si une ref appartient à un master (D22) ou si la base vient d'un plugin
+qui n'est pas un master), `level/save.ts` (refus si le fichier a changé sur disque depuis le
+chargement, copie horodatée `DungeonMakerBackups/<nom>.<AAAAMMJJ-HHMMSS>.esp.bak` à côté du
+plugin, écriture atomique, relecture octet par octet). Page Editor : bouton « Save to
+plugin » (Ctrl+S) avec avertissement CK au premier enregistrement, « Reload plugin »,
+avertissement du navigateur si on ferme avec des changements non enregistrés ; après
+l'enregistrement la cellule est rechargée et l'historique repart du fichier.
 - **Pourquoi** : sans elle, rien n'arrive dans le CK. Dernière car la plus destructive.
 - **Quoi** : bouton explicite (V5) ; copie de sauvegarde horodatée (D47) ; refs existantes
   conservées (FormID), nouvelles refs créées, refs supprimées retirées ; avertissement

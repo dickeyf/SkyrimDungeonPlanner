@@ -1,4 +1,5 @@
 <script lang="ts">
+  import SessionNotice from '../components/SessionNotice.svelte';
   import type { AnalysisResult } from '$lib/catalogue/analyze';
   import { summarize, type KitStat } from '$lib/catalogue/extract';
   import { IMPERIAL_KIT } from '$lib/catalogue/kits';
@@ -97,7 +98,7 @@
   </p>
 
   {#if !session.ready}
-    <p class="warn">Configure the game folder first (Setup).</p>
+    <SessionNotice />
   {:else}
     <p>
       <button disabled={store.busy} onclick={() => store.loadStats(true)}>Load pieces</button>

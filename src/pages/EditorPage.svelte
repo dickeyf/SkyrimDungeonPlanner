@@ -5,7 +5,7 @@
    * assistant (open faces and compatible pieces). Nothing is written to the plugin until
    * step 15.
    */
-  import { onMount } from 'svelte';
+  import SessionNotice from '../components/SessionNotice.svelte';
   import CellView from '../components/CellView.svelte';
   import ProfileView from '../components/ProfileView.svelte';
   import type { Catalogue, FormKey, Piece, PieceCategory } from '$lib/catalogue/types';
@@ -42,7 +42,7 @@
     type OpenFace,
   } from '$lib/grid';
   import type { CellIndex, Vec3 } from '$lib/catalogue/types';
-  import { piecesByFormKey, summarizeCell } from '$lib/level';
+  import { editsFromChanges, piecesByFormKey, summarizeCell } from '$lib/level';
   import {
     CATEGORY_COLORS,
     layoutObjects,
@@ -69,8 +69,13 @@
   let showFaces = $state(true);
   let activeFace = $state<string | null>(null);
 
-  onMount(() => {
-    if (session.ready && !ed.store && ed.rememberedPlugin) void ed.openPlugin();
+  // open the remembered working plugin as soon as the game folder is restored, which may
+  // finish after this page is shown (browser reload on /editor)
+  let autoOpened = false;
+  $effect(() => {
+    if (autoOpened || !session.ready || ed.store || !ed.rememberedPlugin) return;
+    autoOpened = true;
+    void ed.openPlugin();
   });
 
   $effect(() => {
@@ -352,6 +357,46 @@
     },
   };
 
+  // ---- saving (step 15) ----------------------------------------------------------------------
+
+  /** The CK warning is confirmed once per page load. */
+  let ckWarned = false;
+
+  async function save(): Promise<void> {
+    if (!pending || !anchor || !changeCount(pending)) return;
+    if (
+      !ckWarned &&
+      !window.confirm(
+        'Save into the plugin now?\n\n' +
+          'If the Creation Kit has this plugin open, do not save it from the CK afterwards ' +
+          'without reloading it first: the CK would overwrite these changes.\n\n' +
+          'A timestamped backup of the current file is made before writing.',
+      )
+    )
+      return;
+    ckWarned = true;
+    stopPlacing();
+    activeFace = null;
+    await ed.save(editsFromChanges(pending, pieces, anchor));
+  }
+
+  // unsaved edits are lost when the page closes
+  function onBeforeUnload(e: BeforeUnloadEvent): void {
+    if (pending && changeCount(pending)) e.preventDefault();
+  }
+
+  async function reloadPlugin(): Promise<void> {
+    if (
+      pending &&
+      changeCount(pending) &&
+      !window.confirm('Reload the plugin from disk and drop the unsaved edits?')
+    )
+      return;
+    const cell = ed.loaded?.cell;
+    await ed.openPlugin(ed.store?.name);
+    if (cell && ed.cells.some((c) => c.key === cell)) await ed.openCell(cell);
+  }
+
   function rotateSelected(turns: 1 | -1): void {
     if (layout && ed.selected) apply(rotateTile(layout, pieces, ed.selected, turns), 'Rotation');
   }
@@ -367,7 +412,9 @@
     if (target && ['INPUT', 'SELECT', 'TEXTAREA'].includes(target.tagName)) return;
     if (!history) return;
     const key = e.key.toLowerCase();
-    if ((e.ctrlKey || e.metaKey) && key === 'z' && !e.shiftKey) {
+    if ((e.ctrlKey || e.metaKey) && key === 's') {
+      void save();
+    } else if ((e.ctrlKey || e.metaKey) && key === 'z' && !e.shiftKey) {
       history = undo(history);
       ghost = null;
     } else if ((e.ctrlKey || e.metaKey) && (key === 'y' || (key === 'z' && e.shiftKey))) {
@@ -394,11 +441,11 @@
   const COLORS: Record<string, string> = CATEGORY_COLORS;
 </script>
 
-<svelte:window onkeydown={onKey} />
+<svelte:window onkeydown={onKey} onbeforeunload={onBeforeUnload} />
 
 <section>
   {#if !session.ready}
-    <p class="warn">Configure the game folder first (<a href="#/setup">Setup</a>).</p>
+    <SessionNotice />
   {:else if !ed.store}
     <p class="warn">
       Choose the working plugin in <a href="#/setup">Setup</a>.
@@ -414,6 +461,11 @@
         {/each}
       </select>
       <button disabled={ed.busy || !cellKey} onclick={() => ed.openCell(cellKey)}>Load cell</button>
+      <button
+        disabled={ed.busy}
+        title="Read the plugin again from disk, e.g. after saving it in the Creation Kit"
+        onclick={reloadPlugin}>Reload plugin</button
+      >
       {#if history}
         <button disabled={!history.past.length} onclick={() => (history = undo(history!))}
           >Undo</button
@@ -423,6 +475,8 @@
         >
       {/if}
       {#if pending && changeCount(pending)}
+        <button class="save" disabled={ed.busy} onclick={save} title="Ctrl+S">Save to plugin</button
+        >
         <span class="warn">
           unsaved: {pending.added.length} added, {pending.moved.length} moved, {pending.removed
             .length} removed
@@ -431,6 +485,7 @@
       {#if ed.busy}<span>{catalogueStore.progress || 'working...'}</span>{/if}
       {#if ed.error}<span class="err">{ed.error}</span>{/if}
     </div>
+    {#if ed.message}<p class="hint">{ed.message}</p>{/if}
 
     {#if ed.loaded && layout && summary}
       <div class="cols">
@@ -683,6 +738,9 @@
   .diag {
     user-select: text;
     font-family: monospace;
+  }
+  .save {
+    font-weight: 600;
   }
   .candidates {
     list-style: none;
