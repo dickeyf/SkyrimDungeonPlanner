@@ -48,7 +48,7 @@ export interface Piece {
   category: PieceCategory;
   /** NIF origin relative to the min corner of cell (0,0,0) of the piece, rotation 0. */
   pivot: Vec3;
-  /** Grid cells occupied at rotation 0. Tiles only. */
+  /** Grid cells occupied at rotation 0, on every level the piece spans. Tiles only. */
   cells: CellIndex[];
   /** Open faces only; an absent face is closed. Tiles only. */
   faces: Face[];
@@ -88,10 +88,13 @@ export interface Catalogue {
   pieces: Piece[];
 }
 
-/** `cells` must be indexed from the piece's min corner: every axis has a 0. */
+/**
+ * `cells` must be indexed from the piece's min corner in plan (x and y have a 0); z is the
+ * level relative to the NIF origin's slice (D55) and may start below 0.
+ */
 export function cellsAreNormalized(cells: readonly CellIndex[]): boolean {
   if (cells.length === 0) return false;
-  return [0, 1, 2].every((axis) => Math.min(...cells.map((c) => c[axis]!)) === 0);
+  return [0, 1].every((axis) => Math.min(...cells.map((c) => c[axis]!)) === 0);
 }
 
 /** Two faces mate when they look at each other and `conn` of one equals `mate` of the other. */

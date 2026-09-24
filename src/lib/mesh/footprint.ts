@@ -13,11 +13,15 @@ export const GRID_TOL = 4.0;
 export interface Footprint {
   /** Grid offset per horizontal axis, relative to the NIF origin, in [0, module). */
   phase: [number, number];
-  /** Occupied cells at rotation 0, indexed from the min corner. */
+  /**
+   * Occupied cells at rotation 0: x and y indexed from the min corner; z is the level relative
+   * to the NIF origin's slice and spans every opening level, so a ramp or a stair occupies
+   * both levels it joins.
+   */
   cells: CellIndex[];
   /** NIF origin relative to the min corner of the cells; z = 0 by convention. */
   pivot: Vec3;
-  /** Cells covered by each opening along its side, in normalized piece indices. */
+  /** Cells covered by each opening along its side, in piece indices, z = opening level. */
   openingCells: CellIndex[][];
   /** Z level of each opening (round(zMin / zModule)). */
   openingLevels: number[];
@@ -77,8 +81,6 @@ export function computeFootprint(
     raw[axis] = overlappedCells(g.min[axis] - ph, g.max[axis] - ph, module);
   }
   const min: [number, number] = [raw[0][0]!, raw[1][0]!];
-  const cells: CellIndex[] = [];
-  for (const i of raw[0]) for (const j of raw[1]) cells.push([i - min[0], j - min[1], 0]);
 
   const openingLevels: number[] = [];
   const openingCells: CellIndex[][] = [];
@@ -96,11 +98,18 @@ export function computeFootprint(
       module,
     ).map((c) => c - min[o.other]);
     const across = o.sign > 0 ? raw[o.axis].length - 1 : 0;
+    const level = openingLevels[openingLevels.length - 1]!;
     openingCells.push(
-      along.map((c) => (o.axis === 0 ? [across, c, 0] : [c, across, 0]) as CellIndex),
+      along.map((c) => (o.axis === 0 ? [across, c, level] : [c, across, level]) as CellIndex),
     );
   }
   if (openings.length === 0) notes.push('no opening detected');
+
+  const levels = openingLevels.length ? openingLevels : [0];
+  const cells: CellIndex[] = [];
+  for (let k = Math.min(...levels); k <= Math.max(...levels); k++) {
+    for (const i of raw[0]) for (const j of raw[1]) cells.push([i - min[0], j - min[1], k]);
+  }
 
   return {
     phase,

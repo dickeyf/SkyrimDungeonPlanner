@@ -347,6 +347,25 @@ compteur des changements non enregistrés (écriture à l'étape 15).
 - **Engage** : V4.
 
 ### Étape 14 – Assistant contextuel : clic sur une face ouverte
+
+**FAIT, vérifié dans l'app (23-24 sept. 2026).** `src/lib/grid/assist.ts` et `joints.ts`,
+testés :
+- une ouverture est une suite contiguë de faces de même direction et de même type ; faces
+  ouvertes (orange) = ouvertures dont les cellules extérieures sont libres ;
+- candidats = ouvertures de type compatible (`facesMate`, composites compris), tournées pour
+  faire face, centrées (une ouverture plus étroite dans une plus large), sans chevauchement ;
+  une rampe est proposée montante ou descendante ;
+- niveaux : une face porte le niveau de son ouverture et une pièce occupe tous les niveaux
+  entre ses ouvertures (D59) ; sans cela les jonctions des pentes paraissaient ouvertes ;
+- jonctions jugées sur leurs deux profils superposés (D60) : exacte ou incluse passent,
+  couture en jaune avec l'écart en unités, incompatible ou ouverture contre un mur en rouge ;
+  la tolérance des types (8 unités) laissait passer des coutures visibles de près ;
+- cellules partagées par deux tuiles en magenta (la détection de R10, tolérée par D58) ;
+- panneau : pièces compatibles avec le dessin de leur profil, fantôme au survol, pose au
+  clic ; pour une jonction marquée, les deux profils superposés.
+Vérifié sur la cellule du mod de travail : coutures connues en jaune, une couture inconnue
+découverte, plus aucun faux positif. Annotations corrigées au passage : couple
+`ImpLRoomDoor01:-Y` / `ImpLRoomDoor03:+Y` fusionné (profil en fait symétrique).
 - **Pourquoi** : c'est la promesse principale de l'outil (« ne propose que ce qui
   s'emboîte »).
 - **Quoi** : faces ouvertes libres = faces `conn` dont la cellule voisine est vide ;
@@ -357,6 +376,23 @@ compteur des changements non enregistrés (écriture à l'étape 15).
   coup d'œil quelle ouverture la pièce proposée présente.
 - **Fini quand** : sur une cellule vide, on enchaîne couloir → coin → salle → porte sans
   jamais choisir une pièce incompatible ; tests unitaires sur la recherche de candidats.
+
+### Étape 14b – Continuité des textures aux jonctions
+- **Pourquoi** : un profil identique ne garantit pas une texture continue. Constaté le
+  24 sept. 2026 : une pièce de salle symétrique posée dans le mauvais sens raccorde sans
+  couture, mais sa texture est interrompue ; tournée de 180°, elle devient continue.
+- **Quoi** : lire dans les NIF les UV des sommets et le fichier de texture de chaque forme
+  (`BSShaderTextureSet`) ; le long des arêtes ouvertes d'une jonction, comparer de chaque
+  côté le fichier et la coordonnée de texture (continue à un nombre entier de répétitions
+  près) ; verdict « texture discontinue » dans une autre couleur, avec la cause (fichier
+  différent ou raccord décalé) ; l'assistant propose d'abord la rotation qui garde la
+  texture continue.
+- **Limites** : seules les arêtes de la jonction sont comparées ; certaines pièces sont
+  peut-être prévues avec un léger décalage, seuil à régler sur la cellule du mod de travail.
+- **Quand** : après l'étape 15 (raffinement, pas indispensable pour écrire le plugin), sauf
+  décision contraire.
+- **Fini quand** : la pièce de salle mal tournée est signalée, et plus après rotation ;
+  tests unitaires sur la comparaison des UV.
 
 ### Étape 15 – Sauvegarde en place dans le plugin
 - **Pourquoi** : sans elle, rien n'arrive dans le CK. Dernière car la plus destructive.

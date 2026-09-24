@@ -10,7 +10,7 @@ import { kvGet, kvSet } from '$lib/fs';
 import { ArchiveIndex } from '$lib/vfs';
 import { session } from './session.svelte';
 
-const ANALYSIS_VERSION = 1; // bump when the analysis output changes shape or meaning
+const ANALYSIS_VERSION = 2; // bump when the analysis output changes shape or meaning
 
 class CatalogueStore {
   readonly kit: KitDefinition = IMPERIAL_KIT;

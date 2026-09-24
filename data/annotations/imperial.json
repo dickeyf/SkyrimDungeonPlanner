@@ -7,7 +7,7 @@
         "ImpLRoomDoor01:-Y",
         "ImpLRoomDoor03:+Y"
       ],
-      "decision": "distinct"
+      "decision": "same-type"
     },
     {
       "faces": [

@@ -1,31 +1,45 @@
 <script lang="ts">
   /**
-   * Step 13: edit a cell's tiles. Pure editing logic lives in $lib/grid/edit; this page wires
-   * it to the scene (pointer events), the keyboard and the piece palette. Nothing is written
-   * to the plugin until step 15.
+   * Steps 13-14: edit a cell's tiles. Pure logic lives in $lib/grid (edit, assist); this page
+   * wires it to the scene (pointer events), the keyboard, the piece palette and the contextual
+   * assistant (open faces and compatible pieces). Nothing is written to the plugin until
+   * step 15.
    */
   import { onMount } from 'svelte';
   import CellView from '../components/CellView.svelte';
+  import ProfileView from '../components/ProfileView.svelte';
   import type { Catalogue, FormKey, Piece, PieceCategory } from '$lib/catalogue/types';
   import { editorStore as ed } from '$lib/editor/editorStore.svelte';
   import {
     addTile,
+    badJoints,
+    candidatesFor,
     cellAt,
     changeCount,
     changes,
     commit,
     conflictsFor,
+    faceAt,
+    inFrameOf,
+    SEAM_TOL,
+    faceRect,
     footprintCells,
     historyOf,
     layoutFromGrid,
+    openFaces,
     moveTile,
     redo,
     removeTile,
     rotateTile,
+    sharedCells,
+    surroundings,
     undo,
+    type BadJoint,
+    type Candidate,
     type EditResult,
     type History,
     type Layout,
+    type OpenFace,
   } from '$lib/grid';
   import type { CellIndex, Vec3 } from '$lib/catalogue/types';
   import { piecesByFormKey, summarizeCell } from '$lib/level';
@@ -34,6 +48,7 @@
     layoutObjects,
     sceneGrid,
     tileObject,
+    type Highlight,
     type PointerInfo,
     type SceneHandlers,
   } from '$lib/render';
@@ -51,6 +66,8 @@
   let message = $state('');
   let filter = $state('');
   let category = $state<PieceCategory | 'all'>('all');
+  let showFaces = $state(true);
+  let activeFace = $state<string | null>(null);
 
   onMount(() => {
     if (session.ready && !ed.store && ed.rememberedPlugin) void ed.openPlugin();
@@ -75,6 +92,7 @@
     placing = null;
     drag = null;
     ghost = null;
+    activeFace = null;
   });
 
   const catalogue = $derived(ed.catalogue ?? emptyCatalogue);
@@ -91,6 +109,120 @@
   const summary = $derived(ed.loaded ? summarizeCell(ed.loaded, pieces) : null);
   const pending = $derived(original && layout ? changes(original, layout) : null);
   const selectedTile = $derived(ed.selected ? layout?.tiles.get(ed.selected) : undefined);
+
+  // ---- assistant -----------------------------------------------------------------------------
+
+  const types = $derived(new Map(catalogue.connectionTypes.map((t) => [t.id, t])));
+  const opens = $derived(layout ? openFaces(layout, pieces) : []);
+  const bad = $derived(
+    layout
+      ? badJoints(
+          layout,
+          pieces,
+          types,
+          anchor ? { module: anchor.module, profileOf: (k, dir) => profileOf(k, dir) } : undefined,
+        )
+      : [],
+  );
+  const active = $derived(opens.find((o) => o.id === activeFace));
+  const activeBad = $derived(bad.find((o) => o.id === activeFace));
+  const shared = $derived(layout ? sharedCells(layout, pieces) : []);
+  let activeShared = $state.raw<ReturnType<typeof sharedCells>[number] | null>(null);
+  const cellBox = (c: CellIndex) => ({
+    min: [
+      anchor!.origin[0] + c[0] * anchor!.module.xy,
+      anchor!.origin[1] + c[1] * anchor!.module.xy,
+    ] as [number, number],
+    max: [
+      anchor!.origin[0] + (c[0] + 1) * anchor!.module.xy,
+      anchor!.origin[1] + (c[1] + 1) * anchor!.module.xy,
+    ] as [number, number],
+  });
+  const activePiece = $derived(active ? layout?.tiles.get(active.tile)?.piece : undefined);
+  const validPieces = $derived(new Map([...pieces].filter(([, p]) => p.review.validated)));
+  const candidates = $derived(
+    active && layout
+      ? candidatesFor(active, layout, validPieces, types).sort((a, b) =>
+          pieces.get(a.piece)!.editorId.localeCompare(pieces.get(b.piece)!.editorId),
+        )
+      : [],
+  );
+  const around = $derived(
+    active && layout && anchor && ed.loaded
+      ? surroundings(active, layout, pieces, ed.loaded.grid.opaque, anchor)
+      : null,
+  );
+  const highlights = $derived.by((): Highlight[] => {
+    if (!anchor || !showFaces || placing) return [];
+    // a bad joint's strip lies inside the neighbour, over the faulty junction
+    return [
+      ...opens.map((o) => ({
+        ...faceRect(o, anchor),
+        color: o.id === activeFace ? '#ffd24a' : '#e8a33a',
+        opacity: o.id === activeFace ? 0.95 : 0.55,
+      })),
+      ...bad.map((o) => ({
+        ...faceRect(o, anchor),
+        color:
+          o.fit === 'seam'
+            ? o.id === activeFace
+              ? '#fff27a'
+              : '#e8d23a'
+            : o.id === activeFace
+              ? '#ff8080'
+              : '#e04040',
+        opacity: o.id === activeFace ? 0.95 : 0.7,
+      })),
+      ...shared.map((sc) => ({
+        ...cellBox(sc.cell),
+        color: '#ff2bd6',
+        opacity: sc === activeShared ? 0.8 : 0.45,
+      })),
+    ];
+  });
+
+  /** Face profiles from the mesh analysis, by `EditorID:dir` (rotation 0). */
+  const profiles = $derived(
+    new Map(
+      (catalogueStore.analysis?.faces ?? []).map((f) => [`${f.piece}:${f.opening.dir}`, f.profile]),
+    ),
+  );
+  const profileOf = (pieceKey: FormKey | undefined, dir: string) =>
+    pieceKey ? profiles.get(`${pieces.get(pieceKey)?.editorId}:${dir}`) : undefined;
+
+  /** Profiles of a junction in this opening's frame (the same drawing the verdict judges). */
+  function jointLayers(joint: BadJoint): { segments: number[][]; color: string }[] {
+    const mine = profileOf(layout?.tiles.get(joint.tile)?.piece, joint.opening.dir);
+    const layers = mine ? [{ segments: mine, color: '#e04040' }] : [];
+    if (!anchor) return layers;
+    for (const f of joint.facing) {
+      const prof = profileOf(layout?.tiles.get(f.tile)?.piece, f.opening.dir);
+      if (prof) {
+        layers.push({ segments: inFrameOf(joint, f, prof, anchor.module), color: '#7fdc7f' });
+      }
+    }
+    return layers;
+  }
+
+  function openFace(face: OpenFace | undefined): void {
+    activeFace = face?.id ?? null;
+    ghost = null;
+    if (face) ed.selected = null;
+  }
+
+  function previewCandidate(c: Candidate | null): void {
+    if (c) showGhost(pieces.get(c.piece)!, c.cell, c.rotation);
+    else ghost = null;
+  }
+
+  function placeCandidate(c: Candidate): void {
+    if (!layout) return;
+    const r = addTile(layout, pieces, c.piece, c.cell, c.rotation);
+    if (apply(r, 'Placement') && r.ok) {
+      activeFace = null;
+      ghost = null;
+    }
+  }
 
   const palette = $derived.by(() => {
     const needle = filter.trim().toLowerCase();
@@ -168,6 +300,20 @@
         }
         return;
       }
+      const face = showFaces && anchor ? faceAt(info.world, [...opens, ...bad], anchor) : undefined;
+      if (face) {
+        openFace(face);
+        activeShared = null;
+        return;
+      }
+      const under = showFaces ? cellUnder(info.world) : null;
+      const sc = under && shared.find((x) => x.cell[0] === under[0] && x.cell[1] === under[1]);
+      activeFace = null;
+      activeShared = sc ?? null;
+      if (sc) {
+        ed.selected = null;
+        return;
+      }
       ed.selected = info.key;
     },
     down(info: PointerInfo) {
@@ -237,7 +383,10 @@
       deleteSelected();
     } else if (key === 'escape') {
       if (placing) stopPlacing();
-      else ed.selected = null;
+      else if (activeFace || activeShared) {
+        openFace(undefined);
+        activeShared = null;
+      } else ed.selected = null;
     } else return;
     e.preventDefault();
   }
@@ -293,6 +442,115 @@
               <span class="hint"
                 >Click to place (Shift+click: place and stop), R / Shift+R to rotate, Esc to stop.</span
               >
+            {:else if activeShared}
+              <b class="err">Shared cell</b>
+              {activeShared.cell.join(',')}, claimed by:
+              {#each activeShared.tiles as k (k)}
+                <div>
+                  {pieces.get(layout.tiles.get(k)?.piece ?? '')?.editorId} at cell {layout.tiles
+                    .get(k)
+                    ?.cell.join(',')}, rot {(layout.tiles.get(k)?.rotation ?? 0) * 90}°
+                </div>
+              {/each}
+              <div class="hint">
+                Two tiles overlap here (tolerated in a loaded level, refused for new placements).
+                Esc to close.
+              </div>
+            {:else if activeBad}
+              {@const mine = pieces.get(layout.tiles.get(activeBad.tile)?.piece ?? '')}
+              <b class="err"
+                >{activeBad.fit === 'seam'
+                  ? `Seam of ${activeBad.gap.toFixed(1)} units`
+                  : activeBad.facing.length
+                    ? Number.isNaN(activeBad.gap)
+                      ? 'Mismatched junction'
+                      : `Mismatched junction (${activeBad.gap.toFixed(0)} units off)`
+                    : 'Opening against a wall'}</b
+              >: {mine?.editorId} ({activeBad.dir}) runs into
+              {activeBad.against
+                .map((k) => pieces.get(layout.tiles.get(k)?.piece ?? '')?.editorId)
+                .join(', ')}.
+              <ProfileView size={140} layers={jointLayers(activeBad)} />
+              <div class="hint">
+                Red: this opening. Green: the openings in front, mirrored as seen from this side,
+                shifted to their true place along the face. Exact or included (one drawing inside
+                the other) passes; a gap over {SEAM_TOL} units is a seam.
+              </div>
+              <div class="hint diag">
+                this: {activeBad.opening.face.conn}{activeBad.opening.face.extraConn?.length
+                  ? ` +${activeBad.opening.face.extraConn.join('+')}`
+                  : ''} (mate {types.get(activeBad.opening.face.conn)?.mate}), cells
+                {activeBad.cells.map((c) => c.join(',')).join(' ')}
+                {#each activeBad.facing as f (f.id)}
+                  <br />facing: {pieces.get(layout.tiles.get(f.tile)?.piece ?? '')?.editorId}
+                  {f.dir}
+                  {f.opening.face.conn}{f.opening.face.extraConn?.length
+                    ? ` +${f.opening.face.extraConn.join('+')}`
+                    : ''}, cells {f.cells.map((c) => c.join(',')).join(' ')}
+                {:else}
+                  <br />facing: no opening on that side (wall)
+                {/each}
+              </div>
+              <div class="hint">Esc to close.</div>
+            {:else if active}
+              {@const own = profileOf(activePiece, active.opening.dir)}
+              <b>Open face</b> of {pieces.get(activePiece ?? '')?.editorId}
+              ({active.dir}, {active.outside.length} cell{active.outside.length > 1 ? 's' : ''})
+              {#if own}
+                <ProfileView size={90} layers={[{ segments: own, color: '#e8a33a' }]} />
+              {/if}
+              <div class="hint">
+                face cells {active.cells.map((c) => c.join(',')).join(' ')}, outside
+                {active.outside.map((c) => c.join(',')).join(' ')}
+              </div>
+              {#if around && (around.tiles.length || around.opaque.length)}
+                <div class="warn">
+                  In front of this face (any level):
+                  {#each around.tiles as t (t.key)}
+                    <div>
+                      tile {pieces.get(t.piece)?.editorId} at cell {t.cell.join(',')}, rot {t.rotation *
+                        90}°
+                    </div>
+                  {/each}
+                  {#each around.opaque as o (o.ref.refFormKey)}
+                    <div>
+                      {pieces.get(o.ref.base)?.editorId} kept out of the grid: {o.reason}
+                      (pos {o.ref.pos.map((v) => v.toFixed(1)).join(', ')}, rz {(
+                        (o.ref.rot[2] * 180) /
+                        Math.PI
+                      ).toFixed(1)}°)
+                    </div>
+                  {/each}
+                </div>
+              {/if}
+              <div class="hint">
+                {candidates.length} compatible placement{candidates.length === 1 ? '' : 's'}: hover
+                to preview, click to place, Esc to close.
+              </div>
+              <ul class="candidates">
+                {#each candidates as c, n (n)}
+                  {@const prof = profileOf(c.piece, c.opening.dir)}
+                  <li>
+                    <button
+                      onmouseenter={() => previewCandidate(c)}
+                      onmouseleave={() => previewCandidate(null)}
+                      onclick={() => placeCandidate(c)}
+                    >
+                      {#if prof}
+                        <ProfileView size={44} layers={[{ segments: prof, color: '#7fdc7f' }]} />
+                      {/if}
+                      <span>
+                        <span
+                          class="swatch"
+                          style:background={COLORS[pieces.get(c.piece)!.category] ?? '#999'}
+                        ></span>
+                        {pieces.get(c.piece)!.editorId}
+                        <span class="hint">by {c.opening.dir}, {c.rotation * 90}°</span>
+                      </span>
+                    </button>
+                  </li>
+                {/each}
+              </ul>
             {:else if selectedTile}
               <b>{pieces.get(selectedTile.piece)?.editorId}</b>
               {selectedTile.origin ? '' : '(new)'}<br />
@@ -306,7 +564,8 @@
               {/if}
             {:else}
               <span class="hint"
-                >Click a tile to select it, or a piece below to place it. Drag to pan, wheel to
+                >Click a tile to select it, an orange open face for compatible pieces (red: a
+                junction that does not fit), or a piece below to place it. Drag to pan, wheel to
                 zoom, Ctrl+Z / Ctrl+Y to undo / redo.</span
               >
             {/if}
@@ -342,6 +601,10 @@
             </ul>
           </div>
 
+          <label class="hint"
+            ><input type="checkbox" bind:checked={showFaces} /> Show open faces ({opens.length}),
+            mismatched junctions ({bad.length}) and shared cells ({shared.length})</label
+          >
           <p class="hint">
             {ed.loaded.refs.length} references: {ed.loaded.grid.tiles.length} tiles,
             {ed.loaded.grid.opaque.length} other objects, {ed.loaded.grid.overlaps.length} shared cells
@@ -353,6 +616,7 @@
           {objects}
           {grid}
           {ghost}
+          {highlights}
           {handlers}
           meshes={() => ed.meshes()}
           selected={ed.selected}
@@ -415,6 +679,26 @@
   .palette li button.active {
     border-color: var(--accent);
     color: var(--accent);
+  }
+  .diag {
+    user-select: text;
+    font-family: monospace;
+  }
+  .candidates {
+    list-style: none;
+    padding: 0;
+    margin: 0.3rem 0 0;
+    max-height: 50vh;
+    overflow: auto;
+  }
+  .candidates button {
+    width: 100%;
+    text-align: left;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    font-size: 12px;
+    margin: 1px 0;
   }
   .swatch {
     display: inline-block;

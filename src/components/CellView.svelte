@@ -7,6 +7,7 @@
   import {
     CellScene,
     type GridSpec,
+    type Highlight,
     type MeshCache,
     type OpaqueDisplay,
     type SceneHandlers,
@@ -18,6 +19,7 @@
     objects,
     grid,
     ghost = null,
+    highlights = [],
     handlers,
     meshes,
     selected = null,
@@ -26,6 +28,7 @@
     objects: SceneObject[];
     grid: GridSpec | null;
     ghost?: { object: SceneObject; ok: boolean } | null;
+    highlights?: Highlight[];
     handlers: SceneHandlers;
     meshes: () => Promise<MeshCache>;
     selected?: string | null;
@@ -83,6 +86,10 @@
 
   $effect(() => {
     scene?.select(selected);
+  });
+
+  $effect(() => {
+    scene?.setHighlights(highlights);
   });
 
   $effect(() => {

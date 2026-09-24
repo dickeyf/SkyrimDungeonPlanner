@@ -14,6 +14,7 @@ import {
   LineBasicMaterial,
   LineSegments,
   Mesh,
+  MeshBasicMaterial,
   MeshLambertMaterial,
   OrthographicCamera,
   Raycaster,
@@ -67,6 +68,14 @@ export interface GridSpec {
   range: [number, number, number, number];
 }
 
+/** A flat rectangle drawn over everything, e.g. an open face of the assistant. */
+export interface Highlight {
+  min: [number, number];
+  max: [number, number];
+  color: string;
+  opacity: number;
+}
+
 const MARKER = new BoxGeometry(24, 24, 24);
 const SELECTED_COLOR = '#ffffff';
 
@@ -87,6 +96,7 @@ export class CellScene {
   private dragging = false;
   private planeZ = 0;
   private ghost: Mesh | null = null;
+  private readonly highlights = new Group();
 
   constructor(
     private readonly canvas: HTMLCanvasElement,
@@ -99,7 +109,7 @@ export class CellScene {
     const sun = new DirectionalLight(0xffffff, 1.1);
     sun.position.set(0.4, -0.7, 1);
     this.scene.add(sun);
-    this.scene.add(this.objects);
+    this.scene.add(this.objects, this.highlights);
 
     // Skyrim frame: Z up; looking down -Z with north (+Y) up on screen
     this.camera.up.set(0, 1, 0);
@@ -138,6 +148,33 @@ export class CellScene {
       this.grid = new LineSegments(geometry, new LineBasicMaterial({ color: 0x3d3b47 }));
       this.grid.renderOrder = -1;
       this.scene.add(this.grid);
+    }
+    this.requestRender();
+  }
+
+  /** Replace the highlight rectangles (drawn on top of the tiles, not pickable). */
+  setHighlights(list: readonly Highlight[]): void {
+    for (const child of [...this.highlights.children]) {
+      const mesh = child as Mesh;
+      mesh.geometry.dispose();
+      (mesh.material as MeshBasicMaterial).dispose();
+      this.highlights.remove(mesh);
+    }
+    for (const h of list) {
+      const w = h.max[0] - h.min[0];
+      const d = h.max[1] - h.min[1];
+      const mesh = new Mesh(
+        new BoxGeometry(w, d, 1),
+        new MeshBasicMaterial({
+          color: h.color,
+          transparent: true,
+          opacity: h.opacity,
+          depthTest: false,
+        }),
+      );
+      mesh.position.set(h.min[0] + w / 2, h.min[1] + d / 2, this.planeZ);
+      mesh.renderOrder = 20;
+      this.highlights.add(mesh);
     }
     this.requestRender();
   }
@@ -283,6 +320,7 @@ export class CellScene {
     this.canvas.removeEventListener('pointerup', this.onPointerUp);
     this.controls.dispose();
     this.clearObjects();
+    this.setHighlights([]);
     this.setGrid(null);
     for (const m of this.materials.values()) m.dispose();
     this.renderer.dispose();

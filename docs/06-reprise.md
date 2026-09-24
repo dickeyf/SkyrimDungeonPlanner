@@ -24,13 +24,8 @@ contre MO2. Étape 4 (R14b) faite et validée dans Chrome.
 structurelles sur 525 STAT impériaux). Phase 1 terminée le 22 sept. 2026 : catalogue Impérial construit
 dans le navigateur et validé (105 tuiles, annotations dans `data/annotations/imperial.json`).
 Étape 11 faite le même jour (plugin de travail ouvert dans l'app, cellule chargée :
-205 tuiles reconnues). Étape 12 faite le 23 sept. 2026 (rendu three.js de la cellule, 0,3 s). Prochaine action =
-**étape 13** : édition (occupation des cases, refus des chevauchements pour les nouveaux
-placements seulement (D58), rotation 90°, déplacement avec snap, suppression, undo/redo,
-palette de pièces), logique pure dans `src/lib/grid`.
-
-Un échec de R3 ne tue pas le projet (repli : saisie manuelle). Un échec de R14b/c déplace l'extraction vers un utilitaire local ; l'éditeur reste une SPA.
-
-## Faits vérifiés vs hypothèses
-- Vérifié par recherche : pas de librairie JS/WASM prête pour écrire des plugins Skyrim ; un éditeur NIF navigateur existe pour Morrowind.
-- Hypothèses non vérifiées : plusieurs NAVM reliés par Finalize dans une cellule intérieure (R2) ; vertex identiques aux jonctions des kits (R3) ; module du kit Impérial (R5) ; détails du format BSA v105 / NIF SSE / NAVM à confirmer contre les specs (UESP, nif.xml) au moment d'écrire les parseurs.
+205 tuiles reconnues). Étape 12 faite le 23 sept. 2026 (rendu three.js de la cellule, 0,3 s). Étape 13 faite le 23 sept. 2026 (édition : ajout, déplacement, rotation, suppression,
+undo/redo). Étape 14 faite le 24 sept. 2026 (assistant : faces ouvertes, pièces compatibles,
+jonctions jugées sur leurs profils (D60), niveaux des pentes (D59), cellules partagées).
+Prochaine action = **étape 15** : sauvegarde en place dans le plugin (copie de sauvegarde,
+avertissement CK, refus ESL). L'étape 14b (continuité des textures) est prévue après.
