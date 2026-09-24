@@ -39,6 +39,24 @@ export interface SceneObject {
   pickable: boolean;
 }
 
+/** Pointer event in the scene: the point on the grid plane and the pickable object under it. */
+export interface PointerInfo {
+  world: Vec3;
+  key: string | null;
+  shift: boolean;
+}
+
+export interface SceneHandlers {
+  /** A press and release without movement. */
+  click(info: PointerInfo): void;
+  /** Return true to start a drag: panning is disabled until the button is released. */
+  down?(info: PointerInfo): boolean;
+  /** Any pointer movement, hovering or dragging. */
+  move?(info: PointerInfo): void;
+  /** End of a drag started by `down`. */
+  up?(info: PointerInfo): void;
+}
+
 /** How objects that are not tiles (clutter, markers, custom pieces) are drawn. */
 export type OpaqueDisplay = 'visible' | 'faded' | 'hidden';
 
@@ -66,10 +84,13 @@ export class CellScene {
   private frame = 0;
   private readonly observer: ResizeObserver;
   private downAt: { x: number; y: number } | null = null;
+  private dragging = false;
+  private planeZ = 0;
+  private ghost: Mesh | null = null;
 
   constructor(
     private readonly canvas: HTMLCanvasElement,
-    private readonly onPick: (key: string | null) => void,
+    private readonly handlers: SceneHandlers,
   ) {
     this.renderer = new WebGLRenderer({ canvas, antialias: true });
     this.renderer.setPixelRatio(window.devicePixelRatio);
@@ -90,7 +111,9 @@ export class CellScene {
     this.controls.zoomToCursor = true;
     this.controls.addEventListener('change', () => this.requestRender());
 
-    canvas.addEventListener('pointerdown', this.onPointerDown);
+    // capture phase: runs before the controls, so a drag can be claimed before panning starts
+    canvas.addEventListener('pointerdown', this.onPointerDown, { capture: true });
+    canvas.addEventListener('pointermove', this.onPointerMove);
     canvas.addEventListener('pointerup', this.onPointerUp);
     this.observer = new ResizeObserver(() => this.resize());
     this.observer.observe(canvas);
@@ -105,6 +128,7 @@ export class CellScene {
       this.grid = null;
     }
     if (spec) {
+      this.planeZ = spec.origin[2];
       const [i0, i1, j0, j1] = spec.range;
       const geometry = new BufferGeometry();
       geometry.setAttribute(
@@ -143,6 +167,62 @@ export class CellScene {
       }),
     );
     return { drawn: list.length - markers, markers };
+  }
+
+  /**
+   * Update the placed objects in place: meshes of unchanged keys are kept (their matrix,
+   * geometry and colour updated), new keys are added and missing ones removed.
+   */
+  async syncObjects(list: readonly SceneObject[], cache: MeshCache): Promise<void> {
+    const wanted = new Set(list.map((o) => o.key));
+    for (const [key, mesh] of this.byKey) {
+      if (!wanted.has(key)) {
+        this.objects.remove(mesh);
+        this.byKey.delete(key);
+        if (this.selected === mesh) this.selected = null;
+      }
+    }
+    await Promise.all(
+      list.map(async (o) => {
+        const geometry = o.modelPath ? await cache.get(o.modelPath) : null;
+        let mesh = this.byKey.get(o.key);
+        if (!mesh) {
+          mesh = new Mesh(geometry ?? MARKER);
+          mesh.matrixAutoUpdate = false;
+          this.objects.add(mesh);
+          this.byKey.set(o.key, mesh);
+        } else if (mesh.geometry !== (geometry ?? MARKER)) {
+          mesh.geometry = geometry ?? MARKER;
+        }
+        mesh.matrix.copy(placementMatrix(o.pos, o.rot, geometry ? o.scale : 1));
+        mesh.matrixWorldNeedsUpdate = true;
+        mesh.userData = { key: o.key, pickable: o.pickable, color: o.color };
+        this.styleMesh(mesh);
+      }),
+    );
+    this.requestRender();
+  }
+
+  /** Preview of a piece being placed or moved; green when it fits, red on a conflict. */
+  async setGhost(o: SceneObject | null, ok: boolean, cache: MeshCache): Promise<void> {
+    if (!o) {
+      if (this.ghost) this.scene.remove(this.ghost);
+      this.ghost = null;
+      this.requestRender();
+      return;
+    }
+    const geometry = (o.modelPath ? await cache.get(o.modelPath) : null) ?? MARKER;
+    if (!this.ghost) {
+      this.ghost = new Mesh(geometry);
+      this.ghost.matrixAutoUpdate = false;
+      this.ghost.renderOrder = 10;
+      this.scene.add(this.ghost);
+    }
+    this.ghost.geometry = geometry;
+    this.ghost.material = this.material(ok ? '#7fdc7f' : '#e05050', 0.55);
+    this.ghost.matrix.copy(placementMatrix(o.pos, o.rot, 1));
+    this.ghost.matrixWorldNeedsUpdate = true;
+    this.requestRender();
   }
 
   /** Frame the whole cell. */
@@ -198,7 +278,8 @@ export class CellScene {
   dispose(): void {
     cancelAnimationFrame(this.frame);
     this.observer.disconnect();
-    this.canvas.removeEventListener('pointerdown', this.onPointerDown);
+    this.canvas.removeEventListener('pointerdown', this.onPointerDown, { capture: true });
+    this.canvas.removeEventListener('pointermove', this.onPointerMove);
     this.canvas.removeEventListener('pointerup', this.onPointerUp);
     this.controls.dispose();
     this.clearObjects();
@@ -253,14 +334,8 @@ export class CellScene {
     });
   }
 
-  private readonly onPointerDown = (e: PointerEvent): void => {
-    this.downAt = { x: e.clientX, y: e.clientY };
-  };
-
-  /** A click that did not move is a pick; a drag is a pan. */
-  private readonly onPointerUp = (e: PointerEvent): void => {
-    if (!this.downAt || Math.hypot(e.clientX - this.downAt.x, e.clientY - this.downAt.y) > 4)
-      return;
+  /** Grid-plane point and pickable object under the pointer. */
+  private info(e: PointerEvent): PointerInfo {
     const rect = this.canvas.getBoundingClientRect();
     const ndc = new Vector2(
       ((e.clientX - rect.left) / rect.width) * 2 - 1,
@@ -268,8 +343,42 @@ export class CellScene {
     );
     const ray = new Raycaster();
     ray.setFromCamera(ndc, this.camera);
+    // top-down orthographic view: the ray is vertical, so x and y are those of its origin
+    const world: Vec3 = [ray.ray.origin.x, ray.ray.origin.y, this.planeZ];
     const hits = ray.intersectObjects(this.objects.children, false);
-    const hit = hits.find((h) => (h.object as Object3D).userData.pickable);
-    this.onPick(hit ? (hit.object.userData.key as string) : null);
+    const hit = hits.find((h) => (h.object as Object3D).userData.pickable && h.object.visible);
+    return { world, key: hit ? (hit.object.userData.key as string) : null, shift: e.shiftKey };
+  }
+
+  private readonly onPointerDown = (e: PointerEvent): void => {
+    if (e.button !== 0) return;
+    this.downAt = { x: e.clientX, y: e.clientY };
+    if (this.handlers.down?.(this.info(e))) {
+      this.dragging = true;
+      this.controls.enabled = false;
+      this.canvas.setPointerCapture(e.pointerId);
+    }
+  };
+
+  private readonly onPointerMove = (e: PointerEvent): void => {
+    this.handlers.move?.(this.info(e));
+  };
+
+  /** A press and release without movement is a click; a claimed drag ends; else it was a pan. */
+  private readonly onPointerUp = (e: PointerEvent): void => {
+    if (e.button !== 0) return;
+    const info = this.info(e);
+    if (this.dragging) {
+      this.dragging = false;
+      this.controls.enabled = true;
+      if (this.canvas.hasPointerCapture(e.pointerId))
+        this.canvas.releasePointerCapture(e.pointerId);
+      this.handlers.up?.(info);
+      return;
+    }
+    if (this.downAt && Math.hypot(e.clientX - this.downAt.x, e.clientY - this.downAt.y) <= 4) {
+      this.handlers.click(info);
+    }
+    this.downAt = null;
   };
 }

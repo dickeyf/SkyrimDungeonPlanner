@@ -1,65 +1,95 @@
 <script lang="ts">
-  /** Hosts the imperative three.js CellScene and feeds it the loaded cell. */
+  /**
+   * Hosts the imperative three.js CellScene: keeps its objects, grid, ghost and selection in
+   * sync with the props, and forwards pointer events to the page.
+   */
   import { onMount } from 'svelte';
-  import { CellScene, sceneGrid, sceneObjects, type OpaqueDisplay } from '$lib/render';
+  import {
+    CellScene,
+    type GridSpec,
+    type MeshCache,
+    type OpaqueDisplay,
+    type SceneHandlers,
+    type SceneObject,
+  } from '$lib/render';
   import { PREF_KEYS, getPref, setPref } from '$lib/fs';
-  import type { Catalogue, FormKey } from '$lib/catalogue/types';
-  import type { LoadedCell } from '$lib/level';
-  import type { MeshCache } from '$lib/render';
 
   let {
-    loaded,
-    catalogue,
-    models,
+    objects,
+    grid,
+    ghost = null,
+    handlers,
     meshes,
-    selected = $bindable<string | null>(null),
+    selected = null,
+    fitKey,
   }: {
-    loaded: LoadedCell;
-    catalogue: Catalogue;
-    models: ReadonlyMap<FormKey, string>;
+    objects: SceneObject[];
+    grid: GridSpec | null;
+    ghost?: { object: SceneObject; ok: boolean } | null;
+    handlers: SceneHandlers;
     meshes: () => Promise<MeshCache>;
     selected?: string | null;
+    /** The view is re-framed whenever this value changes (a new cell was loaded). */
+    fitKey: string;
   } = $props();
 
   let canvas: HTMLCanvasElement;
-  let scene: CellScene | null = null;
+  let scene = $state.raw<CellScene | null>(null);
   let status = $state('');
   let opaque = $state<OpaqueDisplay>(
-    (getPref(PREF_KEYS.opaqueDisplay) as OpaqueDisplay) ?? 'faded',
+    (getPref(PREF_KEYS.opaqueDisplay) as OpaqueDisplay | undefined) ?? 'faded',
   );
+  let fitted = '';
 
   onMount(() => {
-    scene = new CellScene(canvas, (key) => (selected = key));
+    // handlers are read at event time, so later prop changes are honoured
+    const s = new CellScene(canvas, {
+      click: (i) => handlers.click(i),
+      down: (i) => handlers.down?.(i) ?? false,
+      move: (i) => handlers.move?.(i),
+      up: (i) => handlers.up?.(i),
+    });
+    scene = s;
     return () => {
-      scene?.dispose();
+      s.dispose();
       scene = null;
     };
   });
 
-  // reload the scene whenever another cell is loaded
   $effect(() => {
-    const cell = loaded;
-    if (!scene) return;
+    scene?.setGrid(grid);
+  });
+
+  $effect(() => {
     const s = scene;
+    const list = objects;
+    const key = fitKey;
+    if (!s) return;
     void (async () => {
       const started = performance.now();
-      const objects = sceneObjects(cell, catalogue, models);
-      s.setGrid(sceneGrid(cell));
-      status = `loading meshes 0/${objects.length}`;
       const cache = await meshes();
-      const result = await s.setObjects(objects, cache, (done, total) => {
-        status = `loading meshes ${done}/${total}`;
-      });
-      s.fit();
-      status = `${result.drawn} meshes (${cache.size} distinct), ${result.markers} markers, ${(
-        (performance.now() - started) /
-        1000
-      ).toFixed(1)} s`;
+      await s.syncObjects(list, cache);
+      s.select(selected);
+      if (fitted !== key) {
+        fitted = key;
+        s.fit();
+        status = `${list.length} objects, ${cache.size} distinct meshes, ${(
+          (performance.now() - started) /
+          1000
+        ).toFixed(1)} s`;
+      }
     })();
   });
 
   $effect(() => {
     scene?.select(selected);
+  });
+
+  $effect(() => {
+    const s = scene;
+    const g = ghost;
+    if (!s) return;
+    void meshes().then((cache) => s.setGhost(g?.object ?? null, g?.ok ?? true, cache));
   });
 
   $effect(() => {
@@ -87,7 +117,7 @@
 <style>
   .view {
     position: relative;
-    height: 75vh;
+    height: 78vh;
   }
   canvas {
     display: block;

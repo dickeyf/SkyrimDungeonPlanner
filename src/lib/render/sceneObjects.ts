@@ -2,6 +2,8 @@
 import type { Catalogue, FormKey, PieceCategory } from '../catalogue/types';
 import { modelArchivePath } from '../format/esp/stat';
 import type { LoadedCell } from '../level/loadCell';
+import { tileWorldPlacement, type EditTile, type Layout } from '../grid/edit';
+import type { GridAnchor } from '../grid/types';
 import type { GridSpec, SceneObject } from './CellScene';
 
 export const CATEGORY_COLORS: Record<PieceCategory | 'foreign' | 'opaque', string> = {
@@ -68,4 +70,38 @@ export function sceneGrid(loaded: LoadedCell, margin = 4): GridSpec | null {
       Math.max(...js) + 1 + margin,
     ],
   };
+}
+
+/** A layout tile (existing, moved or new) as a scene object. */
+export function tileObject(
+  tile: EditTile,
+  piece: Catalogue['pieces'][number],
+  anchor: GridAnchor,
+): SceneObject {
+  const p = tileWorldPlacement(tile, piece, anchor);
+  return {
+    key: tile.key,
+    modelPath: modelArchivePath(piece.model),
+    pos: p.pos,
+    rot: p.rot,
+    scale: p.scale,
+    color: tile.own ? CATEGORY_COLORS[piece.category] : CATEGORY_COLORS.foreign,
+    pickable: true,
+  };
+}
+
+/** Everything to draw while editing: the layout's tiles plus the cell's non-tile objects. */
+export function layoutObjects(
+  layout: Layout,
+  loaded: LoadedCell,
+  catalogue: Catalogue,
+  models: ReadonlyMap<FormKey, string>,
+): SceneObject[] {
+  const pieces = new Map(catalogue.pieces.map((p) => [p.formKey, p]));
+  const out: SceneObject[] = [];
+  for (const tile of layout.tiles.values()) {
+    const piece = pieces.get(tile.piece);
+    if (piece) out.push(tileObject(tile, piece, loaded.grid.anchor));
+  }
+  return [...out, ...sceneObjects(loaded, catalogue, models).filter((o) => !o.pickable)];
 }

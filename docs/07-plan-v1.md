@@ -332,6 +332,12 @@ de dossiers dans la vue Data (`Overlay`, chaque dossier de chaque couche MO2 lu 
 - **Engage** : D44, V3.
 
 ### Étape 13 – Édition : ajouter, déplacer, supprimer, tourner, undo/redo
+
+**FAIT, vérifié dans l'app** (10 tuiles, tout défaire, tout refaire). `src/lib/grid/edit.ts` (layout immuable, ajout,
+déplacement, rotation autour du coin min, suppression, refus des conflits nouveaux (D58),
+tuiles des masters en lecture seule, historique undo/redo), testé. Page Editor : palette,
+fantôme vert/rouge, glisser la tuile sélectionnée, R / Maj+R, Suppr, Échap, Ctrl+Z / Ctrl+Y,
+compteur des changements non enregistrés (écriture à l'étape 15).
 - **Pourquoi** : cœur de l'outil ; logique pure dans `src/lib/grid` testable sans DOM.
 - **Quoi** : occupation des cellules, détection de chevauchement (refus + surbrillance),
   rotation 90°, déplacement par glisser avec snap, suppression, pile undo/redo par
