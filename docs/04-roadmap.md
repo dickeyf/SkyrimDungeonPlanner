@@ -29,6 +29,12 @@ Pages HTML de test et scripts jetables. Voir `03-risques.md`.
 
 **Jalon : faire un niveau impérial d'un seul Z très rapidement, l'ouvrir dans le CK.**
 
+## Phase 2b – Vérification profonde des jonctions (R16)
+- [ ] Preuve de concept sur les deux cas connus (couture de porte, pièces de salle)
+- [ ] Bords libres exacts + visibilité depuis l'intérieur (rendu GPU), cache local par paire
+- [ ] Profils = filtre rapide, test profond = confirmation ; continuité des textures (14b)
+- [ ] Plus tard, avec les grottes et les props : où boucher une fuite, bouchon vérifié
+
 ## Phase 3 – NavMesh de base
 - [ ] R1 écrire un NAVM valide ; R4 polygones marchables ; R11
 - [ ] `walkable` et `navEdge` dans le catalogue

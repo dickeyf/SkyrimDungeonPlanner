@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { ConnectionType, Face, FaceDir, Piece } from '../catalogue/types';
 import {
   badJoints,
+  checkCandidates,
   candidatesFor,
   faceAt,
   faceRect,
@@ -292,5 +293,42 @@ describe('badJoints with geometry', () => {
       ['new:2', 'seam'],
     ]);
     expect(joints[0]!.gap).toBeCloseTo(5, 0);
+  });
+});
+
+describe('checkCandidates', () => {
+  // XXX
+  // XY   <- Y must mate with the X above (clicked) and the X on its left
+  const CROSS = piece('Cross', 2, 2, [
+    ['-X', 'H'],
+    ['+X', 'H'],
+    ['-Y', 'H'],
+    ['+Y', 'H'],
+  ]);
+  const ALL = new Map([...PIECES, [CROSS.formKey, CROSS]]);
+  let l: Layout = EMPTY;
+  for (const [key, cell] of [
+    ['Straight', [0, 2, 0]],
+    ['Cross', [2, 2, 0]],
+    ['Straight', [4, 2, 0]],
+    ['Straight', [0, 0, 0]],
+  ] as const) {
+    l = place(l, key, [...cell], 0, ALL);
+  }
+
+  it('drops placements that would not fit the other neighbours', () => {
+    const below = openFaces(l, ALL).find((f) => f.tile === 'new:2' && f.dir === '-Y')!;
+    const raw = candidatesFor(below, l, ALL, TYPES);
+    // the face alone accepts straights turned upright and corners, among others
+    expect(raw.some((c) => c.piece === 'Straight')).toBe(true);
+    const checked = checkCandidates(raw, l, ALL, TYPES);
+    // an upright straight would put a wall against the hall on its left: dropped
+    expect(checked.some((c) => c.piece === 'Straight')).toBe(false);
+    expect(checked.map((c) => [c.piece, c.rotation, c.fit])).toContainEqual(['Corner', 0, 'exact']);
+    for (const c of checked) {
+      const r = addTile(l, ALL, c.piece, c.cell, c.rotation);
+      if (!r.ok) throw new Error('candidate refused');
+      expect(badJoints(r.layout, ALL, TYPES).filter((j) => j.tile === r.key)).toEqual([]);
+    }
   });
 });

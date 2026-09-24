@@ -8,6 +8,11 @@ et `npm run check` au vert quand il y a du code.
 Critère de réussite V1 (V14) : *un donjon impérial de 30 tuiles sur un Z en moins de 10
 minutes, ouvert dans le CK sans erreur ni fente visible.*
 
+But de la V1 (24 sept. 2026) : *une fois finie, la V1 est utile et utilisable (ergonomie et
+UX soignées), et permet de construire des donjons avec le kit Impérial facilement et
+rapidement.* Quelque chose de simple, mais qui apporte une vraie valeur. Le critère
+ci-dessus en est la mesure chiffrée.
+
 ## Hypothèses retenues pour ce plan
 
 Les recommandations de `01-decisions.md` (« Reste à décider pour la V1 ») sont prises telles
@@ -389,8 +394,12 @@ découverte, plus aucun faux positif. Annotations corrigées au passage : couple
   texture continue.
 - **Limites** : seules les arêtes de la jonction sont comparées ; certaines pièces sont
   peut-être prévues avec un léger décalage, seuil à régler sur la cellule du mod de travail.
-- **Quand** : après l'étape 15 (raffinement, pas indispensable pour écrire le plugin), sauf
-  décision contraire.
+- **Option** (décidé le 24 sept. 2026) : vérification **facultative, désactivée par
+  défaut**, activée par une case à cocher « Texture continuity check » ; sans elle, les
+  propositions et les marques restent celles des profils.
+- **Quand** : plus tard (raffinement, pas indispensable pour écrire le plugin). Constaté
+  pendant le test de l'étape 15b : 4 pièces s'emboîtent sans couture, mais leur texture
+  n'est pas toujours continue.
 - **Fini quand** : la pièce de salle mal tournée est signalée, et plus après rotation ;
   tests unitaires sur la comparaison des UV.
 
@@ -413,11 +422,38 @@ l'enregistrement la cellule est rechargée et l'historique repart du fichier.
   s'ouvre dans le CK, les tuiles sont à leur place, aucune fente.
 - **Engage** : D21, D22, D47, V5.
 
+### Étape 15b – Assistant : ne proposer que ce qui s'emboîte avec tous les voisins
+- **Pourquoi** : demandé le 24 sept. 2026. En cliquant la face ouverte d'une pièce, les
+  propositions ne tiennent compte que de cette face ; une pièce proposée peut ne pas
+  s'emboîter avec les autres pièces qu'elle touchera une fois posée.
+- **Quoi** : pour chaque candidat, simuler la pose et juger toutes ses jonctions avec les
+  pièces existantes (D60) : écarter un candidat qui crée une jonction incompatible ou met
+  une ouverture contre un mur ; signaler (sans l'écarter) celui qui crée une couture.
+  Mesurer et réduire le délai de 1 à 2 s constaté après chaque modification.
+- **Fini quand** : dans une configuration en L, seules les pièces qui s'emboîtent avec les
+  deux voisins sont proposées ; une modification s'affiche sans délai perceptible.
+
+**Fait en partie (24 sept. 2026)** : `checkCandidates` (`src/lib/grid/assist.ts`) simule la
+pose de chaque candidat et juge toutes ses jonctions (`jointsOfTile`) : incompatible ou
+ouverture contre un mur = écarté, couture = gardé et signalé. **Cas en L vérifié dans
+l'app.** Délai : verdicts de profils mis en cache par paire de pièces et position relative ;
+mesures dans la console (`junctions checked in`, `scene updated in`) ; reste à confirmer que
+le délai a disparu.
+
 ### Étape 16 – Jalon V1 : test du critère de réussite
 - **Quoi** : chronométrer la construction d'un donjon de 30 tuiles à partir d'une cellule
   vide dupliquée dans le CK ; ouvrir dans le CK ; noter les frictions dans `05-idees.md`.
 - **Fini quand** : < 10 minutes, aucune erreur CK, aucune fente. Sinon : liste des
   corrections, et on itère sur 12–15.
+
+### Étape 17 – Ergonomie de fin de V1 : parcours de démarrage et interface simples
+- **Pourquoi** : le but de la V1 (utile et utilisable). À faire à la toute fin de la V1,
+  quand les fonctions sont stables.
+- **Quoi** : un parcours « Getting started » simple ; « Setup » devient « Settings », avec
+  Catalogue et Validation en sous-pages dans un panneau de gauche ; simplifier et rendre plus
+  compréhensible ce que l'on voit dans l'éditeur.
+- **Fini quand** : une personne qui découvre l'outil configure et construit ses premières
+  tuiles sans explication.
 
 ---
 

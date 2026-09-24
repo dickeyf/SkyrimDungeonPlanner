@@ -14,6 +14,7 @@
     addTile,
     badJoints,
     candidatesFor,
+    checkCandidates,
     cellAt,
     changeCount,
     changes,
@@ -36,6 +37,7 @@
     undo,
     type BadJoint,
     type Candidate,
+    type JointGeometry,
     type EditResult,
     type History,
     type Layout,
@@ -119,16 +121,27 @@
 
   const types = $derived(new Map(catalogue.connectionTypes.map((t) => [t.id, t])));
   const opens = $derived(layout ? openFaces(layout, pieces) : []);
-  const bad = $derived(
-    layout
-      ? badJoints(
-          layout,
-          pieces,
-          types,
-          anchor ? { module: anchor.module, profileOf: (k, dir) => profileOf(k, dir) } : undefined,
-        )
-      : [],
-  );
+  /**
+   * Stable between edits (it changes only with the cell or the catalogue analysis), so the
+   * profile verdicts cached per geometry are reused from one edit to the next.
+   */
+  const geometry = $derived.by((): JointGeometry | undefined => {
+    if (!anchor) return undefined;
+    const byKey = profiles;
+    const byForm = pieces;
+    return {
+      module: anchor.module,
+      profileOf: (k, dir) => byKey.get(`${byForm.get(k)?.editorId}:${dir}`),
+    };
+  });
+  const bad = $derived.by(() => {
+    if (!layout) return [];
+    const started = performance.now();
+    const out = badJoints(layout, pieces, types, geometry);
+    if (import.meta.env.DEV)
+      console.debug(`junctions checked in ${(performance.now() - started).toFixed(0)} ms`);
+    return out;
+  });
   const active = $derived(opens.find((o) => o.id === activeFace));
   const activeBad = $derived(bad.find((o) => o.id === activeFace));
   const shared = $derived(layout ? sharedCells(layout, pieces) : []);
@@ -145,10 +158,17 @@
   });
   const activePiece = $derived(active ? layout?.tiles.get(active.tile)?.piece : undefined);
   const validPieces = $derived(new Map([...pieces].filter(([, p]) => p.review.validated)));
+  // the clicked face proposes, every neighbour of the new tile must accept (step 15b)
   const candidates = $derived(
     active && layout
-      ? candidatesFor(active, layout, validPieces, types).sort((a, b) =>
-          pieces.get(a.piece)!.editorId.localeCompare(pieces.get(b.piece)!.editorId),
+      ? checkCandidates(
+          candidatesFor(active, layout, validPieces, types).sort((a, b) =>
+            pieces.get(a.piece)!.editorId.localeCompare(pieces.get(b.piece)!.editorId),
+          ),
+          layout,
+          pieces,
+          types,
+          geometry,
         )
       : [],
   );
@@ -601,6 +621,13 @@
                         ></span>
                         {pieces.get(c.piece)!.editorId}
                         <span class="hint">by {c.opening.dir}, {c.rotation * 90}°</span>
+                        {#if c.fit === 'seam'}
+                          <span class="warn"
+                            >seam of {c.gap.toFixed(1)} with {c.seamWith
+                              .map((k) => pieces.get(layout.tiles.get(k)?.piece ?? '')?.editorId)
+                              .join(', ')}</span
+                          >
+                        {/if}
                       </span>
                     </button>
                   </li>

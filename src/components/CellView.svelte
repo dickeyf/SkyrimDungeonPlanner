@@ -72,6 +72,8 @@
       const started = performance.now();
       const cache = await meshes();
       await s.syncObjects(list, cache);
+      if (import.meta.env.DEV)
+        console.debug(`scene updated in ${(performance.now() - started).toFixed(0)} ms`);
       s.select(selected);
       if (fitted !== key) {
         fitted = key;

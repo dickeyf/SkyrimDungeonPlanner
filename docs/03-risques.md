@@ -199,6 +199,31 @@ Empreintes des props/clutter/meubles ; objets déplaçables (Havok) à ignorer ;
 ### R13 – Distribution
 Réglé par D46 : chaque utilisateur construit le catalogue depuis sa propre installation, dans son navigateur ; on ne distribue que nos annotations. Reste à décider : les annotations sont-elles indexées par EditorID ou par signature ?
 
+### R16 – Vérification profonde des jonctions (fuites visibles)
+Idée du 24 sept. 2026. Les profils (D60) ne voient que les arêtes ouvertes dans le plan de
+jonction : un chambranle ou un sol qui ne se raccorde pas un peu en retrait leur échappe
+(cas `ImpLRoomDoor02` / `ImpLHallDoor02`). Méthode hybride proposée, sur les deux pièces
+placées côte à côte :
+1. **Vérification exacte** : autour de la jonction, les bords libres de chaque mesh (arêtes
+   d'un seul triangle) ; distance exacte à la surface de l'autre pièce ; un bord ni recollé ni
+   recouvert à moins d'un seuil (~0,5 unité, à régler) est une fente candidate, avec sa
+   largeur. Déterministe : aucune fente fine ne passe entre deux échantillons.
+2. **Visibilité depuis l'intérieur** (test de fuite des éditeurs de niveaux) : rendu GPU
+   (three.js) depuis des points de vue où le joueur peut se tenir, proches de la jonction,
+   à la résolution d'un écran réel, faces vues de face / vues de dos / vide en couleurs
+   distinctes. Une face vue de dos ou le vide = fuite visible. Écarte les fentes candidates
+   cachées derrière un recouvrement, pratique courante des auteurs de kits.
+Verdict : fente candidate ET visible = défaut. Limite : la géométrie seule ; une fente d'une
+fraction d'unité peut laisser filtrer la lumière, seuil à valider sur les cas connus.
+Coût : bien plus lent que les profils ; les profils servent de filtre rapide, le test profond
+confirme les cas probables. Résultat mis en cache localement (paire de pièces, paire de
+faces, position relative → s'emboîte, rotations valables, fuites), recalculé si les pièces
+changent ; hors du dépôt (donnée dérivée des fichiers du jeu). Le même passage peut porter la
+continuité des textures (étape 14b). Pour les grottes et les props : dire où une fuite doit
+être bouchée (rocher, colonne) et confirmer qu'un bouchon posé la couvre.
+**Preuve de concept** : la couture `ImpLRoomDoor02` / `ImpLHallDoor02` est détectée ; les
+pièces de salle autour de `ImpLRoomMid02`, sans couture en jeu, ne le sont pas.
+
 ## Risque de projet
 
 ### R8 – Ambition

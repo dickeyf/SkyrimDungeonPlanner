@@ -19,7 +19,7 @@ import type {
 } from '../catalogue/types';
 import { facesMate } from '../catalogue/types';
 import { rotateFootprintCell } from './derive';
-import { conflictsFor, footprintCells, type Layout, type Pieces } from './edit';
+import { addTile, conflictsFor, footprintCells, type Layout, type Pieces } from './edit';
 import type { Profile } from '../mesh/profiles';
 import { betterFit, inFrameOf, profileFit, type JointFit } from './joints';
 import type { GridAnchor, OpaqueRef } from './types';
@@ -149,23 +149,127 @@ export function openFaces(layout: Layout, pieces: Pieces): OpenFace[] {
   return worldOpenings(layout, pieces).filter((o) => !o.outside.some((c) => used.has(cellKey(c))));
 }
 
-/** An opening that runs into another tile without a clean junction. */
-export interface BadJoint extends OpenFace {
+/** A junction between an opening and the tiles in front of it. */
+export interface Joint extends OpenFace {
   /** Tiles in front of the opening. */
   against: string[];
-  /** Their openings facing back, to explain the mismatch. */
+  /** Their openings facing back, to explain the verdict. */
   facing: OpenFace[];
-  /** `seam` or `mismatch` (see joints.ts); `mismatch` also for a wall in front. */
+  /** See joints.ts; `mismatch` also for an opening against a wall. */
   fit: JointFit;
   /** Gap in units for a geometric verdict, NaN when judged by connection types. */
   gap: number;
 }
+
+/** A junction that is not clean: `seam` or `mismatch`. */
+export type BadJoint = Joint;
 
 /** Face profiles by piece and rotation-0 direction, for the geometric verdict. */
 export interface JointGeometry {
   profileOf(piece: FormKey, dir: FaceDir): Profile | undefined;
   module: { xy: number; z: number };
 }
+
+/**
+ * Profile verdicts by piece pair and relative placement. The same pairs meet again and again
+ * across a level and between edits, so each is computed once per geometry.
+ */
+const fitCache = new WeakMap<JointGeometry, Map<string, { fit: JointFit; gap: number }>>();
+
+interface JointContext {
+  layout: Layout;
+  types: ReadonlyMap<string, ConnectionType>;
+  geometry?: JointGeometry;
+  used: Map<string, string[]>;
+  byTile: Map<string, OpenFace[]>;
+}
+
+function jointContext(
+  layout: Layout,
+  pieces: Pieces,
+  types: ReadonlyMap<string, ConnectionType>,
+  geometry?: JointGeometry,
+): JointContext & { all: OpenFace[] } {
+  const all = worldOpenings(layout, pieces);
+  const byTile = new Map<string, OpenFace[]>();
+  for (const o of all) byTile.set(o.tile, [...(byTile.get(o.tile) ?? []), o]);
+  return { layout, types, geometry, used: occupancy(layout, pieces), byTile, all };
+}
+
+/** Sum of the lowest and highest index along the face: twice the centre, in cells. */
+const span2 = (cells: readonly CellIndex[], along: 0 | 1) =>
+  Math.min(...cells.map((c) => c[along])) + Math.max(...cells.map((c) => c[along]));
+
+function profileVerdict(
+  ctx: JointContext,
+  o: OpenFace,
+  p: OpenFace,
+): { fit: JointFit; gap: number } | null {
+  const geometry = ctx.geometry;
+  if (!geometry) return null;
+  const minePiece = ctx.layout.tiles.get(o.tile)!.piece;
+  const theirPiece = ctx.layout.tiles.get(p.tile)!.piece;
+  const along = alongAxis(o.dir);
+  const key = [
+    minePiece,
+    o.opening.dir,
+    theirPiece,
+    p.opening.dir,
+    o.dir,
+    span2(p.cells, along) - span2(o.cells, along),
+    p.cells[0]![2] - o.cells[0]![2],
+  ].join('|');
+  let cache = fitCache.get(geometry);
+  if (!cache) fitCache.set(geometry, (cache = new Map()));
+  const known = cache.get(key);
+  if (known) return known;
+  const mine = geometry.profileOf(minePiece, o.opening.dir);
+  const theirs = geometry.profileOf(theirPiece, p.opening.dir);
+  if (!mine || !theirs) return null;
+  const verdict = profileFit(mine, inFrameOf(o, p, theirs, geometry.module));
+  cache.set(key, verdict);
+  return verdict;
+}
+
+/** The junction of opening `o`, or null when it looks onto free cells. */
+function judge(ctx: JointContext, o: OpenFace): Joint | null {
+  const against = [
+    ...new Set(
+      o.outside.flatMap((c) => ctx.used.get(cellKey(c)) ?? []).filter((k) => k !== o.tile),
+    ),
+  ];
+  if (!against.length) return null;
+  const face: Face = { ...o.opening.face, dir: o.dir };
+  const along = alongAxis(o.dir);
+  const want = new Set(o.outside.map(cellKey));
+  // openings of the tiles in front that look back and share at least one cell of the junction
+  const facing = against.flatMap((k) =>
+    (ctx.byTile.get(k) ?? []).filter(
+      (p) => p.dir === oppositeDir(o.dir) && p.cells.some((c) => want.has(cellKey(c))),
+    ),
+  );
+  let fit: JointFit = 'mismatch';
+  let gap = NaN;
+  for (const p of facing) {
+    let verdict = profileVerdict(ctx, o, p);
+    if (!verdict) {
+      // a narrower opening may sit centred in front of a wider one, the rest against walls
+      const mated =
+        (centredWithin(p.cells, o.outside, along) || centredWithin(o.outside, p.cells, along)) &&
+        facesMate(face, { ...p.opening.face, dir: p.dir }, ctx.types);
+      verdict = { fit: mated ? 'exact' : 'mismatch', gap: NaN };
+    }
+    // keep the best opening in front: better verdict, then smaller gap
+    const { fit: f, gap: g } = verdict;
+    if (f !== fit ? betterFit(f, fit) === f : g < gap || Number.isNaN(gap)) {
+      fit = f;
+      gap = g;
+    }
+  }
+  return { ...o, against, facing, fit, gap };
+}
+
+const isBad = (j: Joint | null): j is Joint => !!j && (j.fit === 'seam' || j.fit === 'mismatch');
 
 /**
  * Openings that run into another tile without a clean junction: a wall, an offset opening, a
@@ -180,50 +284,74 @@ export function badJoints(
   types: ReadonlyMap<string, ConnectionType>,
   geometry?: JointGeometry,
 ): BadJoint[] {
-  const used = occupancy(layout, pieces);
-  const all = worldOpenings(layout, pieces);
-  const byTile = new Map<string, OpenFace[]>();
-  for (const o of all) byTile.set(o.tile, [...(byTile.get(o.tile) ?? []), o]);
-  const out: BadJoint[] = [];
-  for (const o of all) {
-    const against = [
-      ...new Set(o.outside.flatMap((c) => used.get(cellKey(c)) ?? []).filter((k) => k !== o.tile)),
-    ];
-    if (!against.length) continue;
-    const face: Face = { ...o.opening.face, dir: o.dir };
-    const along = alongAxis(o.dir);
-    const want = new Set(o.outside.map(cellKey));
-    // openings of the tiles in front that look back and share at least one cell of the junction
-    const facing = against.flatMap((k) =>
-      (byTile.get(k) ?? []).filter(
-        (p) => p.dir === oppositeDir(o.dir) && p.cells.some((c) => want.has(cellKey(c))),
-      ),
-    );
-    let fit: JointFit = 'mismatch';
-    let gap = NaN;
-    for (const p of facing) {
-      const mine = geometry?.profileOf(layout.tiles.get(o.tile)!.piece, o.opening.dir);
-      const theirs = geometry?.profileOf(layout.tiles.get(p.tile)!.piece, p.opening.dir);
-      let f: JointFit;
-      let g = NaN;
-      if (geometry && mine && theirs) {
-        ({ fit: f, gap: g } = profileFit(mine, inFrameOf(o, p, theirs, geometry.module)));
-      } else {
-        // a narrower opening may sit centred in front of a wider one, the rest against walls
-        const mated =
-          (centredWithin(p.cells, o.outside, along) || centredWithin(o.outside, p.cells, along)) &&
-          facesMate(face, { ...p.opening.face, dir: p.dir }, types);
-        f = mated ? 'exact' : 'mismatch';
-      }
-      // keep the best opening in front: better verdict, then smaller gap
-      if (f !== fit ? betterFit(f, fit) === f : g < gap || Number.isNaN(gap)) {
-        fit = f;
-        gap = g;
+  const ctx = jointContext(layout, pieces, types, geometry);
+  return ctx.all.map((o) => judge(ctx, o)).filter(isBad);
+}
+
+/**
+ * Every junction a tile takes part in: its own openings against other tiles, and the
+ * openings of other tiles that look into its cells (against its openings or its walls).
+ */
+export function jointsOfTile(
+  layout: Layout,
+  pieces: Pieces,
+  types: ReadonlyMap<string, ConnectionType>,
+  key: string,
+  geometry?: JointGeometry,
+): Joint[] {
+  const tile = layout.tiles.get(key);
+  const piece = tile && pieces.get(tile.piece);
+  if (!tile || !piece) return [];
+  const mine = new Set(footprintCells(piece, tile.cell, tile.rotation).map(cellKey));
+  const ctx = jointContext(layout, pieces, types, geometry);
+  return ctx.all
+    .filter((o) => o.tile === key || o.outside.some((c) => mine.has(cellKey(c))))
+    .map((o) => judge(ctx, o))
+    .filter((j): j is Joint => j !== null);
+}
+
+export interface CheckedCandidate extends Candidate {
+  /** Worst junction the placement would create with the tiles around it. */
+  fit: JointFit;
+  gap: number;
+  /** Tiles it would join badly, for a seam. */
+  seamWith: string[];
+}
+
+/**
+ * Keep the candidates that fit every tile they would touch, not only the clicked face: each
+ * is placed in a copy of the layout and all its junctions judged. A placement creating a
+ * mismatch (a wrong profile, an opening against a wall) is dropped; one creating a seam is
+ * kept and flagged. Best fits first.
+ */
+export function checkCandidates(
+  candidates: readonly Candidate[],
+  layout: Layout,
+  pieces: Pieces,
+  types: ReadonlyMap<string, ConnectionType>,
+  geometry?: JointGeometry,
+): CheckedCandidate[] {
+  const out: CheckedCandidate[] = [];
+  for (const c of candidates) {
+    const placed = addTile(layout, pieces, c.piece, c.cell, c.rotation);
+    if (!placed.ok) continue;
+    const joints = jointsOfTile(placed.layout, pieces, types, placed.key, geometry);
+    let fit: JointFit = 'exact';
+    let gap = 0;
+    const seamWith = new Set<string>();
+    for (const j of joints) {
+      if (betterFit(j.fit, fit) === fit && j.fit !== fit) {
+        fit = j.fit;
+        gap = j.gap;
+      } else if (j.fit === fit && j.gap > gap) gap = j.gap;
+      if (j.fit === 'seam') {
+        for (const k of j.tile === placed.key ? j.against : [j.tile]) seamWith.add(k);
       }
     }
-    if (fit === 'seam' || fit === 'mismatch') out.push({ ...o, against, facing, fit, gap });
+    if (fit !== 'mismatch') out.push({ ...c, fit, gap, seamWith: [...seamWith] });
   }
-  return out;
+  const rank: Record<JointFit, number> = { exact: 0, included: 0, seam: 1, mismatch: 2 };
+  return out.sort((a, b) => rank[a.fit] - rank[b.fit]);
 }
 
 /**
