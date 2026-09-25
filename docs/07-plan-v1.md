@@ -465,6 +465,14 @@ qu'avec le CK en tout cas. Bon pour une V1. » Frictions relevées et traitées 
 Reste pour l'étape 17 : la présentation (UX).
 
 ### Étape 17 – Ergonomie de fin de V1 : parcours de démarrage et interface simples
+
+**En cours (24 sept. 2026).** Partie 1 faite : barre du haut Editor / Settings, Settings avec
+panneau de gauche (Folders and plugin, Catalogue, Validation, Developer en développement),
+page Getting started en trois étapes, ouverture directe de l'éditeur une fois configuré.
+Partie 2 faite : barre d'outils simplifiée (Save principal avec le nombre de changements),
+messages éphémères, aide courte et raccourcis repliés, légende des marques, contrôles au
+thème sombre. Ajouté : aimantation intelligente des pièces (nouvelles et déplacées) sur les
+faces ouvertes qu'elles épousent, les pièces n'étant pas toutes alignées sur la grille brute.
 - **Pourquoi** : le but de la V1 (utile et utilisable). À faire à la toute fin de la V1,
   quand les fonctions sont stables.
 - **Quoi** : un parcours « Getting started » simple ; « Setup » devient « Settings », avec

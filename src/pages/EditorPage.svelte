@@ -33,11 +33,13 @@
     layoutFromGrid,
     relativePlacement,
     openFaces,
-    moveTile,
+    placeTile,
+    withoutTile,
     redo,
     removeTile,
     rotateTile,
     sharedCells,
+    snapPlacement,
     surroundings,
     undo,
     type BadJoint,
@@ -72,7 +74,12 @@
   let historyFor = $state.raw<typeof ed.loaded>(null);
   let original = $state.raw<Layout | null>(null);
   let placing = $state<{ piece: FormKey; rotation: 0 | 1 | 2 | 3 } | null>(null);
-  let drag = $state.raw<{ key: string; grab: CellIndex; target: CellIndex } | null>(null);
+  let drag = $state.raw<{
+    key: string;
+    grab: CellIndex;
+    target: CellIndex;
+    rotation: 0 | 1 | 2 | 3;
+  } | null>(null);
   let ghost = $state.raw<{ object: ReturnType<typeof tileObject>; ok: boolean } | null>(null);
   let message = $state('');
   let filter = $state('');
@@ -411,6 +418,34 @@
     ghost = { object, ok };
   }
 
+  /**
+   * Where the piece being placed goes: snapped onto a nearby open face it fits (pieces do not
+   * all line up with the plain grid), else on the grid under the pointer.
+   */
+  function placementAt(world: Vec3): { cell: CellIndex; rotation: 0 | 1 | 2 | 3 } {
+    const p = placing!;
+    const snapped =
+      layout && anchor
+        ? snapPlacement({
+            world,
+            anchor,
+            layout,
+            pieces,
+            types,
+            piece: p.piece,
+            rotation: p.rotation,
+            opens,
+            geometry,
+          })
+        : null;
+    return (
+      snapped ?? {
+        cell: cellAt(world, anchor!, pieces.get(p.piece)!, p.rotation),
+        rotation: p.rotation,
+      }
+    );
+  }
+
   function startPlacing(piece: Piece): void {
     placing = { piece: piece.formKey, rotation: 0 };
     ed.selected = null;
@@ -426,9 +461,10 @@
   const handlers: SceneHandlers = {
     click(info: PointerInfo) {
       if (placing && layout && anchor) {
-        const piece = pieces.get(placing.piece)!;
-        const cell = cellAt(info.world, anchor, piece, placing.rotation);
-        const r = addTile(layout, pieces, placing.piece, cell, placing.rotation);
+        const { cell, rotation } = placementAt(info.world);
+        const r = addTile(layout, pieces, placing.piece, cell, rotation);
+        // a snap may have turned the piece: keep that rotation for the next one
+        if (r.ok) placing = { ...placing, rotation };
         if (apply(r, 'Placement') && r.ok && !info.shift) {
           // keep placing the same piece; Shift+click places and stops
         } else if (r.ok && info.shift) {
@@ -458,31 +494,58 @@
       const tile = layout.tiles.get(info.key);
       if (!tile?.own) return false;
       const grab = cellUnder(info.world);
-      drag = { key: info.key, grab, target: tile.cell };
+      drag = { key: info.key, grab, target: tile.cell, rotation: tile.rotation };
       return true;
     },
     move(info: PointerInfo) {
       if (!layout || !anchor) return;
       if (placing) {
-        const piece = pieces.get(placing.piece)!;
-        showGhost(piece, cellAt(info.world, anchor, piece, placing.rotation), placing.rotation);
+        const { cell, rotation } = placementAt(info.world);
+        showGhost(pieces.get(placing.piece)!, cell, rotation);
       } else if (drag) {
         const tile = layout.tiles.get(drag.key)!;
+        const piece = pieces.get(tile.piece)!;
         const now = cellUnder(info.world);
-        const target: CellIndex = [
+        const onGrid: CellIndex = [
           tile.cell[0] + now[0] - drag.grab[0],
           tile.cell[1] + now[1] - drag.grab[1],
           tile.cell[2],
         ];
-        drag = { ...drag, target };
-        showGhost(pieces.get(tile.piece)!, target, tile.rotation, tile.key);
+        // snap as for a new piece, from the dragged tile's centre, with the tile out of the way
+        const rest = withoutTile(layout, tile.key);
+        const cells = footprintCells(piece, onGrid, tile.rotation);
+        const centre: Vec3 = [
+          anchor.origin[0] +
+            ((Math.min(...cells.map((c) => c[0])) + Math.max(...cells.map((c) => c[0])) + 1) / 2) *
+              anchor.module.xy,
+          anchor.origin[1] +
+            ((Math.min(...cells.map((c) => c[1])) + Math.max(...cells.map((c) => c[1])) + 1) / 2) *
+              anchor.module.xy,
+          0,
+        ];
+        const snapped = snapPlacement({
+          world: centre,
+          anchor,
+          layout: rest,
+          pieces,
+          types,
+          piece: tile.piece,
+          rotation: tile.rotation,
+          opens: openFaces(rest, pieces),
+          geometry,
+        });
+        const target = snapped?.cell ?? onGrid;
+        const rotation = snapped?.rotation ?? tile.rotation;
+        drag = { ...drag, target, rotation };
+        showGhost(piece, target, rotation, tile.key);
       }
     },
     up() {
       if (drag && layout) {
         const tile = layout.tiles.get(drag.key)!;
-        const same = drag.target.every((v, i) => v === tile.cell[i]);
-        if (!same) apply(moveTile(layout, pieces, drag.key, drag.target), 'Move');
+        const same =
+          drag.target.every((v, i) => v === tile.cell[i]) && drag.rotation === tile.rotation;
+        if (!same) apply(placeTile(layout, pieces, drag.key, drag.target, drag.rotation), 'Move');
       }
       drag = null;
       ghost = null;
@@ -657,7 +720,8 @@
               <b>Placing {pieces.get(placing.piece)?.editorId}</b>, rotation {placing.rotation *
                 90}°<br />
               <span class="hint"
-                >Click to place (Shift+click: place and stop), R / Shift+R to rotate, Esc to stop.</span
+                >Near an orange face it fits, the piece snaps onto it. Click to place (Shift+click:
+                place and stop), R / Shift+R to rotate, Esc to stop.</span
               >
             {:else if activeShared}
               <b class="err">Shared cell</b>

@@ -10,12 +10,14 @@ import {
   historyOf,
   layoutFromGrid,
   moveTile,
+  placeTile,
   redo,
   removeTile,
   rotateTile,
   tileWorldPlacement,
   turnedPlacement,
   undo,
+  withoutTile,
   type Layout,
 } from './edit';
 import type { GridAnchor, PlacedRef } from './types';
@@ -100,6 +102,15 @@ describe('editing', () => {
     expect(moveTile(l, PIECES, 'A', [1, 0, 0])).toMatchObject({ reason: 'conflict' });
     expect(moveTile(l, PIECES, 'M', [10, 10, 0])).toMatchObject({ reason: 'read-only' });
     expect(removeTile(l, 'M')).toMatchObject({ reason: 'read-only' });
+  });
+
+  it('moves and turns a tile in one edit, and reasons without a tile', () => {
+    const l = layout();
+    const r = placeTile(l, PIECES, 'A', [0, -2, 0], 1);
+    expect(r.ok && r.layout.tiles.get('A')).toMatchObject({ cell: [0, -2, 0], rotation: 1 });
+    expect(placeTile(l, PIECES, 'M', [9, 9, 0], 0)).toMatchObject({ reason: 'read-only' });
+    const rest = withoutTile(l, 'M');
+    expect([rest.tiles.has('M'), l.tiles.has('M'), rest.tiles.size]).toEqual([false, true, 3]);
   });
 
   it('turns a tile in place, keeping its footprint corner', () => {

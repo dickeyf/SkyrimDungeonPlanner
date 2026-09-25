@@ -9,6 +9,7 @@ import {
   openFaces,
   openingsOf,
   sharedCells,
+  snapPlacement,
 } from './assist';
 import { addTile, type Layout } from './edit';
 
@@ -363,5 +364,32 @@ describe('junction depth', () => {
         geometry,
       ),
     ).toEqual([]);
+  });
+});
+
+describe('snapPlacement', () => {
+  const anchor = { origin: [0, 0, 0] as const, module: { xy: 128, z: 128 } };
+  const l = place(EMPTY, 'Straight', [0, 0, 0], 0);
+  const snap = (world: [number, number, number], rotation: 0 | 1 | 2 | 3 = 0) =>
+    snapPlacement({
+      world,
+      anchor,
+      layout: l,
+      pieces: PIECES,
+      types: TYPES,
+      piece: 'Straight',
+      rotation,
+      opens: openFaces(l, PIECES),
+    });
+
+  it('snaps onto the open face near the pointer, aligned with it', () => {
+    // pointer east of the hall, one cell too high: the plain grid would leave it offset
+    expect(snap([400, 330, 0])).toEqual({ cell: [2, 0, 0], rotation: 0 });
+    // turned half a turn, the same hall fits by its other end
+    expect(snap([400, 330, 0], 2)).toEqual({ cell: [4, 2, 0], rotation: 2 });
+  });
+
+  it('leaves the plain grid when no open face is near', () => {
+    expect(snap([3000, 3000, 0])).toBeNull();
   });
 });

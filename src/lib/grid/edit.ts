@@ -145,6 +145,24 @@ function place(
   return { ok: true, key, layout: withTile(layout, { ...tile, cell, rotation }) };
 }
 
+/** Move and turn an own tile in one edit (a snapped drag may turn it to fit). */
+export function placeTile(
+  layout: Layout,
+  pieces: Pieces,
+  key: string,
+  cell: CellIndex,
+  rotation: Rotation,
+): EditResult {
+  return place(layout, pieces, key, cell, rotation);
+}
+
+/** The layout without one tile, whatever its owner: to reason about where it could go. */
+export function withoutTile(layout: Layout, key: string): Layout {
+  const tiles = new Map(layout.tiles);
+  tiles.delete(key);
+  return { tiles, nextNew: layout.nextNew, accepted: layout.accepted };
+}
+
 export function moveTile(layout: Layout, pieces: Pieces, key: string, cell: CellIndex): EditResult {
   const tile = layout.tiles.get(key);
   if (!tile) return { ok: false, reason: 'missing' };

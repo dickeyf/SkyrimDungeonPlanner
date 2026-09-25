@@ -507,3 +507,59 @@ export function sharedCells(layout: Layout, pieces: Pieces): SharedCell[] {
   }
   return out;
 }
+
+/** How far (in modules) from an open face the pointer snaps a piece being placed onto it. */
+export const SNAP_RANGE = 2;
+
+/**
+ * Where a piece being placed from the palette snaps: the placement that fits an open face
+ * near the pointer (and every neighbour, as for the compatible pieces), closest to the
+ * pointer, the current rotation first. Pieces do not all span whole multiples of an opening,
+ * so the plain grid may leave the piece one cell off the face it is meant to join; null when
+ * no open face nearby takes the piece, and the plain grid applies.
+ */
+export function snapPlacement(options: {
+  world: Vec3;
+  anchor: GridAnchor;
+  layout: Layout;
+  pieces: Pieces;
+  types: ReadonlyMap<string, ConnectionType>;
+  piece: FormKey;
+  rotation: Rotation;
+  opens: readonly OpenFace[];
+  geometry?: JointGeometry;
+}): { cell: CellIndex; rotation: Rotation } | null {
+  const { world, anchor, layout, pieces, types, rotation, geometry } = options;
+  const piece = pieces.get(options.piece);
+  if (!piece) return null;
+  const m = anchor.module.xy;
+  const centreOf = (cells: readonly CellIndex[]) => [
+    anchor.origin[0] +
+      ((Math.min(...cells.map((c) => c[0])) + Math.max(...cells.map((c) => c[0])) + 1) / 2) * m,
+    anchor.origin[1] +
+      ((Math.min(...cells.map((c) => c[1])) + Math.max(...cells.map((c) => c[1])) + 1) / 2) * m,
+  ];
+  const distance = (cells: readonly CellIndex[]) => {
+    const [x, y] = centreOf(cells);
+    return Math.hypot(world[0] - x!, world[1] - y!);
+  };
+  const only = new Map([[piece.formKey, piece]]);
+  let best: { cell: CellIndex; rotation: Rotation; score: number } | null = null;
+  for (const face of options.opens) {
+    if (distance(face.outside) > SNAP_RANGE * m) continue;
+    const fits = checkCandidates(
+      candidatesFor(face, layout, only, types),
+      layout,
+      pieces,
+      types,
+      geometry,
+    );
+    for (const c of fits) {
+      // the chosen rotation wins over a slightly closer placement turned otherwise
+      const score =
+        distance(footprintCells(piece, c.cell, c.rotation)) + (c.rotation === rotation ? 0 : m);
+      if (!best || score < best.score) best = { cell: c.cell, rotation: c.rotation, score };
+    }
+  }
+  return best && { cell: best.cell, rotation: best.rotation };
+}
