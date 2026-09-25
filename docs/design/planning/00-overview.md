@@ -54,3 +54,4 @@ base `.esm` files, the deep junction check (R16), texture continuity, Z levels.
 - `05-ideas.md` – ideas for later
 - `06-handoff.md` – where the work stands, where to resume
 - `07-plan-v1.md` – the V1 steps (Imperial kit, single Z), with their results
+- `08-plan-v2.md` – the V2 steps: texture continuity, deep junction check, basic NavMesh

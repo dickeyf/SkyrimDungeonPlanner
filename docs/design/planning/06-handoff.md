@@ -21,6 +21,6 @@ the reason for each step. Code, comments, tests, UI and docs in English.
   with how every V1 question was settled.
 
 ## Next
-Not planned yet for 0.2.0; candidates, to be chosen: texture continuity (step 14b, optional),
-the deep junction check (R16, phase 2b), showing tile levels (Z), other interior kits, then the
-NavMesh (phase 3), Z slices (phase 4), props (phase 5) and the Spriggit mode (phase 6).
+**V2 (release 0.2.0)**, chosen on 25 Sep 2026: texture continuity (14b), the deep junction check
+(R16) and a basic NavMesh (phase 3). Step plan: `08-plan-v2.md`, starting with the NavMesh
+proofs of concept (R2, NAVM round trip, R1, R4) and R16's proof of concept.
