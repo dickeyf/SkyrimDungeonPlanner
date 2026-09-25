@@ -466,7 +466,7 @@ Reste pour l'étape 17 : la présentation (UX).
 
 ### Étape 17 – Ergonomie de fin de V1 : parcours de démarrage et interface simples
 
-**En cours (24 sept. 2026).** Partie 1 faite : barre du haut Editor / Settings, Settings avec
+**FAIT (24 sept. 2026) : V1 déclarée terminée.** Partie 1 faite : barre du haut Editor / Settings, Settings avec
 panneau de gauche (Folders and plugin, Catalogue, Validation, Developer en développement),
 page Getting started en trois étapes, ouverture directe de l'éditeur une fois configuré.
 Partie 2 faite : barre d'outils simplifiée (Save principal avec le nombre de changements),
@@ -484,6 +484,13 @@ faces ouvertes qu'elles épousent, les pièces n'étant pas toutes alignées sur
 ---
 
 ## Après la V1
+
+**Publication (24 sept. 2026)** : dépôt GitHub `dickeyf/SkyrimDungeonPlanner`, licence GPL v3.
+Intégration continue : CI (formatage, lint, types, tests, build), CodeQL (analyse statique),
+Security (npm audit + Trivy : vulnérabilités, secrets, configurations), build « fichier
+unique » (un `SkyrimDungeonPlanner.html` autonome, attaché aux releases `v*`), image Docker
+nginx minimale servant l'app sur le port 8080 (GHCR, analysée par Trivy).
+
 Phase 3 (NavMesh), 4 (Z), 5 (props), 6 (mode Spriggit, D57) : voir `04-roadmap.md`. Rien dans les étapes
 ci-dessus ne doit fermer ces portes : `cells` reste 3D, `Piece.walkable` / `obstacle` /
 `ConnectionType.navEdge` restent dans le format même s'ils valent `null`.

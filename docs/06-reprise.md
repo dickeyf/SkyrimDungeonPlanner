@@ -28,5 +28,6 @@ dans le navigateur et validé (105 tuiles, annotations dans `data/annotations/im
 undo/redo). Étape 14 faite le 24 sept. 2026 (assistant : faces ouvertes, pièces compatibles,
 jonctions jugées sur leurs profils (D60), niveaux des pentes (D59), cellules partagées).
 Étape 15 faite le 24 sept. 2026 (sauvegarde en place, copie horodatée, refus si le fichier a
-changé sur disque). Prochaine action = **étape 16** (critère V1), l'étape 14b (continuité
-des textures) et les améliorations d'ergonomie listées dans `07-plan-v1.md`.
+changé sur disque). Étapes 16 (critère V1) et 17 (ergonomie) faites : **V1 terminée le 24 sept. 2026**, publiée sur
+GitHub avec CI, CodeQL, analyse de sécurité, build fichier unique et image Docker. Suite au
+choix : 14b (textures), R16 (vérification profonde des jonctions), voir le Z, phases 3 à 6.

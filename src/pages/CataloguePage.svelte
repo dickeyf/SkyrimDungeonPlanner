@@ -31,6 +31,8 @@
 
   async function analyse(force: boolean): Promise<void> {
     if (!(await store.analyse(force))) return;
+    // reference measurements of the Python prototype, served in development only
+    if (!import.meta.env.DEV) return;
     try {
       const response = await fetch('/poc/data/imperial-pieces.json');
       if (!response.ok) throw new Error(`HTTP ${response.status}`);

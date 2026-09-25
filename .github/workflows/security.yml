@@ -1,0 +1,34 @@
+# Vulnerability scan of the dependencies and the repository: npm audit, then Trivy
+# (known vulnerabilities, leaked secrets, misconfigurations). Fails on high or critical.
+name: Security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: '43 4 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: npm audit
+        run: npm audit --audit-level=high
+      - name: Trivy (dependencies, secrets, misconfigurations)
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: fs
+          scanners: vuln,secret,misconfig
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: '1'

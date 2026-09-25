@@ -5,3 +5,7 @@ tools/.venv
 tools/out
 .idea
 docs
+
+# written by the app (Validation, Save to repository): its own stable format
+data/annotations/
+dist-single
