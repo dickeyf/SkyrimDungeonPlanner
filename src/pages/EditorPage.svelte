@@ -327,7 +327,7 @@
     );
     ed.refreshCatalogue();
     activeShared = null;
-    message = `${ea} + ${eb} recorded as an intended overlap. Save the annotations from the Validation page.`;
+    message = `${ea} + ${eb} recorded as an intended overlap. Save the annotations in Settings, Validation.`;
   }
 
   function openFace(face: OpenFace | undefined): void {
@@ -582,7 +582,7 @@
     <SessionNotice />
   {:else if !ed.store}
     <p class="warn">
-      Choose the working plugin in <a href="#/setup">Setup</a>.
+      Choose the working plugin in <a href="#/settings">Settings</a>.
       {#if ed.busy}<span>opening...</span>{/if}
       {#if ed.error}<span class="err">{ed.error}</span>{/if}
     </p>
@@ -621,7 +621,9 @@
         </span>
       {/if}
       {#if annotationStore.dirty}
-        <a class="warn" href="#/validation">annotations changed: save them in Validation</a>
+        <a class="warn" href="#/settings/validation"
+          >annotations changed: save them in Settings, Validation</a
+        >
       {/if}
       {#if ed.busy}<span>{catalogueStore.progress || 'working...'}</span>{/if}
       {#if ed.error}<span class="err">{ed.error}</span>{/if}

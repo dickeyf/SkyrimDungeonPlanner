@@ -2,19 +2,26 @@
   import { onMount } from 'svelte';
   import { APP_NAME, APP_VERSION } from '$lib/version';
   import { supportsFileSystemAccess } from '$lib/fs';
+  import { editorStore as ed } from '$lib/editor/editorStore.svelte';
   import { session } from '$lib/session/session.svelte';
-  import CataloguePage from './pages/CataloguePage.svelte';
   import EditorPage from './pages/EditorPage.svelte';
-  import HomePage from './pages/HomePage.svelte';
-  import SetupPage from './pages/SetupPage.svelte';
-  import ValidationPage from './pages/ValidationPage.svelte';
+  import GettingStartedPage from './pages/GettingStartedPage.svelte';
+  import SettingsPage from './pages/SettingsPage.svelte';
+
+  /** Routes of earlier versions, kept working. */
+  const ALIASES: Record<string, string> = {
+    '/setup': '/settings',
+    '/catalogue': '/settings/catalogue',
+    '/validation': '/settings/validation',
+  };
 
   const supported = supportsFileSystemAccess();
   let route = $state(currentRoute());
 
   function currentRoute(): string {
     const hash = location.hash.replace(/^#/, '');
-    return hash === '' ? '/' : hash;
+    const path = hash === '' ? '/' : hash;
+    return ALIASES[path] ?? path;
   }
 
   onMount(() => {
@@ -24,27 +31,34 @@
     return () => window.removeEventListener('hashchange', onHash);
   });
 
+  // the start page: once set up, go straight to the editor; otherwise, getting started
+  $effect(() => {
+    if (route !== '/') return;
+    const status = session.status;
+    if (status === 'idle' || status === 'restoring') return;
+    const next = session.ready && ed.rememberedPlugin ? '/editor' : '/start';
+    history.replaceState(null, '', `#${next}`);
+    route = next;
+  });
+
   const links = [
-    ['/', 'Home'],
-    ['/setup', 'Setup'],
-    ['/catalogue', 'Catalogue'],
-    ['/validation', 'Validation'],
     ['/editor', 'Editor'],
+    ['/settings', 'Settings'],
   ] as const;
 </script>
 
 <header>
-  <span class="brand">{APP_NAME} <small>v{APP_VERSION}</small></span>
+  <a class="brand" href="#/start">{APP_NAME} <small>v{APP_VERSION}</small></a>
   <nav>
     {#each links as [path, label] (path)}
-      <a href={`#${path}`} class:active={route === path}>{label}</a>
+      <a href={`#${path}`} class:active={route === path || route.startsWith(`${path}/`)}>{label}</a>
     {/each}
   </nav>
   <span class="status {session.status}">
     {#if session.status === 'ready' && session.view}
       {session.view.game.picked.name}{session.view.mo2
         ? ` / ${session.view.mo2.layout.profile.name}`
-        : ''}
+        : ''}{ed.store ? ` / ${ed.store.name}` : ''}
     {:else}
       {session.status}
     {/if}
@@ -54,16 +68,14 @@
 <main>
   {#if !supported}
     <p class="err">This browser does not expose the File System Access API. Use Chrome or Edge.</p>
-  {:else if route === '/setup'}
-    <SetupPage />
-  {:else if route === '/catalogue'}
-    <CataloguePage />
-  {:else if route === '/validation'}
-    <ValidationPage />
   {:else if route === '/editor'}
     <EditorPage />
+  {:else if route.startsWith('/settings')}
+    <SettingsPage {route} />
+  {:else if route === '/start'}
+    <GettingStartedPage />
   {:else}
-    <HomePage />
+    <p class="hint">Opening the game folder...</p>
   {/if}
 </main>
 
@@ -75,6 +87,11 @@
     padding: 0.5rem 1rem;
     background: var(--bg-panel);
     border-bottom: 1px solid var(--border);
+  }
+  .brand {
+    color: var(--fg);
+    text-decoration: none;
+    font-weight: 600;
   }
   .brand small {
     color: var(--fg-muted);
@@ -103,5 +120,8 @@
   }
   main {
     padding: 1rem;
+  }
+  .hint {
+    color: var(--fg-muted);
   }
 </style>

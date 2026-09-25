@@ -10,11 +10,11 @@
 {#if session.status === 'idle' || session.status === 'restoring'}
   <p class="hint">Opening the game folder...</p>
 {:else if session.status === 'needs-permission'}
-  <p class="warn">{session.message} Grant access in <a href="#/setup">Setup</a>.</p>
+  <p class="warn">{session.message} Grant access in <a href="#/settings">Settings</a>.</p>
 {:else if session.status === 'error'}
-  <p class="err">{session.message} See <a href="#/setup">Setup</a>.</p>
+  <p class="err">{session.message} See <a href="#/settings">Settings</a>.</p>
 {:else}
-  <p class="warn">Configure the game folder first (<a href="#/setup">Setup</a>).</p>
+  <p class="warn">Configure the game folder first (<a href="#/settings">Settings</a>).</p>
 {/if}
 
 <style>
