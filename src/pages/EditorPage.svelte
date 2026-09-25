@@ -200,6 +200,17 @@
   const active = $derived(opens.find((o) => o.id === activeFace));
   const activeBad = $derived(bad.find((o) => o.id === activeFace));
   const shared = $derived(layout ? sharedCells(layout, pieces) : []);
+  const seams = $derived(bad.filter((j) => j.fit === 'seam').length);
+
+  // store messages (saved, cell added...) show for a few seconds
+  let toast = $state('');
+  $effect(() => {
+    const text = ed.message;
+    if (!text) return;
+    toast = text;
+    const timer = setTimeout(() => (toast = ''), 6000);
+    return () => clearTimeout(timer);
+  });
   let activeShared = $state.raw<ReturnType<typeof sharedCells>[number] | null>(null);
   const cellBox = (c: CellIndex) => ({
     min: [
@@ -588,10 +599,10 @@
     </p>
   {:else}
     <div class="toolbar">
-      <b>{ed.store.name}</b>
       <select
         value={cellKey}
         disabled={ed.busy}
+        title="Cell of the working plugin"
         onchange={(e) => chooseCell((e.currentTarget as HTMLSelectElement).value)}
       >
         {#each ed.cells as c (c.key)}
@@ -599,36 +610,44 @@
         {/each}
       </select>
       <button disabled={ed.busy} onclick={newCell}>New cell...</button>
+      {#if history}
+        <span class="group">
+          <button
+            disabled={!history.past.length}
+            title="Undo (Ctrl+Z)"
+            onclick={() => (history = undo(history!))}>↶ Undo</button
+          >
+          <button
+            disabled={!history.future.length}
+            title="Redo (Ctrl+Y)"
+            onclick={() => (history = redo(history!))}>↷ Redo</button
+          >
+        </span>
+      {/if}
+      <span class="spacer"></span>
+      {#if ed.busy}<span class="hint">{catalogueStore.progress || 'working...'}</span>{/if}
+      {#if ed.error}<span class="err">{ed.error}</span>{/if}
+      {#if annotationStore.dirty}
+        <a class="warn" href="#/settings/validation" title="Save them in Settings, Validation"
+          >Annotations to save</a
+        >
+      {/if}
+      <button
+        class="save"
+        disabled={ed.busy || !pending || !changeCount(pending)}
+        onclick={save}
+        title={pending && changeCount(pending)
+          ? `${pending.added.length} added, ${pending.moved.length} moved, ${pending.removed.length} removed (Ctrl+S)`
+          : 'Nothing to save'}
+        >Save{pending && changeCount(pending) ? ` (${changeCount(pending)})` : ''}</button
+      >
       <button
         disabled={ed.busy}
         title="Read the plugin again from disk, e.g. after saving it in the Creation Kit"
         onclick={reloadPlugin}>Reload plugin</button
       >
-      {#if history}
-        <button disabled={!history.past.length} onclick={() => (history = undo(history!))}
-          >Undo</button
-        >
-        <button disabled={!history.future.length} onclick={() => (history = redo(history!))}
-          >Redo</button
-        >
-      {/if}
-      {#if pending && changeCount(pending)}
-        <button class="save" disabled={ed.busy} onclick={save} title="Ctrl+S">Save to plugin</button
-        >
-        <span class="warn">
-          unsaved: {pending.added.length} added, {pending.moved.length} moved, {pending.removed
-            .length} removed
-        </span>
-      {/if}
-      {#if annotationStore.dirty}
-        <a class="warn" href="#/settings/validation"
-          >annotations changed: save them in Settings, Validation</a
-        >
-      {/if}
-      {#if ed.busy}<span>{catalogueStore.progress || 'working...'}</span>{/if}
-      {#if ed.error}<span class="err">{ed.error}</span>{/if}
     </div>
-    {#if ed.message}<p class="hint">{ed.message}</p>{/if}
+    {#if toast}<p class="toast">{toast}</p>{/if}
 
     {#if ed.loaded && layout && summary}
       <div class="cols">
@@ -785,8 +804,13 @@
                 <span class="hint">Master tile: read-only.</span>
               {/if}
               {#if tileJoints.length}
-                <div class="joints">
-                  <b>Junctions</b>
+                {@const issues = tileJoints.filter(
+                  (j) => j.fit === 'seam' || j.fit === 'mismatch',
+                ).length}
+                <details class="joints" open={issues > 0}>
+                  <summary
+                    >Junctions ({tileJoints.length}{issues ? `, ${issues} to check` : ''})</summary
+                  >
                   {#each tileJoints as j (j.id)}
                     <button
                       class:active={inspected === j.id}
@@ -799,7 +823,7 @@
                       {FIT_LABEL[j.fit]}{Number.isNaN(j.gap) ? '' : ` ${j.gap.toFixed(1)}`}
                     </button>
                   {/each}
-                </div>
+                </details>
                 {#if inspectedJoint}
                   <ProfileView size={140} layers={jointLayers(inspectedJoint)} />
                   <div class="hint diag">
@@ -819,15 +843,20 @@
               {/if}
             {:else}
               <span class="hint"
-                >Click a tile to select it, an orange open face for compatible pieces (red: a
-                junction that does not fit), or a piece below to place it. Drag to pan, wheel to
-                zoom, Ctrl+Z / Ctrl+Y to undo / redo.</span
+                >Click an orange face to add a piece that fits, or pick a piece below. Click a tile
+                to select it.</span
               >
+              <details class="hint">
+                <summary>Shortcuts</summary>
+                Drag: pan (or move the selected tile) · Wheel: zoom · R / Shift+R: rotate · Del: delete
+                · Esc: cancel · Ctrl+Z / Ctrl+Y: undo / redo · Ctrl+S: save
+              </details>
             {/if}
             {#if message}<div class="warn">{message}</div>{/if}
           </div>
 
           {#if !active}<div class="palette">
+              <h3 class="list-title">Pieces</h3>
               <div class="filters">
                 <input placeholder="search pieces" bind:value={filter} />
                 <select bind:value={category}>
@@ -856,15 +885,19 @@
               </ul>
             </div>{/if}
 
-          <label class="hint"
-            ><input type="checkbox" bind:checked={showFaces} /> Show open faces ({opens.length}),
-            mismatched junctions ({bad.length}) and shared cells ({shared.length})</label
-          >
-          <p class="hint">
+          <div class="legend">
+            <label><input type="checkbox" bind:checked={showFaces} /> Show marks</label>
+            <span><i style:background="#e8a33a"></i>open face {opens.length}</span>
+            <span><i style:background="#e8d23a"></i>seam {seams}</span>
+            <span><i style:background="#e04040"></i>mismatch {bad.length - seams}</span>
+            <span><i style:background="#ff2bd6"></i>shared cell {shared.length}</span>
+          </div>
+          <details class="hint">
+            <summary>Cell info</summary>
             {ed.loaded.refs.length} references: {ed.loaded.grid.tiles.length} tiles,
-            {ed.loaded.grid.opaque.length} other objects, {ed.loaded.grid.overlaps.length} shared cells
-            (tolerated).
-          </p>
+            {ed.loaded.grid.opaque.length} other objects (not part of the kit), {ed.loaded.grid
+              .overlaps.length} shared cells when loaded.
+          </details>
         </aside>
 
         <CellView
@@ -958,8 +991,56 @@
     user-select: text;
     font-family: monospace;
   }
+  /* the one primary action: filled with the accent colour */
   .save {
     font-weight: 600;
+    color: var(--bg);
+    background: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 4px;
+    padding: 0.3rem 1rem;
+    cursor: pointer;
+  }
+  .save:hover:not(:disabled) {
+    filter: brightness(1.1);
+  }
+  .save:disabled {
+    color: var(--fg-muted);
+    background: transparent;
+    border-color: var(--border);
+    cursor: default;
+  }
+  .group {
+    display: inline-flex;
+    gap: 2px;
+  }
+  .spacer {
+    flex: 1;
+  }
+  .toast {
+    margin: 0 0 0.5rem;
+    padding: 0.3rem 0.6rem;
+    border-left: 3px solid var(--accent);
+    background: var(--bg-panel);
+    font-size: 13px;
+  }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem 0.8rem;
+    font-size: 12px;
+    color: var(--fg-muted);
+    margin: 0.5rem 0;
+  }
+  .legend i {
+    display: inline-block;
+    width: 0.7rem;
+    height: 0.7rem;
+    margin-right: 0.3rem;
+    vertical-align: -1px;
+  }
+  .legend label {
+    flex-basis: 100%;
   }
   .list-title {
     margin: 0.5rem 0 0.3rem;

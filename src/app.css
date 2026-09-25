@@ -52,3 +52,46 @@ input {
   padding: 0.3rem 0.6rem;
   margin: 0.15rem 0.3rem 0.15rem 0;
 }
+
+/* controls in the dark theme; checkboxes and radios keep the native look */
+button,
+select,
+input:not([type='checkbox']):not([type='radio']) {
+  color: var(--fg);
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:hover:not(:disabled),
+select:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+button:disabled,
+select:disabled,
+input:disabled {
+  color: var(--fg-muted);
+  opacity: 0.6;
+  cursor: default;
+}
+
+button:focus-visible,
+select:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+input::placeholder {
+  color: var(--fg-muted);
+}
+
+input[type='checkbox'],
+input[type='radio'] {
+  accent-color: var(--accent);
+}
