@@ -4,11 +4,29 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    # minor and patch updates arrive together; majors stay one pull request each
+    groups:
+      npm-minor-and-patch:
+        update-types: [minor, patch]
+    ignore:
+      # svelte-check and typescript-eslint do not support TypeScript 7 yet
+      - dependency-name: typescript
+        versions: ['>=7']
+      # the types follow the Node LTS the project runs on (see the Dockerfile and CI)
+      - dependency-name: '@types/node'
+        update-types: ['version-update:semver-major']
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
+    groups:
+      actions:
+        patterns: ['*']
   - package-ecosystem: docker
     directory: /
     schedule:
       interval: weekly
+    ignore:
+      # the build image stays on a Node LTS line, moved on purpose
+      - dependency-name: node
+        update-types: ['version-update:semver-major']
