@@ -19,6 +19,22 @@ cells), and the result is written back into the plugin, with a backup, for the C
     concepts.
   - [Planning](docs/design/planning/README.md): decisions, risks, roadmap, V1 step plan.
 
+## Limits of V1
+
+- **Imperial kit only**: other kits (Nordic, Dwemer, caves) are not supported yet.
+- **One level at a time**: ramps and stairs work, but the top-down view does not show heights.
+- **Tiles only**: the tool places the kit's structural pieces; clutter, lights, markers and
+  anything else in a cell are shown and left untouched, never edited.
+- **No NavMesh, props, lighting or door links**: finish those in the Creation Kit (new cells get
+  a neutral default lighting).
+- **Seams are checked on the openings' outlines**: a gap elsewhere around a junction, or a
+  texture that does not continue, is not detected.
+- **Chrome or Edge only** (File System Access API), **ESL-flagged plugins are refused**, and a
+  plugin must not be saved from the Creation Kit while it has unsaved edits in the tool.
+
+See the [user guide](docs/user-guide.md#limits-of-v1) for details and the
+[roadmap](docs/design/planning/04-roadmap.md) for what comes next.
+
 ## Use it
 
 - **One file**: download `SkyrimDungeonPlanner.html` from the latest release (or from the
