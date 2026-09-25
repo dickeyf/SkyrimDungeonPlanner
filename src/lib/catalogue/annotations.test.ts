@@ -157,6 +157,29 @@ describe('applyAnnotations', () => {
   });
 });
 
+describe('accepted overlaps', () => {
+  it('are carried into the catalogue by FormKey, unknown pieces reported', () => {
+    const a: Annotations = {
+      ...emptyAnnotations('Imperial'),
+      overlaps: [
+        { pieces: ['ImpLHallDoor01', 'ImpHall1Way01'], rotation: 2, offset: [1, 3, 0] },
+        { pieces: ['ImpGone03', 'ImpHall1Way01'], rotation: 0, offset: [1, 0, 0] },
+      ],
+    };
+    const { catalogue, issues } = applyAnnotations(auto(), a);
+    const key = (id: string) => catalogue.pieces.find((p) => p.editorId === id)!.formKey;
+    expect(catalogue.overlaps).toEqual([
+      { pieces: [key('ImpLHallDoor01'), key('ImpHall1Way01')], rotation: 2, offset: [1, 3, 0] },
+    ]);
+    expect(issues).toEqual([{ kind: 'unknown-piece', piece: 'ImpGone03' }]);
+    expect(
+      applyAnnotations(auto(), emptyAnnotations('Imperial')).catalogue.overlaps,
+    ).toBeUndefined();
+    const back = parseAnnotations(JSON.parse(serializeAnnotations(a)));
+    expect(back.overlaps).toHaveLength(2);
+  });
+});
+
 describe('serialization', () => {
   it('round-trips with sorted entries', () => {
     const a: Annotations = {

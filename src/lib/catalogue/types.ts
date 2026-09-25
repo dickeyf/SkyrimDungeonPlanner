@@ -80,12 +80,24 @@ export interface Kit {
   note?: string;
 }
 
+/**
+ * Two pieces allowed to share cells in one exact relative placement (from the annotations):
+ * the second piece's corner and rotation in the first piece's frame.
+ */
+export interface PieceOverlap {
+  pieces: [FormKey, FormKey];
+  rotation: 0 | 1 | 2 | 3;
+  offset: CellIndex;
+}
+
 export interface Catalogue {
   /** Format version, bumped on breaking changes. */
   version: 1;
   kits: Kit[];
   connectionTypes: ConnectionType[];
   pieces: Piece[];
+  /** Accepted overlaps between pieces; absent when there are none. */
+  overlaps?: PieceOverlap[];
 }
 
 /**

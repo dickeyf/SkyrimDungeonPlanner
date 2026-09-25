@@ -6,6 +6,7 @@
    * step 15.
    */
   import SessionNotice from '../components/SessionNotice.svelte';
+  import { untrack } from 'svelte';
   import CellView from '../components/CellView.svelte';
   import ProfileView from '../components/ProfileView.svelte';
   import type { Catalogue, FormKey, Piece, PieceCategory } from '$lib/catalogue/types';
@@ -26,7 +27,9 @@
     faceRect,
     footprintCells,
     historyOf,
+    acceptedOverlaps,
     layoutFromGrid,
+    relativePlacement,
     openFaces,
     moveTile,
     redo,
@@ -54,6 +57,8 @@
     type PointerInfo,
     type SceneHandlers,
   } from '$lib/render';
+  import { setOverlap } from '$lib/catalogue/annotationEdits';
+  import { annotationStore } from '$lib/session/annotationStore.svelte';
   import { catalogueStore } from '$lib/session/catalogueStore.svelte';
   import { session } from '$lib/session/session.svelte';
 
@@ -93,7 +98,11 @@
       return;
     }
     const own = new Map(loaded.refs.map((r) => [r.key, r.own]));
-    const layout = layoutFromGrid(loaded.grid, own);
+    const layout = layoutFromGrid(
+      loaded.grid,
+      own,
+      untrack(() => accepted),
+    );
     original = layout;
     history = historyOf(layout);
     placing = null;
@@ -103,6 +112,20 @@
   });
 
   const catalogue = $derived(ed.catalogue ?? emptyCatalogue);
+  const accepted = $derived(acceptedOverlaps(catalogue.overlaps ?? []));
+
+  // an overlap marked as intended applies to the whole history at once
+  $effect(() => {
+    const set = accepted;
+    const h = untrack(() => history);
+    if (!h || h.present.accepted === set) return;
+    const withSet = (l: Layout): Layout => ({ ...l, accepted: set });
+    history = {
+      past: h.past.map(withSet),
+      present: withSet(h.present),
+      future: h.future.map(withSet),
+    };
+  });
   const pieces = $derived(piecesByFormKey(catalogue));
   const anchor = $derived(ed.loaded?.grid.anchor);
   const layout = $derived(history?.present ?? null);
@@ -227,6 +250,25 @@
       }
     }
     return layers;
+  }
+
+  /** Every pair among the tiles claiming a shared cell. */
+  const overlapPairs = (keys: string[]): [string, string][] =>
+    keys.flatMap((a, i) => keys.slice(i + 1).map((b): [string, string] => [a, b]));
+
+  function acceptOverlap(a: string, b: string): void {
+    const ta = layout?.tiles.get(a);
+    const tb = layout?.tiles.get(b);
+    const ea = ta && pieces.get(ta.piece)?.editorId;
+    const eb = tb && pieces.get(tb.piece)?.editorId;
+    if (!ta || !tb || !ea || !eb) return;
+    const rel = relativePlacement(ta, tb);
+    annotationStore.update((ann) =>
+      setOverlap(ann, { pieces: [ea, eb], rotation: rel.rotation, offset: [...rel.offset] }, true),
+    );
+    ed.refreshCatalogue();
+    activeShared = null;
+    message = `${ea} + ${eb} recorded as an intended overlap. Save the annotations from the Validation page.`;
   }
 
   function openFace(face: OpenFace | undefined): void {
@@ -502,6 +544,9 @@
             .length} removed
         </span>
       {/if}
+      {#if annotationStore.dirty}
+        <a class="warn" href="#/validation">annotations changed: save them in Validation</a>
+      {/if}
       {#if ed.busy}<span>{catalogueStore.progress || 'working...'}</span>{/if}
       {#if ed.error}<span class="err">{ed.error}</span>{/if}
     </div>
@@ -528,9 +573,18 @@
                 </div>
               {/each}
               <div class="hint">
-                Two tiles overlap here (tolerated in a loaded level, refused for new placements).
-                Esc to close.
+                Two tiles overlap here (tolerated in a loaded level, refused for new placements). If
+                it is intended (a door nested into its neighbour to hide the joint, with no visible
+                seam), mark it: the pair is then accepted in that exact placement everywhere, not
+                flagged, and may be placed.
               </div>
+              {#each overlapPairs(activeShared.tiles) as [a, b] (a + b)}
+                <button onclick={() => acceptOverlap(a, b)}
+                  >Mark {pieces.get(layout.tiles.get(a)!.piece)?.editorId} +
+                  {pieces.get(layout.tiles.get(b)!.piece)?.editorId} as intended</button
+                >
+              {/each}
+              <div class="hint">Esc to close.</div>
             {:else if activeBad}
               {@const mine = pieces.get(layout.tiles.get(activeBad.tile)?.piece ?? '')}
               <b class="err"

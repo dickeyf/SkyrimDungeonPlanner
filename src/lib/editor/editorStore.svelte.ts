@@ -86,6 +86,13 @@ class EditorStore {
     return this.catalogue;
   }
 
+  /** Re-apply the current annotations after an edit made from the editor. */
+  refreshCatalogue(): void {
+    const analysis = catalogueStore.analysis;
+    if (analysis)
+      this.catalogue = applyAnnotations(analysis.catalogue, annotationStore.current).catalogue;
+  }
+
   async openCell(key: string): Promise<void> {
     await this.run(async () => {
       if (!this.store) throw new Error('no working plugin');

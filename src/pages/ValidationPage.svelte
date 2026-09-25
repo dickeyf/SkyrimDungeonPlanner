@@ -12,6 +12,7 @@
     mergeDecision,
     setComposite,
     setMergeDecision,
+    setOverlap,
     setPiece,
   } from '$lib/catalogue/annotationEdits';
   import { applyAnnotations, serializeAnnotations } from '$lib/catalogue/annotations';
@@ -46,7 +47,7 @@
     );
   });
 
-  let tab = $state<'types' | 'near' | 'composite' | 'pieces'>('near');
+  let tab = $state<'types' | 'near' | 'composite' | 'pieces' | 'overlaps'>('near');
   let openType = $state<number | null>(null);
 
   // wide cyan underneath, thin magenta on top: coinciding lines show magenta on cyan
@@ -233,6 +234,9 @@
         >Composite faces ({review.containment.length})</button
       >
       <button class:active={tab === 'pieces'} onclick={() => (tab = 'pieces')}>Pieces</button>
+      <button class:active={tab === 'overlaps'} onclick={() => (tab = 'overlaps')}
+        >Accepted overlaps ({ann.current.overlaps.length})</button
+      >
       <button class:active={tab === 'types'} onclick={() => (tab = 'types')}
         >Types (read-only)</button
       >
@@ -370,6 +374,30 @@
           </article>
         {/each}
       </div>
+    {:else if tab === 'overlaps'}
+      <p class="hint">
+        Piece pairs that share cells on purpose, in one relative placement. They are marked from the
+        editor (click a magenta shared cell); they are not flagged there and may be placed.
+      </p>
+      <table>
+        <thead>
+          <tr><th>First piece</th><th>Second piece</th><th>Placement</th><th></th></tr>
+        </thead>
+        <tbody>
+          {#each ann.current.overlaps as o (JSON.stringify(o))}
+            <tr>
+              <td>{o.pieces[0]}</td>
+              <td>{o.pieces[1]}</td>
+              <td>offset {o.offset.join(', ')}, turned {o.rotation * 90}°</td>
+              <td>
+                <button onclick={() => ann.update((a) => setOverlap(a, o, false))}>Remove</button>
+              </td>
+            </tr>
+          {:else}
+            <tr><td colspan="4" class="hint">None yet.</td></tr>
+          {/each}
+        </tbody>
+      </table>
     {:else}
       <p>
         <button onclick={excludeNonFitting}>Exclude pieces that do not fit the grid</button>

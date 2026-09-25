@@ -4,6 +4,7 @@ import {
   mergeDecision,
   setComposite,
   setMergeDecision,
+  setOverlap,
   setPiece,
 } from './annotationEdits';
 import { emptyAnnotations } from './annotations';
@@ -33,5 +34,18 @@ describe('annotation edits', () => {
     expect(a.pieces.P).toEqual({ validated: true, exclude: 'off grid' });
     a = setPiece(a, 'P', { validated: false, exclude: undefined });
     expect(a.pieces).toEqual({});
+  });
+
+  it('records and removes accepted overlaps', () => {
+    const nested = {
+      pieces: ['Room', 'Door'] as [string, string],
+      rotation: 0 as const,
+      offset: [3, 0, 0] as [number, number, number],
+    };
+    let a = setOverlap(emptyAnnotations('Imperial'), nested, true);
+    a = setOverlap(a, { ...nested, offset: [3, 0, 0] }, true);
+    expect(a.overlaps).toEqual([nested]);
+    a = setOverlap(a, nested, false);
+    expect(a.overlaps).toEqual([]);
   });
 });

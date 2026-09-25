@@ -22,6 +22,7 @@ import { rotateFootprintCell } from './derive';
 import { addTile, conflictsFor, footprintCells, type Layout, type Pieces } from './edit';
 import type { Profile } from '../mesh/profiles';
 import { betterFit, inFrameOf, profileFit, type JointFit } from './joints';
+import { overlapAccepted } from './overlaps';
 import type { GridAnchor, OpaqueRef } from './types';
 import { addCells, cellKey, dirOffset, oppositeDir, rotateDir, type Rotation } from './rotation';
 
@@ -233,11 +234,17 @@ function profileVerdict(
 
 /** The junction of opening `o`, or null when it looks onto free cells. */
 function judge(ctx: JointContext, o: OpenFace): Joint | null {
-  const against = [
+  const self = ctx.layout.tiles.get(o.tile)!;
+  const accepted = ctx.layout.accepted;
+  // a tile nested into this one by an accepted overlap covers the junction on purpose (D61)
+  const partner = (k: string) =>
+    !!accepted && overlapAccepted(accepted, self, ctx.layout.tiles.get(k)!);
+  const inFront = [
     ...new Set(
       o.outside.flatMap((c) => ctx.used.get(cellKey(c)) ?? []).filter((k) => k !== o.tile),
     ),
   ];
+  const against = inFront.filter((k) => !partner(k));
   if (!against.length) return null;
   const face: Face = { ...o.opening.face, dir: o.dir };
   const along = alongAxis(o.dir);
@@ -388,7 +395,9 @@ export function candidatesFor(
       const cell: CellIndex = [xy[0]!, xy[1]!, t[0]![2] - turned[0]![2] + 0];
       const placed = turned.map((c) => addCells(cell, c));
       if (!centredWithin(placed, t, along) && !centredWithin(t, placed, along)) continue;
-      if (conflictsFor(layout, pieces, footprintCells(piece, cell, rotation)).length) continue;
+      const at = { piece: piece.formKey, cell, rotation };
+      if (conflictsFor(layout, pieces, footprintCells(piece, cell, rotation), undefined, at).length)
+        continue;
       out.push({ piece: piece.formKey, cell, rotation, opening });
     }
   }
@@ -474,10 +483,19 @@ export interface SharedCell {
   tiles: string[];
 }
 
+/** Cells claimed by several tiles, except by pairs whose overlap is accepted. */
 export function sharedCells(layout: Layout, pieces: Pieces): SharedCell[] {
   const out: SharedCell[] = [];
+  const accepted = layout.accepted;
+  const allAccepted = (keys: string[]) =>
+    !!accepted &&
+    keys.every((a, i) =>
+      keys
+        .slice(i + 1)
+        .every((b) => overlapAccepted(accepted, layout.tiles.get(a)!, layout.tiles.get(b)!)),
+    );
   for (const [key, tiles] of occupancy(layout, pieces)) {
-    if (tiles.length < 2) continue;
+    if (tiles.length < 2 || allAccepted(tiles)) continue;
     const [i, j, k] = key.split(',').map(Number) as [number, number, number];
     out.push({ cell: [i, j, k], tiles });
   }

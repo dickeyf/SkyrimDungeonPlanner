@@ -5,7 +5,7 @@
  * never write the plugin: step 15 turns `changes()` into REFR additions, moves and deletions.
  * Rules: master tiles are read-only (D22); a new placement or a move is refused when it would
  * share a cell with another tile, while overlaps already present in the level stay tolerated
- * (D58).
+ * (D58), and so do overlaps accepted in the annotations (overlaps.ts).
  */
 import type { CellIndex, FormKey, Piece, Vec3 } from '../catalogue/types';
 import {
@@ -15,6 +15,7 @@ import {
   type DeriveResult,
 } from './derive';
 import { addCells, normalizeRotation, type Rotation } from './rotation';
+import { overlapAccepted, type AcceptedOverlaps } from './overlaps';
 import type { GridAnchor, PlacedRef } from './types';
 
 export interface EditTile {
@@ -33,6 +34,8 @@ export interface EditTile {
 export interface Layout {
   tiles: ReadonlyMap<string, EditTile>;
   nextNew: number;
+  /** Piece pairs allowed to share cells in one relative placement (annotations). */
+  accepted?: AcceptedOverlaps;
 }
 
 export type EditFailure =
@@ -45,7 +48,11 @@ export type Pieces = ReadonlyMap<FormKey, Piece>;
 const cellKey = (c: CellIndex) => `${c[0]},${c[1]},${c[2]}`;
 const sameCell = (a: CellIndex, b: CellIndex) => a[0] === b[0] && a[1] === b[1] && a[2] === b[2];
 
-export function layoutFromGrid(grid: DeriveResult, own: ReadonlyMap<string, boolean>): Layout {
+export function layoutFromGrid(
+  grid: DeriveResult,
+  own: ReadonlyMap<string, boolean>,
+  accepted?: AcceptedOverlaps,
+): Layout {
   const tiles = new Map<string, EditTile>();
   for (const t of grid.tiles) {
     const key = t.ref.refFormKey;
@@ -58,7 +65,7 @@ export function layoutFromGrid(grid: DeriveResult, own: ReadonlyMap<string, bool
       origin: { ref: t.ref, cell: t.cell, rotation: t.rotation },
     });
   }
-  return { tiles, nextNew: 1 };
+  return { tiles, nextNew: 1, accepted };
 }
 
 /** Cells occupied by a piece placed at `cell` with `rotation`. */
@@ -66,17 +73,22 @@ export function footprintCells(piece: Piece, cell: CellIndex, rotation: Rotation
   return piece.cells.map((pc) => addCells(cell, rotateFootprintCell(pc, rotation)));
 }
 
-/** Cells of `cells` already used by tiles other than `ignore`. */
+/**
+ * Cells of `cells` already used by tiles other than `ignore`. With `placing` (the tile being
+ * placed there), tiles it may overlap by an accepted overlap are not conflicts.
+ */
 export function conflictsFor(
   layout: Layout,
   pieces: Pieces,
   cells: readonly CellIndex[],
   ignore?: string,
+  placing?: { piece: FormKey; cell: CellIndex; rotation: Rotation },
 ): CellIndex[] {
   const wanted = new Set(cells.map(cellKey));
   const hits = new Map<string, CellIndex>();
   for (const tile of layout.tiles.values()) {
     if (tile.key === ignore) continue;
+    if (placing && layout.accepted && overlapAccepted(layout.accepted, placing, tile)) continue;
     const piece = pieces.get(tile.piece);
     if (!piece) continue;
     for (const c of footprintCells(piece, tile.cell, tile.rotation)) {
@@ -89,7 +101,7 @@ export function conflictsFor(
 function withTile(layout: Layout, tile: EditTile, nextNew = layout.nextNew): Layout {
   const tiles = new Map(layout.tiles);
   tiles.set(tile.key, tile);
-  return { tiles, nextNew };
+  return { tiles, nextNew, accepted: layout.accepted };
 }
 
 export function addTile(
@@ -101,7 +113,11 @@ export function addTile(
 ): EditResult {
   const piece = pieces.get(pieceKey);
   if (!piece) return { ok: false, reason: 'unknown-piece' };
-  const cells = conflictsFor(layout, pieces, footprintCells(piece, cell, rotation));
+  const cells = conflictsFor(layout, pieces, footprintCells(piece, cell, rotation), undefined, {
+    piece: pieceKey,
+    cell,
+    rotation,
+  });
   if (cells.length) return { ok: false, reason: 'conflict', cells };
   const key = `new:${layout.nextNew}`;
   const tile: EditTile = { key, piece: pieceKey, cell, rotation, own: true };
@@ -120,7 +136,11 @@ function place(
   if (!tile.own) return { ok: false, reason: 'read-only' };
   const piece = pieces.get(tile.piece);
   if (!piece) return { ok: false, reason: 'unknown-piece' };
-  const cells = conflictsFor(layout, pieces, footprintCells(piece, cell, rotation), key);
+  const cells = conflictsFor(layout, pieces, footprintCells(piece, cell, rotation), key, {
+    piece: tile.piece,
+    cell,
+    rotation,
+  });
   if (cells.length) return { ok: false, reason: 'conflict', cells };
   return { ok: true, key, layout: withTile(layout, { ...tile, cell, rotation }) };
 }
@@ -174,7 +194,7 @@ export function removeTile(layout: Layout, key: string): EditResult {
   if (!tile.own) return { ok: false, reason: 'read-only' };
   const tiles = new Map(layout.tiles);
   tiles.delete(key);
-  return { ok: true, key, layout: { tiles, nextNew: layout.nextNew } };
+  return { ok: true, key, layout: { tiles, nextNew: layout.nextNew, accepted: layout.accepted } };
 }
 
 export function isMoved(tile: EditTile): boolean {

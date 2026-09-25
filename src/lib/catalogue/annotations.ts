@@ -5,7 +5,15 @@
  * the user's installation. Types are never named by hand: they are designated by one of their
  * faces, `EditorID:dir`, which stays valid across analysis runs (the G numbers do not).
  */
-import type { Catalogue, ConnectionType, FaceDir, Piece, PieceCategory } from './types';
+import type {
+  CellIndex,
+  Catalogue,
+  ConnectionType,
+  FaceDir,
+  Piece,
+  PieceCategory,
+  PieceOverlap,
+} from './types';
 
 export interface MergeAnnotation {
   /** Two faces from two automatic groups. */
@@ -21,6 +29,18 @@ export interface CompositeAnnotation {
   accepts: string;
 }
 
+/**
+ * Two pieces that share cells on purpose (a door nested into its neighbour to hide the
+ * joint), in one relative placement: the second piece's corner and rotation in the first
+ * piece's frame. Recorded from the editor.
+ */
+export interface OverlapAnnotation {
+  /** EditorIDs. */
+  pieces: [string, string];
+  rotation: 0 | 1 | 2 | 3;
+  offset: [number, number, number];
+}
+
 export interface PieceAnnotation {
   validated?: boolean;
   category?: PieceCategory;
@@ -33,11 +53,12 @@ export interface Annotations {
   kit: string;
   merges: MergeAnnotation[];
   composites: CompositeAnnotation[];
+  overlaps: OverlapAnnotation[];
   pieces: Record<string, PieceAnnotation>;
 }
 
 export function emptyAnnotations(kit: string): Annotations {
-  return { version: 1, kit, merges: [], composites: [], pieces: {} };
+  return { version: 1, kit, merges: [], composites: [], overlaps: [], pieces: {} };
 }
 
 export type AnnotationIssue =
@@ -77,6 +98,7 @@ export function parseAnnotations(json: unknown): Annotations {
     kit: a.kit,
     merges: a.merges ?? [],
     composites: a.composites ?? [],
+    overlaps: a.overlaps ?? [],
     pieces: a.pieces ?? {},
   };
 }
@@ -173,8 +195,29 @@ export function applyAnnotations(auto: Catalogue, annotations: Annotations): Ann
     });
   }
 
+  // 6. accepted overlaps, by FormKey
+  const byEditorId = new Map(pieces.map((p) => [p.editorId, p.formKey]));
+  const overlaps: PieceOverlap[] = [];
+  for (const o of annotations.overlaps) {
+    const a = byEditorId.get(o.pieces[0]);
+    const b = byEditorId.get(o.pieces[1]);
+    for (const [id, key] of [
+      [o.pieces[0], a],
+      [o.pieces[1], b],
+    ] as const) {
+      if (!key) issues.push({ kind: 'unknown-piece', piece: id });
+    }
+    if (a && b)
+      overlaps.push({ pieces: [a, b], rotation: o.rotation, offset: o.offset as CellIndex });
+  }
+
   return {
-    catalogue: { ...auto, connectionTypes, pieces },
+    catalogue: {
+      ...auto,
+      connectionTypes,
+      pieces,
+      ...(overlaps.length ? { overlaps } : {}),
+    },
     issues: dedupeIssues(issues),
     renamed,
     excludedPieces,
@@ -201,6 +244,13 @@ export function serializeAnnotations(a: Annotations): string {
     composites: [...a.composites].sort(
       (x, y) => x.face.localeCompare(y.face) || x.accepts.localeCompare(y.accepts),
     ),
+    ...(a.overlaps.length
+      ? {
+          overlaps: [...a.overlaps].sort((x, y) =>
+            JSON.stringify(x).localeCompare(JSON.stringify(y)),
+          ),
+        }
+      : {}),
     pieces: Object.fromEntries(Object.entries(a.pieces).sort(([x], [y]) => x.localeCompare(y))),
   };
   return `${JSON.stringify(clean, null, 2)}\n`;

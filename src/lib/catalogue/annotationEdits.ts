@@ -3,7 +3,7 @@
  * the UI can compare against the committed version; nothing here depends on Svelte.
  */
 import type { AnalysisResult } from './analyze';
-import type { Annotations, PieceAnnotation } from './annotations';
+import type { Annotations, OverlapAnnotation, PieceAnnotation } from './annotations';
 
 /** `EditorID:dir` of a face of the analysis. */
 export function analysisFaceKey(analysis: AnalysisResult, faceIndex: number): string {
@@ -61,4 +61,16 @@ export function setPiece(
   if (Object.keys(clean).length) pieces[editorId] = clean;
   else delete pieces[editorId];
   return { ...a, pieces };
+}
+
+const sameOverlap = (x: OverlapAnnotation, y: OverlapAnnotation) =>
+  x.pieces[0] === y.pieces[0] &&
+  x.pieces[1] === y.pieces[1] &&
+  x.rotation === y.rotation &&
+  x.offset.every((v, i) => v === y.offset[i]);
+
+/** Record (or remove) an accepted overlap between two pieces in one relative placement. */
+export function setOverlap(a: Annotations, overlap: OverlapAnnotation, on: boolean): Annotations {
+  const rest = a.overlaps.filter((o) => !sameOverlap(o, overlap));
+  return { ...a, overlaps: on ? [...rest, overlap] : rest };
 }
