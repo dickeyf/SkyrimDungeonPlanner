@@ -68,6 +68,8 @@
 
   let cellKey = $state('');
   let history = $state.raw<History | null>(null);
+  /** The cell `history` belongs to: a layout is only drawn with its own cell (and anchor). */
+  let historyFor = $state.raw<typeof ed.loaded>(null);
   let original = $state.raw<Layout | null>(null);
   let placing = $state<{ piece: FormKey; rotation: 0 | 1 | 2 | 3 } | null>(null);
   let drag = $state.raw<{ key: string; grab: CellIndex; target: CellIndex } | null>(null);
@@ -77,6 +79,30 @@
   let category = $state<PieceCategory | 'all'>('all');
   let showFaces = $state(true);
   let activeFace = $state<string | null>(null);
+
+  // open the last cell of the working plugin once it is open (no "Load" click needed)
+  let autoCellFor = '';
+  $effect(() => {
+    const store = ed.store;
+    if (!store || ed.loaded || ed.busy || autoCellFor === store.name) return;
+    const first = ed.initialCell;
+    if (!first) return;
+    autoCellFor = store.name;
+    void ed.openCell(first);
+  });
+
+  async function chooseCell(key: string): Promise<void> {
+    if (
+      pending &&
+      changeCount(pending) &&
+      !window.confirm('Open another cell and drop the unsaved edits of this one?')
+    ) {
+      cellKey = ed.loaded?.cell ?? cellKey;
+      return;
+    }
+    cellKey = key;
+    await ed.openCell(key);
+  }
 
   // open the remembered working plugin as soon as the game folder is restored, which may
   // finish after this page is shown (browser reload on /editor)
@@ -88,7 +114,8 @@
   });
 
   $effect(() => {
-    if (!cellKey && ed.cells.length) cellKey = ed.cells[0]!.key;
+    if (ed.loaded) cellKey = ed.loaded.cell;
+    else if (!cellKey && ed.cells.length) cellKey = ed.initialCell ?? '';
   });
 
   // a newly loaded cell starts a fresh edit history
@@ -107,6 +134,7 @@
     );
     original = layout;
     history = historyOf(layout);
+    historyFor = loaded;
     placing = null;
     drag = null;
     ghost = null;
@@ -135,7 +163,9 @@
     new Map((catalogueStore.stats?.stats ?? []).map((st) => [st.formKey, st.model])),
   );
   const objects = $derived(
-    layout && ed.loaded ? layoutObjects(layout, ed.loaded, catalogue, models) : [],
+    layout && ed.loaded && historyFor === ed.loaded
+      ? layoutObjects(layout, ed.loaded, catalogue, models)
+      : [],
   );
   const grid = $derived(ed.loaded ? sceneGrid(ed.loaded, 12) : null);
   const summary = $derived(ed.loaded ? summarizeCell(ed.loaded, pieces) : null);
@@ -212,6 +242,18 @@
         )
       : [],
   );
+  let candFilter = $state('');
+  let candCategory = $state<PieceCategory | 'all'>('all');
+  const shownCandidates = $derived.by(() => {
+    const needle = candFilter.trim().toLowerCase();
+    return candidates.filter((c) => {
+      const p = pieces.get(c.piece)!;
+      return (
+        (candCategory === 'all' || p.category === candCategory) &&
+        (!needle || p.editorId.toLowerCase().includes(needle))
+      );
+    });
+  });
   const around = $derived(
     active && layout && anchor && ed.loaded
       ? surroundings(active, layout, pieces, ed.loaded.grid.opaque, anchor)
@@ -547,12 +589,15 @@
   {:else}
     <div class="toolbar">
       <b>{ed.store.name}</b>
-      <select bind:value={cellKey} disabled={ed.busy}>
+      <select
+        value={cellKey}
+        disabled={ed.busy}
+        onchange={(e) => chooseCell((e.currentTarget as HTMLSelectElement).value)}
+      >
         {#each ed.cells as c (c.key)}
           <option value={c.key}>{c.editorId} ({c.placedCount} placed)</option>
         {/each}
       </select>
-      <button disabled={ed.busy || !cellKey} onclick={() => ed.openCell(cellKey)}>Load cell</button>
       <button disabled={ed.busy} onclick={newCell}>New cell...</button>
       <button
         disabled={ed.busy}
@@ -659,36 +704,51 @@
               {#if own}
                 <ProfileView size={90} layers={[{ segments: own, color: '#e8a33a' }]} />
               {/if}
-              <div class="hint">
-                face cells {active.cells.map((c) => c.join(',')).join(' ')}, outside
-                {active.outside.map((c) => c.join(',')).join(' ')}
-              </div>
-              {#if around && (around.tiles.length || around.opaque.length)}
-                <div class="warn">
-                  In front of this face (any level):
-                  {#each around.tiles as t (t.key)}
-                    <div>
-                      tile {pieces.get(t.piece)?.editorId} at cell {t.cell.join(',')}, rot {t.rotation *
-                        90}°
-                    </div>
-                  {/each}
-                  {#each around.opaque as o (o.ref.refFormKey)}
-                    <div>
-                      {pieces.get(o.ref.base)?.editorId} kept out of the grid: {o.reason}
-                      (pos {o.ref.pos.map((v) => v.toFixed(1)).join(', ')}, rz {(
-                        (o.ref.rot[2] * 180) /
-                        Math.PI
-                      ).toFixed(1)}°)
-                    </div>
-                  {/each}
+              <details class="hint">
+                <summary>Details</summary>
+                <div class="hint">
+                  face cells {active.cells.map((c) => c.join(',')).join(' ')}, outside
+                  {active.outside.map((c) => c.join(',')).join(' ')}
                 </div>
-              {/if}
-              <div class="hint">
-                {candidates.length} compatible placement{candidates.length === 1 ? '' : 's'}: hover
-                to preview, click to place, Esc to close.
+                {#if around && (around.tiles.length || around.opaque.length)}
+                  <div class="warn">
+                    In front of this face (any level):
+                    {#each around.tiles as t (t.key)}
+                      <div>
+                        tile {pieces.get(t.piece)?.editorId} at cell {t.cell.join(',')}, rot {t.rotation *
+                          90}°
+                      </div>
+                    {/each}
+                    {#each around.opaque as o (o.ref.refFormKey)}
+                      <div>
+                        {pieces.get(o.ref.base)?.editorId} kept out of the grid: {o.reason}
+                        (pos {o.ref.pos.map((v) => v.toFixed(1)).join(', ')}, rz {(
+                          (o.ref.rot[2] * 180) /
+                          Math.PI
+                        ).toFixed(1)}°)
+                      </div>
+                    {/each}
+                  </div>
+                {/if}
+              </details>
+              <h3 class="list-title">
+                Compatible pieces ({shownCandidates.length}{shownCandidates.length ===
+                candidates.length
+                  ? ''
+                  : ` of ${candidates.length}`})
+              </h3>
+              <div class="filters">
+                <input placeholder="search compatible pieces" bind:value={candFilter} />
+                <select bind:value={candCategory}>
+                  <option value="all">all</option>
+                  <option value="hall">hall</option>
+                  <option value="room">room</option>
+                  <option value="door">door</option>
+                </select>
               </div>
+              <div class="hint">Hover to preview, click to place, Esc to close.</div>
               <ul class="candidates">
-                {#each candidates as c, n (n)}
+                {#each shownCandidates as c, n (n)}
                   {@const prof = profileOf(c.piece, c.opening.dir)}
                   <li>
                     <button
@@ -706,13 +766,6 @@
                         ></span>
                         {pieces.get(c.piece)!.editorId}
                         <span class="hint">by {c.opening.dir}, {c.rotation * 90}°</span>
-                        {#if c.fit === 'seam'}
-                          <span class="warn"
-                            >seam of {c.gap.toFixed(1)} with {c.seamWith
-                              .map((k) => pieces.get(layout.tiles.get(k)?.piece ?? '')?.editorId)
-                              .join(', ')}</span
-                          >
-                        {/if}
                       </span>
                     </button>
                   </li>
@@ -772,34 +825,34 @@
             {#if message}<div class="warn">{message}</div>{/if}
           </div>
 
-          <div class="palette">
-            <div class="filters">
-              <input placeholder="search pieces" bind:value={filter} />
-              <select bind:value={category}>
-                <option value="all">all</option>
-                <option value="hall">hall</option>
-                <option value="room">room</option>
-                <option value="door">door</option>
-              </select>
-            </div>
-            <ul>
-              {#each palette as p (p.formKey)}
-                <li>
-                  <button
-                    class:active={placing?.piece === p.formKey}
-                    onclick={() => startPlacing(p)}
-                  >
-                    <span class="swatch" style:background={COLORS[p.category] ?? '#999'}></span>
-                    {p.editorId}
-                    <span class="hint"
-                      >{new Set(p.cells.map((c) => c[0])).size}x{new Set(p.cells.map((c) => c[1]))
-                        .size}</span
+          {#if !active}<div class="palette">
+              <div class="filters">
+                <input placeholder="search pieces" bind:value={filter} />
+                <select bind:value={category}>
+                  <option value="all">all</option>
+                  <option value="hall">hall</option>
+                  <option value="room">room</option>
+                  <option value="door">door</option>
+                </select>
+              </div>
+              <ul>
+                {#each palette as p (p.formKey)}
+                  <li>
+                    <button
+                      class:active={placing?.piece === p.formKey}
+                      onclick={() => startPlacing(p)}
                     >
-                  </button>
-                </li>
-              {/each}
-            </ul>
-          </div>
+                      <span class="swatch" style:background={COLORS[p.category] ?? '#999'}></span>
+                      {p.editorId}
+                      <span class="hint"
+                        >{new Set(p.cells.map((c) => c[0])).size}x{new Set(p.cells.map((c) => c[1]))
+                          .size}</span
+                      >
+                    </button>
+                  </li>
+                {/each}
+              </ul>
+            </div>{/if}
 
           <label class="hint"
             ><input type="checkbox" bind:checked={showFaces} /> Show open faces ({opens.length}),
@@ -905,6 +958,17 @@
   }
   .save {
     font-weight: 600;
+  }
+  .list-title {
+    margin: 0.5rem 0 0.3rem;
+    font-size: 15px;
+  }
+  .filters {
+    display: flex;
+  }
+  .filters input {
+    flex: 1;
+    min-width: 0;
   }
   .candidates {
     list-style: none;

@@ -452,6 +452,18 @@ nouveau dossier de mod, « Reload MO2 profile » après l'avoir activé dans MO2
 - **Fini quand** : < 10 minutes, aucune erreur CK, aucune fente. Sinon : liste des
   corrections, et on itère sur 12–15.
 
+**FAIT (24 sept. 2026).** Test fait par l'auteur : « très rapide ; limité, mais rapide, plus
+qu'avec le CK en tout cas. Bon pour une V1. » Frictions relevées et traitées aussitôt :
+- choisir une cellule demandait « Load cell » : la cellule choisie se charge seule, et la
+  dernière ouverte est retenue par plugin (et rouverte à l'ouverture du plugin) ;
+- la liste des pièces compatibles proposait des pièces avec couture : écartées ; la liste a
+  maintenant son titre, sa recherche et son filtre de type, et la palette générale disparaît
+  pendant qu'une face est choisie ; les détails techniques de la face sont repliés ;
+- après « Save to plugin », des tuiles réapparaissaient en double, décalées : deux mises à
+  jour de la scène s'entremêlaient, et un layout était dessiné un instant avec l'ancre de la
+  nouvelle cellule ; corrigé (mise à jour de la scène atomique, layout lié à sa cellule).
+Reste pour l'étape 17 : la présentation (UX).
+
 ### Étape 17 – Ergonomie de fin de V1 : parcours de démarrage et interface simples
 - **Pourquoi** : le but de la V1 (utile et utilisable). À faire à la toute fin de la V1,
   quand les fonctions sont stables.

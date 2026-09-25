@@ -8,6 +8,11 @@ export const PREF_KEYS = {
   opaqueDisplay: 'opaqueDisplay',
 } as const;
 
+/** Last cell opened in a plugin, remembered per plugin. */
+export function lastCellPref(plugin: string): string {
+  return `lastCell.${plugin.toLowerCase()}`;
+}
+
 export function getPref(key: string): string | undefined {
   try {
     return localStorage.getItem(PREFIX + key) ?? undefined;

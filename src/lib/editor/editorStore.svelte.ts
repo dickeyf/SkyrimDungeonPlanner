@@ -5,7 +5,7 @@
  */
 import { applyAnnotations } from '$lib/catalogue/annotations';
 import type { Catalogue } from '$lib/catalogue/types';
-import { PREF_KEYS, ensureAccess, getPref, readAll, setPref } from '$lib/fs';
+import { PREF_KEYS, ensureAccess, getPref, lastCellPref, readAll, setPref } from '$lib/fs';
 import type { LevelEdit } from '$lib/level';
 import {
   EspLevelStore,
@@ -176,6 +176,13 @@ class EditorStore {
       this.catalogue = applyAnnotations(analysis.catalogue, annotationStore.current).catalogue;
   }
 
+  /** The cell to open first in the working plugin: the last one opened, else the first. */
+  get initialCell(): string | undefined {
+    if (!this.store) return undefined;
+    const last = getPref(lastCellPref(this.store.name));
+    return this.cells.find((c) => c.key === last)?.key ?? this.cells[0]?.key;
+  }
+
   async openCell(key: string): Promise<void> {
     await this.run(async () => {
       if (!this.store) throw new Error('no working plugin');
@@ -183,6 +190,7 @@ class EditorStore {
       const started = performance.now();
       this.loaded = await loadCell(this.store, key, catalogue);
       this.selected = null;
+      setPref(lastCellPref(this.store.name), key);
       this.message = `cell loaded in ${(performance.now() - started).toFixed(0)} ms`;
     });
   }

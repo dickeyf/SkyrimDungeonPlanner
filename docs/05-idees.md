@@ -13,3 +13,7 @@
 - **Correction manuelle du polygone marchable** dans l'outil de validation du catalogue.
 - **Mode Spriggit** (décidé, D57, phase 6) : le mod de travail lu et écrit en YAML/JSON Spriggit, les masters en binaire ; pour les mods versionnés dans git sans `.esp`.
 - **Kits custom du mod de travail** (murs libres impériaux custom, variantes fenêtrées) dans le catalogue comme props avec pas de 128.
+- **Voir le Z en V1** : le niveau des tuiles (rampes, escaliers) ne se voit pas dans la vue
+  de dessus ; il faut être prudent. Au minimum, afficher le niveau `k` de la tuile survolée
+  ou teinter les tuiles selon leur niveau, en attendant les tranches Z de la phase 4. Relevé
+  au test de l'étape 16.

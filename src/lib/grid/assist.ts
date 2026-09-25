@@ -346,19 +346,10 @@ export function jointsOfTile(
     .filter((j): j is Joint => j !== null);
 }
 
-export interface CheckedCandidate extends Candidate {
-  /** Worst junction the placement would create with the tiles around it. */
-  fit: JointFit;
-  gap: number;
-  /** Tiles it would join badly, for a seam. */
-  seamWith: string[];
-}
-
 /**
  * Keep the candidates that fit every tile they would touch, not only the clicked face: each
- * is placed in a copy of the layout and all its junctions judged. A placement creating a
- * mismatch (a wrong profile, an opening against a wall) is dropped; one creating a seam is
- * kept and flagged. Best fits first.
+ * is placed in a copy of the layout and all its junctions judged. Only placements whose
+ * junctions are all clean (exact or included) are kept: a seam or a mismatch drops them.
  */
 export function checkCandidates(
   candidates: readonly Candidate[],
@@ -366,28 +357,14 @@ export function checkCandidates(
   pieces: Pieces,
   types: ReadonlyMap<string, ConnectionType>,
   geometry?: JointGeometry,
-): CheckedCandidate[] {
-  const out: CheckedCandidate[] = [];
-  for (const c of candidates) {
+): Candidate[] {
+  return candidates.filter((c) => {
     const placed = addTile(layout, pieces, c.piece, c.cell, c.rotation);
-    if (!placed.ok) continue;
-    const joints = jointsOfTile(placed.layout, pieces, types, placed.key, geometry);
-    let fit: JointFit = 'exact';
-    let gap = 0;
-    const seamWith = new Set<string>();
-    for (const j of joints) {
-      if (betterFit(j.fit, fit) === fit && j.fit !== fit) {
-        fit = j.fit;
-        gap = j.gap;
-      } else if (j.fit === fit && j.gap > gap) gap = j.gap;
-      if (j.fit === 'seam') {
-        for (const k of j.tile === placed.key ? j.against : [j.tile]) seamWith.add(k);
-      }
-    }
-    if (fit !== 'mismatch') out.push({ ...c, fit, gap, seamWith: [...seamWith] });
-  }
-  const rank: Record<JointFit, number> = { exact: 0, included: 0, seam: 1, mismatch: 2 };
-  return out.sort((a, b) => rank[a.fit] - rank[b.fit]);
+    if (!placed.ok) return false;
+    return jointsOfTile(placed.layout, pieces, types, placed.key, geometry).every(
+      (j) => j.fit === 'exact' || j.fit === 'included',
+    );
+  });
 }
 
 /**

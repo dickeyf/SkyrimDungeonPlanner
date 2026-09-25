@@ -96,6 +96,8 @@ export class CellScene {
   private dragging = false;
   private planeZ = 0;
   private ghost: Mesh | null = null;
+  /** Bumped by each syncObjects call; a call that is no longer the latest gives up. */
+  private syncGeneration = 0;
   /** World bounds of the drawn grid, to frame an empty cell. */
   private gridBounds: { minX: number; minY: number; maxX: number; maxY: number } | null = null;
   private readonly highlights = new Group();
@@ -220,6 +222,13 @@ export class CellScene {
    * geometry and colour updated), new keys are added and missing ones removed.
    */
   async syncObjects(list: readonly SceneObject[], cache: MeshCache): Promise<void> {
+    // load every geometry first, then apply the list in one go: a sync overtaken by a newer
+    // one while loading is dropped, so two syncs never interleave (stale meshes left behind)
+    const generation = ++this.syncGeneration;
+    const geometries = await Promise.all(
+      list.map((o) => (o.modelPath ? cache.get(o.modelPath) : Promise.resolve(null))),
+    );
+    if (generation !== this.syncGeneration) return;
     const wanted = new Set(list.map((o) => o.key));
     for (const [key, mesh] of this.byKey) {
       if (!wanted.has(key)) {
@@ -228,24 +237,22 @@ export class CellScene {
         if (this.selected === mesh) this.selected = null;
       }
     }
-    await Promise.all(
-      list.map(async (o) => {
-        const geometry = o.modelPath ? await cache.get(o.modelPath) : null;
-        let mesh = this.byKey.get(o.key);
-        if (!mesh) {
-          mesh = new Mesh(geometry ?? MARKER);
-          mesh.matrixAutoUpdate = false;
-          this.objects.add(mesh);
-          this.byKey.set(o.key, mesh);
-        } else if (mesh.geometry !== (geometry ?? MARKER)) {
-          mesh.geometry = geometry ?? MARKER;
-        }
-        mesh.matrix.copy(placementMatrix(o.pos, o.rot, geometry ? o.scale : 1));
-        mesh.matrixWorldNeedsUpdate = true;
-        mesh.userData = { key: o.key, pickable: o.pickable, color: o.color };
-        this.styleMesh(mesh);
-      }),
-    );
+    list.forEach((o, i) => {
+      const geometry = geometries[i] ?? null;
+      let mesh = this.byKey.get(o.key);
+      if (!mesh) {
+        mesh = new Mesh(geometry ?? MARKER);
+        mesh.matrixAutoUpdate = false;
+        this.objects.add(mesh);
+        this.byKey.set(o.key, mesh);
+      } else if (mesh.geometry !== (geometry ?? MARKER)) {
+        mesh.geometry = geometry ?? MARKER;
+      }
+      mesh.matrix.copy(placementMatrix(o.pos, o.rot, geometry ? o.scale : 1));
+      mesh.matrixWorldNeedsUpdate = true;
+      mesh.userData = { key: o.key, pickable: o.pickable, color: o.color };
+      this.styleMesh(mesh);
+    });
     this.requestRender();
   }
 

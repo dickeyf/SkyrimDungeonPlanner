@@ -324,7 +324,7 @@ describe('checkCandidates', () => {
     const checked = checkCandidates(raw, l, ALL, TYPES);
     // an upright straight would put a wall against the hall on its left: dropped
     expect(checked.some((c) => c.piece === 'Straight')).toBe(false);
-    expect(checked.map((c) => [c.piece, c.rotation, c.fit])).toContainEqual(['Corner', 0, 'exact']);
+    expect(checked.map((c) => [c.piece, c.rotation])).toContainEqual(['Corner', 0]);
     for (const c of checked) {
       const r = addTile(l, ALL, c.piece, c.cell, c.rotation);
       if (!r.ok) throw new Error('candidate refused');

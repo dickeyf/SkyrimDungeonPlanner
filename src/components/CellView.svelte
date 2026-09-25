@@ -76,7 +76,8 @@
         console.debug(`scene updated in ${(performance.now() - started).toFixed(0)} ms`);
       s.select(selected);
       if (fitted !== key) {
-        fitted = key;
+        // an empty list may be a transient state: frame again once objects arrive
+        if (list.length) fitted = key;
         s.fit();
         status = `${list.length} objects, ${cache.size} distinct meshes, ${(
           (performance.now() - started) /
