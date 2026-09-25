@@ -25,6 +25,11 @@ export interface Footprint {
   openingCells: CellIndex[][];
   /** Z level of each opening (round(zMin / zModule)). */
   openingLevels: number[];
+  /**
+   * How far each opening's plane lies inside the piece's cell boundary (units; negative when
+   * it sticks out). Two facing openings leave a gap of the sum of their insets.
+   */
+  openingInsets: number[];
   /** All openings sit on the module grid and on integer Z levels. */
   fits: boolean;
   notes: string[];
@@ -83,6 +88,7 @@ export function computeFootprint(
   const min: [number, number] = [raw[0][0]!, raw[1][0]!];
 
   const openingLevels: number[] = [];
+  const openingInsets: number[] = [];
   const openingCells: CellIndex[][] = [];
   const floorZ = openings.length ? Math.min(...openings.map((o) => o.zMin)) : 0;
   for (const o of openings) {
@@ -92,6 +98,11 @@ export function computeFootprint(
         `${o.dir} opening rise ${(o.zMin - floorZ).toFixed(0)} is an ambiguous level for z-module ${zModule}`,
       );
     openingLevels.push(Math.round(o.zMin / zModule));
+    const cellsOnAxis = raw[o.axis];
+    const boundary =
+      phase[o.axis] +
+      (o.sign > 0 ? cellsOnAxis[cellsOnAxis.length - 1]! + 1 : cellsOnAxis[0]!) * module;
+    openingInsets.push(o.sign > 0 ? boundary - o.plane : o.plane - boundary);
     const along = overlappedCells(
       o.spanMin - phase[o.other],
       o.spanMax - phase[o.other],
@@ -117,6 +128,7 @@ export function computeFootprint(
     pivot: [-(phase[0] + min[0] * module), -(phase[1] + min[1] * module), 0],
     openingCells,
     openingLevels,
+    openingInsets,
     fits: notes.length === 0,
     notes,
   };

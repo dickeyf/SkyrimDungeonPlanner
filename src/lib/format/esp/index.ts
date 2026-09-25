@@ -5,6 +5,7 @@
  * Reference: https://en.uesp.net/wiki/Skyrim_Mod:Mod_File_Format
  */
 export * from './cellRefr';
+export * from './create';
 export * from './formId';
 export * from './plugin';
 export * from './records';

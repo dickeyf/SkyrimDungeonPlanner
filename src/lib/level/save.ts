@@ -69,3 +69,18 @@ export async function savePlugin(options: {
   }
   return { backup: `${BACKUP_FOLDER}/${backup}`, stamp: await stampOf(dir, name) };
 }
+
+/** Write a new plugin; refused when a file of that name already exists in the folder. */
+export async function createPluginFile(
+  dir: FsDir,
+  name: string,
+  bytes: Uint8Array,
+): Promise<FileStamp> {
+  if (!/\.esp$/i.test(name)) throw new Error(`${name}: a new plugin must be an .esp file`);
+  for await (const entry of dir.values()) {
+    if (entry.name.toLowerCase() === name.toLowerCase())
+      throw new Error(`${name} already exists in ${dir.name}`);
+  }
+  await writeFileAtomic(dir, name, bytes);
+  return stampOf(dir, name);
+}

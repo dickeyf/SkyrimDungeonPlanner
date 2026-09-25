@@ -40,6 +40,8 @@ export interface LevelStore {
    * only, known bases) before any is applied. Returns the keys of the added references.
    */
   applyEdits(cell: FormKey, edits: readonly LevelEdit[]): Promise<FormKey[]>;
+  /** Add an empty interior cell; its EditorID must be new in this plugin. */
+  addCell(editorId: string): Promise<FormKey>;
   /** The level in its file format, ready to be written. */
   serialize(): Uint8Array;
 }

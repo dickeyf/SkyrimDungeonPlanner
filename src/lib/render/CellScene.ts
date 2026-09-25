@@ -96,6 +96,8 @@ export class CellScene {
   private dragging = false;
   private planeZ = 0;
   private ghost: Mesh | null = null;
+  /** World bounds of the drawn grid, to frame an empty cell. */
+  private gridBounds: { minX: number; minY: number; maxX: number; maxY: number } | null = null;
   private readonly highlights = new Group();
 
   constructor(
@@ -136,10 +138,17 @@ export class CellScene {
       this.grid.geometry.dispose();
       (this.grid.material as LineBasicMaterial).dispose();
       this.grid = null;
+      this.gridBounds = null;
     }
     if (spec) {
       this.planeZ = spec.origin[2];
       const [i0, i1, j0, j1] = spec.range;
+      this.gridBounds = {
+        minX: spec.origin[0] + i0 * spec.module,
+        maxX: spec.origin[0] + i1 * spec.module,
+        minY: spec.origin[1] + j0 * spec.module,
+        maxY: spec.origin[1] + j1 * spec.module,
+      };
       const geometry = new BufferGeometry();
       geometry.setAttribute(
         'position',
@@ -272,7 +281,10 @@ export class CellScene {
       box.minY = Math.min(box.minY, m[13]!);
       box.maxY = Math.max(box.maxY, m[13]!);
     }
-    if (!Number.isFinite(box.minX)) return;
+    if (!Number.isFinite(box.minX)) {
+      if (!this.gridBounds) return;
+      Object.assign(box, this.gridBounds); // empty cell: frame its grid
+    }
     const cx = (box.minX + box.maxX) / 2;
     const cy = (box.minY + box.maxY) / 2;
     this.camera.position.set(cx, cy, 50000);

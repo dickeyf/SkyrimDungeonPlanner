@@ -9,7 +9,9 @@ import { PREF_KEYS, ensureAccess, getPref, readAll, setPref } from '$lib/fs';
 import type { LevelEdit } from '$lib/level';
 import {
   EspLevelStore,
+  createPluginFile,
   loadCell,
+  mastersFor,
   savePlugin,
   stampOf,
   type FileStamp,
@@ -20,8 +22,12 @@ import {
 import { annotationStore } from '$lib/session/annotationStore.svelte';
 import { catalogueStore } from '$lib/session/catalogueStore.svelte';
 import { session } from '$lib/session/session.svelte';
+import { newPluginBytes } from '$lib/format/esp';
 import { MeshCache } from '$lib/render';
-import { ArchiveIndex, type OverlayFileInfo } from '$lib/vfs';
+import { ArchiveIndex, type Layer, type OverlayFileInfo } from '$lib/vfs';
+
+/** Where a new plugin goes: an enabled mod folder of the Data view, or a new MO2 mod. */
+export type PluginTarget = { kind: 'layer'; layer: Layer } | { kind: 'new-mod'; modName: string };
 
 class EditorStore {
   plugins = $state.raw<OverlayFileInfo[]>([]);
@@ -64,6 +70,83 @@ class EditorStore {
       setPref(PREF_KEYS.workPlugin, info.name);
       this.message = `${info.name} (${info.layer.name}): ${this.cells.length} interior cells`;
     });
+  }
+
+  /**
+   * Masters of a new plugin: Skyrim.esm and every plugin that provides a catalogue piece, in
+   * load order, so any piece can be placed.
+   */
+  private async newPluginMasters(): Promise<string[]> {
+    const catalogue = this.catalogue ?? (await this.finalCatalogue());
+    return mastersFor(
+      catalogue.pieces.map((p) => p.formKey),
+      session.view?.plugins ?? ['Skyrim.esm'],
+    );
+  }
+
+  /**
+   * Create an empty plugin and make it the working plugin. In a new MO2 mod folder, the mod
+   * must first be enabled in MO2 before the Data view (and the game) can see it.
+   */
+  async createPlugin(name: string, target: PluginTarget): Promise<void> {
+    await this.run(async () => {
+      const view = session.view;
+      if (!view) throw new Error('no Data view');
+      const fileName = /\.esp$/i.test(name) ? name : `${name}.esp`;
+      if (!/^[\w .'-]+\.esp$/i.test(fileName))
+        throw new Error(`"${fileName}" is not a valid file name`);
+      if (this.plugins.some((p) => p.name.toLowerCase() === fileName.toLowerCase()))
+        throw new Error(`${fileName} already exists in the Data view`);
+      const bytes = newPluginBytes({ masters: await this.newPluginMasters() });
+      if (target.kind === 'layer') {
+        await createPluginFile(target.layer.dir, fileName, bytes);
+        view.overlay.invalidate();
+        await this.listPlugins();
+        this.busy = false;
+        await this.openPlugin(fileName);
+        this.message = `created ${fileName} in ${target.layer.name}; enable it in your mod manager for the game and the CK`;
+        return;
+      }
+      if (!view.mo2) throw new Error('a new mod folder needs an MO2 instance');
+      if (!/^[\w .'()-]+$/.test(target.modName))
+        throw new Error(`"${target.modName}" is not a valid folder name`);
+      const dir = await view.mo2.layout.modsDir.getDirectoryHandle(target.modName, {
+        create: true,
+      });
+      await createPluginFile(dir, fileName, bytes);
+      setPref(PREF_KEYS.workPlugin, fileName);
+      this.message =
+        `created mods/${target.modName}/${fileName}. In MO2: refresh (F5), enable the mod ` +
+        `"${target.modName}" and the plugin, then click "Reload MO2 profile" here.`;
+    });
+  }
+
+  /**
+   * Add an empty interior cell to the working plugin and write it at once (backup, same
+   * checks as a save), then load it.
+   */
+  async addCell(editorId: string): Promise<void> {
+    let key = '';
+    await this.run(async () => {
+      if (!this.source) throw new Error('no working plugin');
+      const { info, stamp } = this.source;
+      const dir = info.layer.dir as unknown as FileSystemHandle;
+      if ('requestPermission' in dir && !(await ensureAccess(dir, 'readwrite')))
+        throw new Error(`write access to ${info.layer.name} was refused`);
+      const store = EspLevelStore.parse(await readAll(info.handle), info.name);
+      key = await store.addCell(editorId);
+      const result = await savePlugin({
+        dir: info.layer.dir,
+        name: info.name,
+        loaded: stamp,
+        bytes: store.serialize(),
+      });
+      this.source = { info, stamp: result.stamp };
+      this.store = EspLevelStore.parse(await readAll(info.handle), info.name);
+      this.cells = await this.store.listCells();
+      this.message = `added cell ${editorId} to ${info.name}; backup ${result.backup}`;
+    });
+    if (key) await this.openCell(key);
   }
 
   /** Mesh cache for the current Data view; rebuilt when the view (profile) changes. */

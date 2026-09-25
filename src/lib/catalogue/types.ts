@@ -29,6 +29,11 @@ export interface Face {
   conn: string;
   /** Composite profiles (D56): further types this face also mates with. */
   extraConn?: string[];
+  /**
+   * How far the opening's plane lies inside the cell boundary (units, negative when it sticks
+   * out); absent when on the boundary. Two facing openings leave a gap of the sum.
+   */
+  inset?: number;
 }
 
 export interface ReviewState {

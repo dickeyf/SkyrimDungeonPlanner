@@ -19,6 +19,8 @@ export interface AnalysedFace {
   piece: string; // editorId
   opening: Opening;
   level: number;
+  /** See Footprint.openingInsets. */
+  inset: number;
   cells: Face['cell'][];
   profile: Profile;
   group: number;
@@ -86,9 +88,10 @@ export async function analyseKit(
         const u0 =
           -footprint.pivot[o.other] + ((Math.min(...along) + Math.max(...along) + 1) / 2) * module;
         const level = footprint.openingLevels[k]!;
+        const inset = footprint.openingInsets[k]!;
         const profile = extractProfile(g, o, u0, level, zModule);
         piece.faces.push(faces.length);
-        faces.push({ piece: stat.editorId, opening: o, level, cells, profile, group: -1 });
+        faces.push({ piece: stat.editorId, opening: o, level, inset, cells, profile, group: -1 });
       });
       pieces.push(piece);
     } catch (error) {
@@ -104,6 +107,7 @@ export async function analyseKit(
           pivot: [0, 0, 0],
           openingCells: [],
           openingLevels: [],
+          openingInsets: [],
           fits: false,
           notes: [],
         },
@@ -146,6 +150,7 @@ export async function analyseKit(
             cell,
             dir: f.opening.dir as FaceDir,
             conn: `${kit.kit}:G${f.group}`,
+            ...(f.inset ? { inset: Math.round(f.inset * 2) / 2 } : {}),
           }));
         }),
         walkable: null,

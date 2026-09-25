@@ -21,7 +21,14 @@ import { facesMate } from '../catalogue/types';
 import { rotateFootprintCell } from './derive';
 import { addTile, conflictsFor, footprintCells, type Layout, type Pieces } from './edit';
 import type { Profile } from '../mesh/profiles';
-import { betterFit, inFrameOf, profileFit, type JointFit } from './joints';
+import {
+  DEPTH_TOL,
+  betterFit,
+  inFrameOf,
+  profileFit,
+  type JointFit,
+  type ProfileFit,
+} from './joints';
 import { overlapAccepted } from './overlaps';
 import type { GridAnchor, OpaqueRef } from './types';
 import { addCells, cellKey, dirOffset, oppositeDir, rotateDir, type Rotation } from './rotation';
@@ -160,6 +167,10 @@ export interface Joint extends OpenFace {
   fit: JointFit;
   /** Gap in units for a geometric verdict, NaN when judged by connection types. */
   gap: number;
+  /** For a geometric verdict: how far this opening's profile lies from the other's, and back. */
+  detail?: { mineOnTheirs: number; theirsOnMine: number };
+  /** Gap between the two opening planes (units, negative when they overlap). */
+  depth?: number;
 }
 
 /** A junction that is not clean: `seam` or `mismatch`. */
@@ -175,7 +186,7 @@ export interface JointGeometry {
  * Profile verdicts by piece pair and relative placement. The same pairs meet again and again
  * across a level and between edits, so each is computed once per geometry.
  */
-const fitCache = new WeakMap<JointGeometry, Map<string, { fit: JointFit; gap: number }>>();
+const fitCache = new WeakMap<JointGeometry, Map<string, ProfileFit>>();
 
 interface JointContext {
   layout: Layout;
@@ -201,11 +212,7 @@ function jointContext(
 const span2 = (cells: readonly CellIndex[], along: 0 | 1) =>
   Math.min(...cells.map((c) => c[along])) + Math.max(...cells.map((c) => c[along]));
 
-function profileVerdict(
-  ctx: JointContext,
-  o: OpenFace,
-  p: OpenFace,
-): { fit: JointFit; gap: number } | null {
+function profileVerdict(ctx: JointContext, o: OpenFace, p: OpenFace): ProfileFit | null {
   const geometry = ctx.geometry;
   if (!geometry) return null;
   const minePiece = ctx.layout.tiles.get(o.tile)!.piece;
@@ -257,23 +264,45 @@ function judge(ctx: JointContext, o: OpenFace): Joint | null {
   );
   let fit: JointFit = 'mismatch';
   let gap = NaN;
+  let detail: Joint['detail'];
+  let bestDepth = 0;
   for (const p of facing) {
-    let verdict = profileVerdict(ctx, o, p);
-    if (!verdict) {
+    const profiled = profileVerdict(ctx, o, p);
+    let f: JointFit;
+    let g = NaN;
+    // the planes of the two openings may stand apart even when their shapes match
+    const depth = (o.opening.face.inset ?? 0) + (p.opening.face.inset ?? 0);
+    if (profiled) {
+      f = profiled.fit;
+      g = profiled.gap;
+      if ((f === 'exact' || f === 'included') && depth > DEPTH_TOL) {
+        f = 'seam';
+        g = depth;
+      }
+    } else {
       // a narrower opening may sit centred in front of a wider one, the rest against walls
       const mated =
         (centredWithin(p.cells, o.outside, along) || centredWithin(o.outside, p.cells, along)) &&
         facesMate(face, { ...p.opening.face, dir: p.dir }, ctx.types);
-      verdict = { fit: mated ? 'exact' : 'mismatch', gap: NaN };
+      f = mated ? 'exact' : 'mismatch';
     }
     // keep the best opening in front: better verdict, then smaller gap
-    const { fit: f, gap: g } = verdict;
     if (f !== fit ? betterFit(f, fit) === f : g < gap || Number.isNaN(gap)) {
       fit = f;
       gap = g;
+      detail = profiled ? { mineOnTheirs: profiled.aOnB, theirsOnMine: profiled.bOnA } : undefined;
+      bestDepth = depth;
     }
   }
-  return { ...o, against, facing, fit, gap };
+  return {
+    ...o,
+    against,
+    facing,
+    fit,
+    gap,
+    ...(detail ? { detail } : {}),
+    ...(facing.length ? { depth: bestDepth } : {}),
+  };
 }
 
 const isBad = (j: Joint | null): j is Joint => !!j && (j.fit === 'seam' || j.fit === 'mismatch');

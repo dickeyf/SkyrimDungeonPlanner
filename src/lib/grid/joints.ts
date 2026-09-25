@@ -4,7 +4,7 @@
  * Connection types group profiles within the loose MATCH_TOL, which lets through gaps of a
  * few units that show up close. A junction is judged on the two profiles themselves, drawn
  * in the same frame:
- * - exact: they coincide within SEAM_TOL;
+ * - exact: they coincide within SEAM_TOL (half a unit: 1 unit already shows);
  * - included: one lies within the other, the other's extra geometry (a ceiling detail, a door
  *   frame around a narrower hall) closing on nothing visible;
  * - seam: they only coincide within the loose tolerance, leaving a gap of `gap` units;
@@ -14,8 +14,18 @@ import type { CellIndex, FaceDir } from '../catalogue/types';
 import { U_SIGN, type Profile } from '../mesh/profiles';
 import { EXACT, MATCH_TOL, samplePoints } from '../mesh/signatures';
 
-/** Largest gap (units) that does not show as a seam. */
-export const SEAM_TOL = 1.5;
+/**
+ * Largest gap (units) that does not show as a seam. Measured in the working cell: seamless
+ * junctions give 0.0, a junction with a visible seam up close 1.0 (a piece 1 unit off).
+ */
+export const SEAM_TOL = 0.5;
+
+/**
+ * Largest gap (units) between the planes of two facing openings, along the junction's normal,
+ * that does not show: the openings match in shape but stand apart (opening planes a little
+ * inside the cell boundary).
+ */
+export const DEPTH_TOL = 0.5;
 
 export type JointFit = 'exact' | 'included' | 'seam' | 'mismatch';
 
@@ -53,15 +63,28 @@ function spread(sorted: readonly number[]): number {
 }
 
 /** Fit of two profiles already in the same frame. */
-export function profileFit(a: Profile, b: Profile): { fit: JointFit; gap: number } {
-  const ab = spread(distances(a, b)); // a covered by b
-  const ba = spread(distances(b, a));
-  const both = Math.max(ab, ba);
-  const one = Math.min(ab, ba);
-  if (both <= SEAM_TOL) return { fit: 'exact', gap: both };
-  if (one <= SEAM_TOL) return { fit: 'included', gap: one };
-  if (one <= MATCH_TOL) return { fit: 'seam', gap: one };
-  return { fit: 'mismatch', gap: one };
+export interface ProfileFit {
+  fit: JointFit;
+  gap: number;
+  /** Distance within which `a` lies on `b`, and `b` on `a` (units). */
+  aOnB: number;
+  bOnA: number;
+}
+
+export function profileFit(a: Profile, b: Profile): ProfileFit {
+  const aOnB = spread(distances(a, b));
+  const bOnA = spread(distances(b, a));
+  const both = Math.max(aOnB, bOnA);
+  const one = Math.min(aOnB, bOnA);
+  const fit: JointFit =
+    both <= SEAM_TOL
+      ? 'exact'
+      : one <= SEAM_TOL
+        ? 'included'
+        : one <= MATCH_TOL
+          ? 'seam'
+          : 'mismatch';
+  return { fit, gap: fit === 'exact' ? both : one, aOnB, bOnA };
 }
 
 /**

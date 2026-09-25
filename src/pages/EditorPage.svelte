@@ -16,6 +16,7 @@
     badJoints,
     candidatesFor,
     checkCandidates,
+    jointsOfTile,
     cellAt,
     changeCount,
     changes,
@@ -23,6 +24,7 @@
     conflictsFor,
     faceAt,
     inFrameOf,
+    DEPTH_TOL,
     SEAM_TOL,
     faceRect,
     footprintCells,
@@ -179,6 +181,21 @@
       anchor!.origin[1] + (c[1] + 1) * anchor!.module.xy,
     ] as [number, number],
   });
+  // every junction of the selected tile, good ones included, to inspect a verdict
+  const tileJoints = $derived(
+    ed.selected && layout && layout.tiles.has(ed.selected)
+      ? jointsOfTile(layout, pieces, types, ed.selected, geometry)
+      : [],
+  );
+  let inspected = $state<string | null>(null);
+  const inspectedJoint = $derived(tileJoints.find((j) => j.id === inspected));
+  const nameOf = (key: string) => pieces.get(layout?.tiles.get(key)?.piece ?? '')?.editorId;
+  const FIT_LABEL: Record<string, string> = {
+    exact: 'exact',
+    included: 'included',
+    seam: 'seam',
+    mismatch: 'mismatch',
+  };
   const activePiece = $derived(active ? layout?.tiles.get(active.tile)?.piece : undefined);
   const validPieces = $derived(new Map([...pieces].filter(([, p]) => p.review.validated)));
   // the clicked face proposes, every neighbour of the new tile must accept (step 15b)
@@ -447,6 +464,19 @@
     if (pending && changeCount(pending)) e.preventDefault();
   }
 
+  async function newCell(): Promise<void> {
+    if (pending && changeCount(pending)) {
+      window.alert('Save or undo the edits of this cell first.');
+      return;
+    }
+    const editorId = window.prompt(
+      'EditorID of the new interior cell (letters, digits and _), e.g. MyDungeon01:',
+    );
+    if (!editorId?.trim()) return;
+    await ed.addCell(editorId.trim());
+    if (ed.loaded) cellKey = ed.loaded.cell;
+  }
+
   async function reloadPlugin(): Promise<void> {
     if (
       pending &&
@@ -523,6 +553,7 @@
         {/each}
       </select>
       <button disabled={ed.busy || !cellKey} onclick={() => ed.openCell(cellKey)}>Load cell</button>
+      <button disabled={ed.busy} onclick={newCell}>New cell...</button>
       <button
         disabled={ed.busy}
         title="Read the plugin again from disk, e.g. after saving it in the Creation Kit"
@@ -698,6 +729,39 @@
               {:else}
                 <span class="hint">Master tile: read-only.</span>
               {/if}
+              {#if tileJoints.length}
+                <div class="joints">
+                  <b>Junctions</b>
+                  {#each tileJoints as j (j.id)}
+                    <button
+                      class:active={inspected === j.id}
+                      class={j.fit}
+                      onclick={() => (inspected = inspected === j.id ? null : j.id)}
+                    >
+                      {j.tile === selectedTile.key
+                        ? `${j.dir} to ${j.against.map(nameOf).join(', ')}`
+                        : `${nameOf(j.tile)} (${j.dir}) into this`}:
+                      {FIT_LABEL[j.fit]}{Number.isNaN(j.gap) ? '' : ` ${j.gap.toFixed(1)}`}
+                    </button>
+                  {/each}
+                </div>
+                {#if inspectedJoint}
+                  <ProfileView size={140} layers={jointLayers(inspectedJoint)} />
+                  <div class="hint diag">
+                    {#if inspectedJoint.detail}
+                      red on green within {inspectedJoint.detail.mineOnTheirs.toFixed(1)}, green on
+                      red within {inspectedJoint.detail.theirsOnMine.toFixed(1)} units (exact: both under
+                      {SEAM_TOL}; included: one under {SEAM_TOL})
+                    {:else}
+                      judged by connection types (no profile)
+                    {/if}
+                    {#if inspectedJoint.depth !== undefined}
+                      <br />gap between the opening planes: {inspectedJoint.depth.toFixed(1)} units (seam
+                      over {DEPTH_TOL}; negative: they overlap)
+                    {/if}
+                  </div>
+                {/if}
+              {/if}
             {:else}
               <span class="hint"
                 >Click a tile to select it, an orange open face for compatible pieces (red: a
@@ -815,6 +879,25 @@
   .palette li button.active {
     border-color: var(--accent);
     color: var(--accent);
+  }
+  .joints {
+    margin-top: 0.4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .joints button {
+    text-align: left;
+    font-size: 12px;
+  }
+  .joints button.seam {
+    color: #e8d23a;
+  }
+  .joints button.mismatch {
+    color: #e04040;
+  }
+  .joints button.active {
+    border-color: var(--accent);
   }
   .diag {
     user-select: text;

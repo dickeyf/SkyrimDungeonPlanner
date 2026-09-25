@@ -1,6 +1,7 @@
 /**
  * A plugin file: TES4 header + top groups. Edits are limited to what V1 needs (D21, D22):
- * add, move and delete REFRs in existing interior cells. Everything else passes through.
+ * add interior cells, and add, move and delete REFRs in interior cells. Everything else
+ * passes through.
  */
 import { BinaryWriter } from '../../binary/BinaryWriter';
 import {
@@ -24,6 +25,13 @@ import {
   type EspNode,
   type EspRecord,
 } from './records';
+import {
+  TOP_GROUPS_AFTER_CELL,
+  interiorBlockOf,
+  newGroup,
+  newInteriorCellData,
+  newRecord,
+} from './create';
 import { decodeTes4, patchHedr, type PluginHeader } from './tes4';
 
 export interface CellEntry {
@@ -232,6 +240,43 @@ export class Plugin {
     temporary.children.push(record);
     this.syncRecordCount();
     return record;
+  }
+
+  /**
+   * Add an empty interior cell, in the block and sub-block its FormID calls for (creating
+   * the CELL top group, in its place among the top groups, when the plugin has none).
+   */
+  addInteriorCell(editorId: string): CellEntry {
+    let top = this.topGroup('CELL');
+    if (!top) {
+      top = newGroup(typeToLabel('CELL'), GroupType.top);
+      const after = this.nodes.findIndex(
+        (n) =>
+          n.kind === 'group' && n.groupType === GroupType.top && TOP_GROUPS_AFTER_CELL.has(n.label),
+      );
+      this.nodes.splice(after === -1 ? this.nodes.length : after, 0, top);
+    }
+    const formId = this.allocateFormId();
+    const { block, subBlock } = interiorBlockOf(formId);
+    const find = (parent: EspGroup, label: number, groupType: number): EspGroup => {
+      let g = parent.children.find(
+        (n): n is EspGroup => n.kind === 'group' && n.groupType === groupType && n.label === label,
+      );
+      if (!g) {
+        g = newGroup(label, groupType);
+        parent.children.push(g);
+      }
+      return g;
+    };
+    const sub = find(
+      find(top, block, GroupType.interiorCellBlock),
+      subBlock,
+      GroupType.interiorCellSubBlock,
+    );
+    const record = newRecord('CELL', formId, newInteriorCellData(editorId));
+    sub.children.push(record);
+    this.syncRecordCount();
+    return { record, info: { editorId, name: '', flags: 1, interior: true } };
   }
 
   /** Move/rescale an existing REFR (must belong to this plugin's own records, D22). */

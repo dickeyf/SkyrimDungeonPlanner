@@ -55,9 +55,19 @@ export function sceneObjects(
 }
 
 /** Grid covering the occupied cells plus a margin, at the anchor's Z. */
+/** Half-size, in cells, of the grid drawn around the origin of an empty cell. */
+const EMPTY_GRID = 16;
+
 export function sceneGrid(loaded: LoadedCell, margin = 4): GridSpec | null {
   const cells = loaded.grid.tiles.flatMap((t) => t.occupied);
-  if (cells.length === 0) return null;
+  if (cells.length === 0) {
+    // a new cell: a grid around the origin to start building on
+    return {
+      origin: loaded.grid.anchor.origin,
+      module: loaded.grid.anchor.module.xy,
+      range: [-EMPTY_GRID, EMPTY_GRID, -EMPTY_GRID, EMPTY_GRID],
+    };
+  }
   const is = cells.map((c) => c[0]);
   const js = cells.map((c) => c[1]);
   return {

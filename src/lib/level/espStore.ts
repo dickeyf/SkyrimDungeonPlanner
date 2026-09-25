@@ -99,6 +99,20 @@ export class EspLevelStore implements LevelStore {
     return added;
   }
 
+  async addCell(editorId: string): Promise<FormKey> {
+    if (!/^[A-Za-z0-9_]+$/.test(editorId))
+      throw new Error(`"${editorId}" is not a valid EditorID (letters, digits and _ only)`);
+    const cells = await this.cellMap();
+    for (const entry of cells.values()) {
+      if (entry.info.editorId.toLowerCase() === editorId.toLowerCase())
+        throw new Error(`${this.name} already has a cell named ${editorId}`);
+    }
+    const entry = this.plugin.addInteriorCell(editorId);
+    const key = this.formKey(entry.record.formId);
+    cells.set(key, entry);
+    return key;
+  }
+
   serialize(): Uint8Array {
     return this.plugin.write();
   }

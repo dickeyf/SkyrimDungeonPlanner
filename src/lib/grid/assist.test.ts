@@ -332,3 +332,36 @@ describe('checkCandidates', () => {
     }
   });
 });
+
+describe('junction depth', () => {
+  const HALL = [
+    [-128, 0, 128, 0],
+    [-128, 0, -128, 256],
+    [128, 0, 128, 256],
+  ];
+  const geometry = { module: { xy: 128, z: 128 }, profileOf: () => HALL };
+
+  it('turns a matching junction whose planes stand apart into a seam', () => {
+    // the corner's -X opening sits 1 unit inside its cell: a 1-unit gap to the straight
+    const inset = {
+      ...CORNER,
+      faces: CORNER.faces.map((f) => (f.dir === '-X' ? { ...f, inset: 1 } : f)),
+    };
+    const all = new Map([...PIECES, [inset.formKey, inset]]);
+    const l = place(place(EMPTY, 'Straight', [0, 0, 0], 0, all), 'Corner', [2, 0, 0], 0, all);
+    const joints = badJoints(l, all, TYPES, geometry);
+    expect(joints.map((j) => [j.tile, j.fit, j.gap, j.depth])).toEqual([
+      ['new:1', 'seam', 1, 1],
+      ['new:2', 'seam', 1, 1],
+    ]);
+    // flush planes: nothing to report
+    expect(
+      badJoints(
+        place(place(EMPTY, 'Straight', [0, 0, 0], 0), 'Corner', [2, 0, 0], 0),
+        PIECES,
+        TYPES,
+        geometry,
+      ),
+    ).toEqual([]);
+  });
+});

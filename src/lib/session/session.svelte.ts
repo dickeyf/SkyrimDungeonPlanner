@@ -87,6 +87,11 @@ class Session {
     await this.open(name);
   }
 
+  /** Read the MO2 profile again (mods or plugins enabled in MO2 meanwhile). */
+  async reload(): Promise<void> {
+    await this.open(this.view?.mo2?.layout.profile.name);
+  }
+
   private async open(profile?: string): Promise<void> {
     try {
       this.view = await openDataView(profile);

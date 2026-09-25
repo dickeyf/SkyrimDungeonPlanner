@@ -22,6 +22,8 @@ describe('profileFit', () => {
     expect(seam.fit).toBe('seam');
     expect(seam.gap).toBeCloseTo(5, 0);
     expect(profileFit(HALL, shifted(HALL, 40)).fit).toBe('mismatch');
+    // a piece 1 unit off already shows up close
+    expect(profileFit(HALL, shifted(HALL, 1)).fit).toBe('seam');
   });
 });
 

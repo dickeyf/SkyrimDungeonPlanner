@@ -14,6 +14,29 @@
 
   let busy = $state(false);
 
+  // new plugin: file name and destination folder
+  let newName = $state('MyDungeon.esp');
+  let folder = $state('');
+  let newMod = $state('My Dungeon');
+  const layers = $derived(session.view?.overlay.layers ?? []);
+  $effect(() => {
+    // default: the folder of the working plugin, else the first mod folder
+    if (folder || !layers.length) return;
+    const current = ed.plugins.find((p) => p.name === ed.store?.name)?.layer.name;
+    folder = current ?? layers[0]!.name;
+  });
+
+  function createPlugin(): void {
+    const layer = layers.find((l) => l.name === folder);
+    void ed.createPlugin(
+      newName,
+      folder === NEW_MOD || !layer
+        ? { kind: 'new-mod', modName: newMod }
+        : { kind: 'layer', layer },
+    );
+  }
+  const NEW_MOD = '\u0000new-mod';
+
   async function run(action: () => Promise<void>): Promise<void> {
     busy = true;
     try {
@@ -96,6 +119,39 @@
     </div>
   {/if}
 
+  {#if session.view}
+    <div class="row new">
+      <div>
+        <b>New plugin</b>
+        <div class="hint">Empty, with the masters the Imperial kit needs.</div>
+      </div>
+      <div class="form">
+        <label>File <input bind:value={newName} /></label>
+        <label
+          >Folder
+          <select bind:value={folder}>
+            {#each layers as l (l.name)}
+              <option value={l.name}>{l.name}</option>
+            {/each}
+            {#if session.view.mo2}<option value={NEW_MOD}>New MO2 mod folder...</option>{/if}
+          </select>
+        </label>
+        {#if folder === NEW_MOD}
+          <label>Mod name <input bind:value={newMod} /></label>
+        {/if}
+        <button disabled={busy || ed.busy || !newName.trim()} onclick={createPlugin}>Create</button>
+      </div>
+    </div>
+    {#if session.view.mo2}
+      <div class="row">
+        <div class="hint">After enabling a mod or plugin in MO2:</div>
+        <button disabled={busy} onclick={() => run(() => session.reload())}
+          >Reload MO2 profile</button
+        >
+      </div>
+    {/if}
+  {/if}
+
   {#if session.status === 'needs-permission'}
     <p class="warn">
       {session.message}
@@ -124,5 +180,11 @@
   }
   .hint {
     color: var(--fg-muted);
+  }
+  .form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    align-items: center;
   }
 </style>
