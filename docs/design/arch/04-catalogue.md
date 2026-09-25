@@ -23,6 +23,20 @@ between its openings, so a ramp occupies both levels it joins.
 
 ## Pipeline
 
+```mermaid
+flowchart LR
+  esm["Skyrim.esm<br/>STAT records"] --> stats["Kit pieces<br/>(model, category)"]
+  stats --> nif["NIF meshes<br/>(Data view, BSA)"]
+  nif --> weld["Weld, open edges"]
+  weld --> open["Openings"]
+  open --> fp["Footprint:<br/>cells, pivot, levels, insets"]
+  open --> prof["Face profiles"]
+  prof --> group["Grouping into<br/>connection types"]
+  group --> ann["+ annotations<br/>(merges, composites, pieces, overlaps)"]
+  fp --> cat["Catalogue"]
+  ann --> cat
+```
+
 1. **Kit STATs** (`extract.ts`, `build.ts`): the STAT records of `Skyrim.esm` whose model lies
    in the kit's folders, classified by model sub-folder and EditorID (525 Imperial STATs, 111
    structural pieces). Cached in IndexedDB, keyed on the master's size and date.

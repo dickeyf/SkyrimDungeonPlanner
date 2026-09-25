@@ -48,6 +48,22 @@ byte that only means something relative to that file's master list; converting a
 
 ## Data flow
 
+```mermaid
+sequenceDiagram
+  participant S as Session
+  participant C as Catalogue
+  participant L as Level store
+  participant E as Editor page
+  S->>S: restore folder handles, build the Data view
+  S->>C: read kit STATs from Skyrim.esm
+  C->>C: analyse meshes, group profiles, apply annotations
+  E->>L: open the working plugin, read a cell
+  L-->>E: references
+  E->>E: derive the grid, edit the layout (undo, redo)
+  E->>L: Save: edits applied to a fresh parse
+  L->>L: backup, atomic write, read back
+```
+
 1. **Session** (`session/session.svelte.ts`): restores the game folder and MO2 instance handles
    from IndexedDB, then builds the **Data view** (`vfs`): the overlay of MO2 mod folders on the
    game's `Data`, the plugin load order and the archive load order.

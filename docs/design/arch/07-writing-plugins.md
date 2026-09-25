@@ -22,6 +22,22 @@ they applied, so a refused edit leaves the plugin untouched.
 
 ## Safe saving (`level/save.ts`, V5, D47)
 
+```mermaid
+sequenceDiagram
+  participant E as Editor
+  participant D as Disk
+  E->>D: read the plugin again
+  alt size or date changed since loaded
+    D-->>E: refused, edits kept in the page
+  else unchanged
+    E->>E: apply the edits to the fresh parse (all or nothing)
+    E->>D: copy the current file to DungeonMakerBackups/
+    E->>D: write the new plugin atomically
+    E->>D: read it back and compare
+    E->>E: reload the cell, restart the history
+  end
+```
+
 1. **Stamp**: the file's size and modification time are recorded when it is loaded.
 2. The file is **read again**; if its stamp changed (the Creation Kit saved it meanwhile), the
    save is refused and the edits stay in the page: nothing written elsewhere is overwritten.

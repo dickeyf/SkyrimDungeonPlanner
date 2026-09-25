@@ -22,21 +22,38 @@ here are in [../planning/](../planning/README.md).
 
 ## In one picture
 
-```
- game folder + MO2 instance (read in place, File System Access API)
-        │
-        ▼
- vfs: virtual Data view ── archives (BSA) ── format/esp, format/bsa, format/nif
-        │                                         │
-        ▼                                         ▼
- catalogue: kit STATs ──► mesh analysis ──► connection types ──► + annotations
-        │                                                          │
-        ▼                                                          ▼
- level: working plugin ──► cell refs ──► grid: layout ◄── assistant, junction checks
-        ▲                                   │
-        └──── edits, safe save ◄────────────┤
-                                            ▼
-                                 render: three.js scene ◄── Svelte pages
+```mermaid
+flowchart LR
+  subgraph disk["User's disk (read in place)"]
+    game["Game Data folder"]
+    mo2["MO2 mods and profile"]
+    plugin["Working plugin (.esp)"]
+  end
+
+  subgraph browser["Browser (no server)"]
+    vfs["Virtual Data view<br/>overlay + load orders"]
+    formats["Parsers<br/>ESP, BSA, NIF"]
+    catalogue["Catalogue<br/>mesh analysis + annotations"]
+    level["Level store<br/>cells and references"]
+    grid["Grid layout<br/>editing, undo"]
+    assist["Assistant and<br/>junction checks"]
+    scene["three.js scene"]
+    ui["Svelte pages"]
+  end
+
+  game --> vfs
+  mo2 --> vfs
+  vfs --> formats
+  formats --> catalogue
+  plugin --> level
+  catalogue --> grid
+  level --> grid
+  grid <--> assist
+  catalogue --> assist
+  grid --> scene
+  ui <--> grid
+  scene <--> ui
+  grid -- "Save: edits + backup" --> plugin
 ```
 
 Everything runs in the browser (Chrome or Edge): there is no server, nothing is uploaded, and

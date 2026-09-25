@@ -14,6 +14,23 @@ outside cells are all free.
 
 For an open face, every opening of every validated piece is tried:
 
+```mermaid
+flowchart TD
+  start["Open face clicked"] --> each["Each opening of each validated piece"]
+  each --> rot{"A rotation turns it<br/>to face the open face?"}
+  rot -- no --> drop["Dropped"]
+  rot -- yes --> type{"Connection types mate?<br/>(composites included)"}
+  type -- no --> drop
+  type -- yes --> align{"Centred on the open face?"}
+  align -- no --> drop
+  align -- yes --> room{"Free of other tiles?"}
+  room -- no --> drop
+  room -- yes --> sim["Place it in a copy of the layout"]
+  sim --> joints{"Every junction exact or included?"}
+  joints -- no --> drop
+  joints -- yes --> keep["Listed as compatible"]
+```
+
 1. **Rotation**: the one that turns the opening to face the open face (a direction fixes it).
 2. **Type**: the two faces must mate (`facesMate`: one's type, or a composite `extraConn`,
    has the other as `mate`).
@@ -38,6 +55,25 @@ strictly, on the two profiles themselves:
    **spread** is the distance within which 97 % of the samples lie (robust to a few stray
    points).
 3. **Verdict**:
+
+```mermaid
+flowchart TD
+  j["Junction: opening against the tiles in front"] --> f{"An opening faces back?"}
+  f -- no --> wall["mismatch: against a wall"]
+  f -- yes --> p["Both profiles in one frame<br/>(mirrored, shifted)"]
+  p --> both{"Both spreads within 0.5?"}
+  both -- yes --> exact["exact"]
+  both -- no --> one{"One spread within 0.5?"}
+  one -- yes --> inc["included"]
+  one -- no --> loose{"One within 8?"}
+  loose -- yes --> seam["seam"]
+  loose -- no --> mis["mismatch"]
+  exact --> d{"Planes more than<br/>0.5 apart?"}
+  inc --> d
+  d -- yes --> seam
+  d -- no --> ok["clean"]
+```
+
    - **exact**: both spreads within `SEAM_TOL` (0.5 unit);
    - **included**: one profile lies within the other (one spread within `SEAM_TOL`): the extra
      geometry on one side (a ceiling detail, a wide door frame around a narrower hall) closes on
