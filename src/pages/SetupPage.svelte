@@ -15,9 +15,13 @@
   let busy = $state(false);
 
   // new plugin: file name and destination folder
-  let newName = $state('MyDungeon.esp');
+  const NEW_MOD = '\u0000new-mod';
   let folder = $state('');
   let newMod = $state('My Dungeon');
+  // the file is named after its folder until the name is typed by hand
+  let typedName = $state<string | null>(null);
+  const folderName = $derived(folder === NEW_MOD ? newMod : folder);
+  const newName = $derived(typedName ?? `${folderName.replace(/[^\w .'-]/g, '').trim()}.esp`);
   const layers = $derived(session.view?.overlay.layers ?? []);
   $effect(() => {
     // default: the folder of the working plugin, else the first mod folder
@@ -35,7 +39,6 @@
         : { kind: 'layer', layer },
     );
   }
-  const NEW_MOD = '\u0000new-mod';
 
   async function run(action: () => Promise<void>): Promise<void> {
     busy = true;
@@ -126,7 +129,12 @@
         <div class="hint">Empty, with the masters the Imperial kit needs.</div>
       </div>
       <div class="form">
-        <label>File <input bind:value={newName} /></label>
+        <label
+          >File <input
+            value={newName}
+            oninput={(e) => (typedName = (e.currentTarget as HTMLInputElement).value)}
+          /></label
+        >
         <label
           >Folder
           <select bind:value={folder}>

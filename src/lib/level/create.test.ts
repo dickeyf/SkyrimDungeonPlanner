@@ -89,11 +89,15 @@ describe('createPluginFile', () => {
 });
 
 describe('mastersFor', () => {
-  it('keeps Skyrim.esm and the owners of the pieces, in load order', () => {
-    const order = ['Skyrim.esm', 'Update.esm', 'Dawnguard.esm', 'Other.esp'];
-    expect(mastersFor(['0x1:Dawnguard.esm', '0x2:skyrim.esm'], order)).toEqual([
+  it('keeps Skyrim.esm and the owners of the pieces, official masters first', () => {
+    // MO2's plugins.txt leaves the official masters out
+    const order = ['Other.esp', 'Mod.esm'];
+    expect(mastersFor(['0x1:Dawnguard.esm', '0x2:Mod.esm'], order)).toEqual([
       'Skyrim.esm',
       'Dawnguard.esm',
+      'Mod.esm',
     ]);
+    expect(mastersFor(['0x2:skyrim.esm'], [])).toEqual(['Skyrim.esm']);
+    expect(() => mastersFor(['0x3:Gone.esp'], order)).toThrow('not in the load order');
   });
 });

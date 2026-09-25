@@ -443,7 +443,7 @@ scène à chaque modification, au lieu de 1 à 2 s.
 
 ### Étape 16 – Jalon V1 : test du critère de réussite
 
-**Préalable ajouté (24 sept. 2026), CODE FAIT, à vérifier dans l'app, le CK et xEdit** :
+**Préalable ajouté (24 sept. 2026), FAIT, vérifié dans le CK et en jeu** :
 créer un plugin et des cellules (D62). Setup : « New plugin » (nom, dossier de mod MO2 ou
 nouveau dossier de mod, « Reload MO2 profile » après l'avoir activé dans MO2). Editor :
 « New cell... » (EditorID), cellule vide avec une grille autour de l'origine.
