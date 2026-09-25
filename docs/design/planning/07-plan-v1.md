@@ -14,12 +14,14 @@ brings real value. The criterion above is its quantified measure.
 
 ## Assumptions made for this plan
 
-The recommendations of `01-decisions.md` ("Still to decide for V1") are taken as is: V1 editing
+The recommendations of `01-decisions.md` (then "Still to decide for V1") were taken as is: V1 editing
 of existing cells only, V2 STAT door frames only, V3 real untextured meshes, V4 90° rotation +
 undo/redo, V5 explicit save, V6 ESL refused, V7 Python prototyping then TS port, V8 validation
 in the same SPA, V9 annotations by EditorID, V10 anchoring by best fit, V12 static pages.
 The "Proposed" rows D15, D21–D23, D43–D47 are also assumed settled. Each step states when one
 of these assumptions becomes binding; that is the moment to challenge it if needed.
+How each one ended up is in `01-decisions.md`, "Settled for V1 (release 0.1.0)": all held
+except V1, revised by D62 (the tool also creates plugins and cells).
 
 Code convention: code, comments, tests, UI and these docs in English (the docs were written in French and translated when the project was published, 24 Sep 2026).
 

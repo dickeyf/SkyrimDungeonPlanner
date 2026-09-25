@@ -47,8 +47,8 @@ Measured example (`imphall1way01`, module 128): `pivot: [128, 128, -8]`, `cells`
 | `class` | `tile` or `prop` | V1 (tile only) |
 | `category` | hall / room / door (UI filtering) | V1 |
 | `pivot` | position of the NIF origin relative to the min corner of the piece's cell (0,0,0), rotation 0 | V1 |
-| `cells` | occupied grid cells, 3D indices, rotation 0. In V1 all z = 0 | V1 |
-| `faces` | **open** faces only; a missing face is closed. `dir` ∈ ±X, ±Y, ±Z. `conn`: a type, or a list for composite profiles (D56, `implhalldoor*`) | V1 (±X, ±Y) |
+| `cells` | occupied grid cells, 3D indices, rotation 0. `z` is the level relative to the NIF origin's slice; a piece spans every level between its openings, so a ramp occupies both levels it joins (D59) | V1 |
+| `faces` | **open** faces only, one per cell (a two-cell opening is two faces); a missing face is closed. `dir` ∈ ±X, ±Y, ±Z. `cell.z` = the opening's level (D59). `conn`: the type; `extraConn`: further types a composite profile also accepts (D56, `implhalldoor*`); `inset`: how far the opening's plane lies inside the cell boundary (two facing openings stand `insetA + insetB` apart) | V1 (±X, ±Y) |
 | `walkable` | walkable polygon(s), vertices with Z, in local coordinates | NavMesh |
 | `obstacle` | floor footprint(s) to cut holes in the NavMesh (props, then furniture) | Obstacles |
 | `review` | proposed by analysis vs validated by hand | V1 |
@@ -79,6 +79,16 @@ Same record as the piece with `class: "prop"`, without `cells` or `faces`, with 
 ```
 (e.g. pillars at cell corners; L/M/R free walls at a 128 step.)
 
+### 1.5 Accepted overlaps (D61)
+Two pieces allowed to share cells in one exact relative placement (a door frame nested into its
+neighbour to hide the joint), recorded in the annotations by EditorID and carried into the
+catalogue by FormKey:
+```json
+{ "pieces": ["ImpLHall2Way01", "ImpLRoomDoorL03"], "rotation": 3, "offset": [2, 4, 0] }
+```
+`rotation` and `offset` are the second piece's rotation and corner in the first piece's frame,
+so one entry covers the pair wherever and however it is turned in a level.
+
 ## 2. Level (view derived from the .esp)
 
 What the tool reads for each ref of the cell:
@@ -95,11 +105,11 @@ Deriving a tile placement:
 
 On write: the inverse (cell + rotation + pivot → world pos/rot). Existing refs keep their FormID; only new tiles create refs.
 
-Occupancy: the set of occupied cells (all tiles) is used to detect overlaps and to find free open faces.
+Occupancy: the set of occupied cells (all tiles) is used to detect overlaps and to find free open faces. Overlaps already in a loaded cell are tolerated and flagged (D58); new ones are refused, except accepted overlaps (D61).
 
 ## 3. Baked outputs (later)
 - NavMesh: NAVM records in the cell. "Covered tile" = a geometric test on the existing triangles, so no data to store.
 - Tool-specific state, if any is needed (lock, list of created NAVMs): minimal side file next to the plugin. Open question.
 
-## 4. Minimum for V1
-Catalogue: `editorId`, `formKey`, `category`, `pivot`, `cells` (z = 0), `faces` (±X/±Y) + connection types (`id`, `mate`). Everything else can stay `null`.
+## 4. What V1 uses
+Catalogue: `editorId`, `formKey`, `model`, `category`, `pivot`, `cells` (with levels), `faces` (±X/±Y, with `extraConn` and `inset`), `review`, connection types (`id`, `mate`), accepted overlaps. `walkable` and `obstacle` stay `null` until the NavMesh (phase 3) and props (phase 5).

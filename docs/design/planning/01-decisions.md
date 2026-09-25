@@ -11,7 +11,7 @@ Statuses: **Decided** (settled), **Proposed** (suggested, to be confirmed), **Op
 | D4 | Cross-section view to see the structure of the floors: later, but must remain possible | Decided |
 | D5 | Free overlapping volumes eventually (not only connected floors) | Decided |
 | D6 | Free pieces (pillars, free-standing walls) to be supported, in addition to structural tiles; not in V1 | Decided |
-| D7 | Caves out of initial scope (they do not snap cleanly) | Proposed |
+| D7 | Caves out of initial scope (they do not snap cleanly). **Revised on 25 Sep 2026**: out of V1 (0.1.0), but part of 1.0.0, which supports every interior kit of the base `.esm` files (D63); caves will rely on the deep junction check (R16) to show where a leak must be plugged | Decided (25 Sep 2026) |
 
 ## Data
 | # | Decision | Status |
@@ -52,7 +52,7 @@ Statuses: **Decided** (settled), **Proposed** (suggested, to be confirmed), **Op
 | D41 | Browser SPA, **no backend**, no installation | Decided (subject to R14) |
 | D42 | Configuration: game root folder + plugin to work on; the tool remembers them from one session to the next. **Completed (D49 revised)**: + MO2 instance and profile, optional; without MO2 (Vortex or vanilla), the Data view = the `Data` folder alone. The profile is chosen in the tool and remembered (localStorage): a global MO2 instance does not have its `ModOrganizer.ini` in the instance folder, so MO2's active profile is not readable | Decided |
 | D43 | Disk access through the File System Access API (Chromium: Chrome/Edge). Folder handles are kept in IndexedDB, not in localStorage; localStorage for simple preferences | Decided (validated by R14a on 21 Sep 2026) |
-| D44 | WebGL 3D rendering in the canvas; the top-down 2D view = orthographic camera on the 3D scene; Z slices = clipping planes; cross-section view = orthographic side camera | Proposed |
+| D44 | WebGL 3D rendering in the canvas; the top-down 2D view = orthographic camera on the 3D scene; Z slices = clipping planes; cross-section view = orthographic side camera | Decided (implemented at step 12, 23 Sep 2026: orthographic top-down camera on the 3D scene) |
 | D45 | Targeted in-house parsers rather than full libraries: ESP (opaque records, only STAT/CELL/REFR/NAVM decoded), BSA v105 + LZ4, NIF SSE (nodes, BSTriShape, collision) | Decided (BSA + LZ4 + NIF validated by R14b, ESP validated by R14c) |
 | D46 | The catalogue is built **in the user's browser** from their installation; only our annotations (type names, validations) are distributed | Decided (validated by step 9 on 22 Sep 2026: 111 pieces analyzed in 9 s, identical to the Python measurements) |
 | D47 | Backup copy of the plugin before any write: timestamped copy in `DungeonMakerBackups/` next to the plugin (`.bak` extension, ignored by the game and the CK); the write is refused if the file changed on disk since it was loaded | Decided (24 Sep 2026) |
@@ -77,33 +77,34 @@ Statuses: **Decided** (settled), **Proposed** (suggested, to be confirmed), **Op
 | D62 | V1 **also creates plugins and cells** (extends the assumption "editing existing cells only"): new empty plugin (HEDR 1.71, first id 0x800, masters = Skyrim.esm + the plugins that provide catalogue pieces) in an enabled MO2 mod folder or a new mod folder (to be enabled in MO2); new minimal interior cell (EditorID, interior flag, default lighting) filed in its block / sub-block, written immediately with a backup copy. The actual lighting is set in the CK | Decided (24 Sep 2026) |
 | D63 | **Versions**: the planning's "V1" is release **0.1.0**, a minimal but functional and useful beta ("V1" was a working name). The project stays in beta (0.x) until **1.0.0**, the first version supporting every interior kit of Skyrim's base `.esm` files, with the deep junction check (R16), texture continuity (14b), Z levels, etc. The version is set in `package.json` only (the app reads it); a release is the tag `v<version>` | Decided (25 Sep 2026) |
 
-## Still to decide for V1
-None of these rows is settled; the right-hand column is Claude's recommendation.
+## Settled for V1 (release 0.1.0)
+The questions opened for V1 and how each was settled (24 Sep 2026, V1 released as 0.1.0, D63).
 
-| # | Question | Recommendation |
+| # | Question | Outcome |
 |---|---|---|
-| V1 | Cell creation | Edit only existing cells (created/duplicated in the CK) |
-| V2 | Doors | Doorway tiles (STAT) only; the DOOR object and teleportation stay in the CK. **Confirmed by R5**: the doorways are the `*door*` tiles of the hall/room sub-kits; the `door/` folder only contains DOOR objects |
-| V3 | Rendering | Real untextured meshes, shaded, seen from above (we already parse the NIFs) |
-| V4 | Editing | 90° rotation, undo/redo at minimum; multiple selection and group move if time allows |
-| V5 | Saving | Explicit button, no autosave; warn "close or reload the CK" |
-| V6 | ESL plugins | Refused in V1 with a clear message (restricted FormID range). Implemented in `Plugin.parse` |
-| V7 | Mesh analysis prototyping | R3/R5 in Python, then TypeScript port once the algorithm is proven. **Clarification (21 Sep 2026)**: pynifly cannot be installed outside Blender; in-house BSA and NIF readers in Python (`tools/bsa.py`, `tools/nif.py`), which serve as the reference for the port |
-| V8 | Catalogue validation tool | A page of the same SPA. **Done** (Validation page, step 10) |
-| V9 | Key of the distributed annotations | EditorID (readable) rather than signature. **Done**: pieces by EditorID, types designated by an `EditorID:dir` face; types are never named by hand (internal, never shown to the designer) |
-| V10 | Grid anchoring in an existing cell | Best fit on the recognized tiles; world origin for an empty cell. **Implemented and validated by R10** (`deriveGrid`) |
-| V11 | Tech stack | **Decided**: TypeScript + Vite + Svelte 5 (runes) + three.js. No SvelteKit; editor scene in imperative three.js outside the framework; Threlte at most for thumbnails |
-| V12 | Hosting | Static pages (e.g. GitHub Pages) |
-| V13 | License, repository, project name | To be decided |
-| V14 | V1 success criterion | "Imperial dungeon of 30 tiles on one Z in under 10 minutes, opened in the CK with no error and no visible gap" |
+| V1 | Cell creation | **Revised by D62**: the tool also creates plugins and interior cells (planned at first: edit only cells created in the CK) |
+| V2 | Doors | As recommended: doorway tiles (STAT) only; the DOOR object and teleportation stay in the CK. **Confirmed by R5**: the doorways are the `*door*` tiles of the hall/room sub-kits; the `door/` folder only contains DOOR objects |
+| V3 | Rendering | As recommended: real untextured meshes, shaded, seen from above (step 12) |
+| V4 | Editing | 90° rotation, undo/redo, drag to move, with snapping onto open faces (steps 13, 17). Multiple selection and group move: not done, later |
+| V5 | Saving | Explicit Save button (Ctrl+S), no autosave; CK warning on the first save; timestamped backup; refused if the file changed on disk (D47, step 15) |
+| V6 | ESL plugins | Refused with a clear message (restricted FormID range). Implemented in `Plugin.parse` |
+| V7 | Mesh analysis prototyping | R3/R5 in Python, then TypeScript port once the algorithm was proven. pynifly cannot be installed outside Blender; in-house BSA and NIF readers in Python (`tools/bsa.py`, `tools/nif.py`) served as the reference for the port (step 9) |
+| V8 | Catalogue validation tool | A page of the same SPA (Settings, Validation; step 10) |
+| V9 | Key of the distributed annotations | EditorID: pieces by EditorID, types designated by an `EditorID:dir` face; types are never named by hand (internal, never shown to the designer) |
+| V10 | Grid anchoring in an existing cell | Best fit on the recognized tiles; world origin for an empty cell. Implemented and validated by R10 (`deriveGrid`) |
+| V11 | Tech stack | TypeScript + Vite + Svelte 5 (runes) + three.js. No SvelteKit; editor scene in imperative three.js outside the framework |
+| V12 | Hosting | Three ways, no server needed: a single self-contained HTML file attached to each GitHub release, a minimal nginx Docker image (GHCR), or the dev server. GitHub Pages remains possible |
+| V13 | License, repository, project name | GNU GPL v3; `github.com/dickeyf/SkyrimDungeonPlanner`; Skyrim Dungeon Planner |
+| V14 | V1 success criterion | "Imperial dungeon of 30 tiles on one Z in under 10 minutes, opened in the CK with no error and no visible gap": **met** at step 16 ("very fast; limited, but fast, faster than with the CK") |
 
-Also to be confirmed, already listed as "Proposed" above: D7, D15, D21–D23, D43–D47.
+Still "Proposed" above, for later phases: D15 (props, phase 5) and D35–D37 (NavMesh, phase 3).
 
 Postponed to phase 3 (NavMesh): where to store the tool's own state (lock, list of created NAVMs).
 
 ## Open questions
-- **MO2**: the browser sees the real disk, not the VFS. Configuration = the game's Data folder
-  (vanilla BSAs) + plugin file in its mod folder + additional mesh folders if needed. To be
-  validated.
+- **MO2**: settled by D50 (the tool rebuilds the MO2 overlay from `modlist.txt`, validated by
+  R15).
+- **Non-Chromium browsers**: settled by D48 (Chromium only; a degraded import/export mode maybe
+  later).
 - **Custom pieces**: should extraction run on the custom NIFs of the working mod (custom Imperial
-  free-standing walls)? Probably yes as soon as props arrive.
+  free-standing walls)? Probably yes as soon as props arrive (phase 5).

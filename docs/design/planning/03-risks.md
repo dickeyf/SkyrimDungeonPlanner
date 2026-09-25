@@ -91,8 +91,8 @@ Hypothesis: two compatible pieces have the same vertices on their junction plane
     with the polylines, reusable by the tests of the TypeScript port.
 
 ### R6 – Editing the plugin in place
-Read/write without losing FormIDs, unknown records, or what the CK produced. Test merged into **R14c** (on a copy of the working plugin).
-- **Note**: the plugin cannot be written while the CK has it open; MO2/VFS – plan for "close or reload the CK".
+Read/write without losing FormIDs, unknown records, or what the CK produced. Test merged into **R14c** (on a copy of the working plugin). **Settled**: R14c passed (identical round trip), and V1 writes the working plugin in place, verified in the CK and in game (step 15).
+- **Note**: the plugin cannot be written while the CK has it open; MO2/VFS – plan for "close or reload the CK". Implemented: the save is refused if the file changed on disk since it was loaded, and warns about the CK (D47).
 
 ### R10 – Deriving the grid of an existing cell
 Refs slightly offset, rotated off 90°, scaled; grid origin specific to each cell.
@@ -197,7 +197,7 @@ The 2D union does not tolerate two stacked floors: handle per layer, connect at 
 Footprints of props/clutter/furniture; movable objects (Havok) to ignore; volume of data to produce.
 
 ### R13 – Distribution
-Settled by D46: each user builds the catalogue from their own install, in their browser; we distribute only our annotations. Still to decide: are the annotations indexed by EditorID or by signature?
+Settled by D46: each user builds the catalogue from their own install, in their browser; we distribute only our annotations. The annotations are indexed by EditorID (V9). The app itself is distributed as a single HTML file per release and a Docker image (V12).
 
 ### R16 – Deep junction check (visible leaks)
 Idea of 24 Sep 2026. The profiles (D60) only see the open edges in the junction
@@ -227,4 +227,4 @@ room pieces around `ImpLRoomMid02`, with no seam in game, are not.
 ## Project risk
 
 ### R8 – Ambition
-The full plan is very ambitious. Mitigation: narrow V1 (one kit, one Z, no NavMesh), structures designed broad, proofs of concept first.
+The full plan is very ambitious. Mitigation: narrow V1 (one kit, one Z, no NavMesh), structures designed broad, proofs of concept first. **So far**: V1 was built and released as 0.1.0 in four days (21–24 Sep 2026), every blocker for V1 proven first.
