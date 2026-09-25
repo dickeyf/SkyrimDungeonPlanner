@@ -34,7 +34,7 @@
     "prettier-plugin-svelte": "^3.4.0",
     "svelte": "^5.57.0",
     "svelte-check": "^4.7.6",
-    "typescript": "~6.0.2",
+    "typescript": "~7.0.2",
     "typescript-eslint": "^8.70.1",
     "vite": "^8.3.0",
     "vite-plugin-singlefile": "^2.3.3",
