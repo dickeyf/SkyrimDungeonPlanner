@@ -1,6 +1,6 @@
 # Build the SPA, then serve it with a minimal unprivileged nginx on port 8080, at /.
 
-FROM node:22-alpine AS build
+FROM node:25-alpine AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
