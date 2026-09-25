@@ -1,4 +1,4 @@
-/** CELL and REFR record fields the tool needs (docs/02-modele-de-donnees.md §2). */
+/** CELL and REFR record fields the tool needs (docs/design/planning/02-data-model.md §2). */
 import type { Vec3 } from '../../catalogue/types';
 import { BinaryWriter } from '../../binary/BinaryWriter';
 import type { EspRecord } from './records';

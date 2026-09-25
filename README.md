@@ -8,7 +8,16 @@ V1 covers the Imperial kit on a single Z level: open or create a plugin and its 
 place tiles on the kit's grid, and let the assistant offer only the pieces that fit every
 neighbour. Junctions are checked on the pieces' own mesh profiles (seams, mismatches, shared
 cells), and the result is written back into the plugin, with a backup, for the Creation Kit.
-The design notes are in `docs/` (French).
+
+![The editor: a cell on the Imperial kit's grid, an open face and its compatible pieces](docs/img.png)
+
+## Documentation
+
+- [User guide](docs/user-guide.md): getting started, the editor, the assistant, saving, limits.
+- [Design documentation](docs/design/README.md)
+  - [Architecture](docs/design/arch/README.md): structure, file formats, algorithms and
+    concepts.
+  - [Planning](docs/design/planning/README.md): decisions, risks, roadmap, V1 step plan.
 
 ## Use it
 
@@ -42,7 +51,7 @@ npm run build:single  # one self-contained dist-single/index.html
 ## Layout
 
 ```
-docs/          design notes (French)
+docs/          user guide; design/arch (architecture), design/planning (decisions, plans)
 data/          catalogue annotations (human decisions over the automatic analysis)
 poc/           proof-of-concept HTML pages (phase 0)
 tools/         Python + pynifly analysis scripts (prototypes)

@@ -1,6 +1,6 @@
 /**
  * Catalogue data model — the only data owned by the tool (D10, D12, D13).
- * Mirrors docs/02-modele-de-donnees.md §1. Fields marked "later" are present so the
+ * Mirrors docs/design/planning/02-data-model.md §1. Fields marked "later" are present so the
  * V1 format never blocks Z levels, props or NavMesh (D14), but V1 leaves them null.
  */
 

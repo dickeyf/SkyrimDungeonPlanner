@@ -3,13 +3,18 @@
 ## Project
 
 Browser SPA (Chromium, no backend) to assemble Skyrim SE dungeons from modular kits and write
-them back into a plugin. V1 = Imperial kit, single Z level. Design docs are in `docs/` (French);
-read them in order `00` -> `06`, then `07-plan-v1.md` for the current step plan.
+them back into a plugin. V1 (Imperial kit, single Z level) is done. Documentation:
+
+- `docs/user-guide.md`: the user guide;
+- `docs/design/arch/`: technical architecture, algorithms and concepts; keep it up to date
+  when the code changes;
+- `docs/design/planning/`: decisions, risks, roadmap and step plans; read `00` -> `06`,
+  then `07-plan-v1.md`.
 
 ## Language
 
 - Code, comments, identifiers, tests, commit messages and UI text: **English**.
-- `docs/*.md` and conversation with the user: **French**.
+- Documentation (`README.md`, `docs/**/*.md`): **English**.
 
 ## Stack and layout
 

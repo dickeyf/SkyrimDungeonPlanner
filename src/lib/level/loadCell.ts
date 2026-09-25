@@ -1,6 +1,6 @@
 /**
  * Step 11: load a cell of the level store and derive its grid view with the kit catalogue
- * (docs/02-modele-de-donnees.md §2, R10, D23, D58).
+ * (docs/design/planning/02-data-model.md §2, R10, D23, D58).
  */
 import type { Catalogue, Piece } from '../catalogue/types';
 import { deriveGrid, type DeriveResult } from '../grid/derive';

@@ -1,6 +1,6 @@
 # Analysis scripts (Python)
 
-Throwaway scripts for the mesh-analysis proofs of concept R5 and R3 (`docs/03-risques.md`).
+Throwaway scripts for the mesh-analysis proofs of concept R5 and R3 (`docs/design/planning/03-risks.md`).
 The algorithms are prototyped here first, then ported to TypeScript once proven (V7).
 `pynifly` is not on PyPI (it is a Blender add-on with a native DLL), so the NIF reading is
 done by `nif.py`, a small reader limited to what the analyses need (node tree, BSTriShape

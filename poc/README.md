@@ -1,6 +1,6 @@
 # Proof-of-concept pages (phase 0)
 
-One throwaway HTML page per browser-side risk from `docs/03-risques.md`. Each page is picked
+One throwaway HTML page per browser-side risk from `docs/design/planning/03-risks.md`. Each page is picked
 up automatically by `vite.config.ts` and served at `/poc/<name>.html` in dev.
 
 | Page                | Risk              | Success criterion                                                                                                                        |

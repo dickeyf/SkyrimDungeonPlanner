@@ -1,5 +1,5 @@
 /**
- * Level view derived from the plugin (docs/02-modele-de-donnees.md §2).
+ * Level view derived from the plugin (docs/design/planning/02-data-model.md §2).
  * The .esp stays the source of truth (D10); these structures are rebuilt on every load.
  */
 import type { CellIndex, FormKey, Vec3 } from '../catalogue/types';

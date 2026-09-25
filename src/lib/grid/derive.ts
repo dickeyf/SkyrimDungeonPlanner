@@ -1,5 +1,5 @@
 /**
- * Derive the grid view of a cell from its placed references (docs/02-modele-de-donnees.md §2,
+ * Derive the grid view of a cell from its placed references (docs/design/planning/02-data-model.md §2,
  * R10, D23, V10).
  *
  * A reference is a tile placement when its base is a catalogue tile, it is not tilted or
