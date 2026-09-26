@@ -40,7 +40,7 @@ Statuses: **Decided** (settled), **Proposed** (suggested, to be confirmed), **Op
 | D33 | Connection to the existing NavMesh: attempted automatically; otherwise the designer connects it in the CK | Decided |
 | D34 | Manual finalization in the CK only happens at the very end; the tool does not try to preserve or merge manual touch-ups | Decided |
 | D35 | "Tile without NavMesh" determined by a geometric test (a triangle whose center falls within the tile's volume), not by internal tracking | Proposed |
-| D36 | One NAVM record per baked batch; the tool only deletes the NAVMs it created | Proposed (to be proven, R2) |
+| D36 | **One NAVM record per cell** (R2 fallback): the CK's Finalize creates no edge links between two NAVMs of the same interior cell, so a partial bake rewrites the cell's single NAVM and keeps the triangles outside the selection. The tool only rewrites or deletes the triangles it baked | Decided (25 Sep 2026, R2 disproved) |
 | D37 | "Locked" flag per cell once in the finishing phase: warning before any destructive bake | Proposed |
 | D38 | NavMesh templates = **walkable polygons** per tile (not triangles); at bake: union → subtraction of obstacles → triangulation; canonical vertices forced at the boundaries according to the connection type | Proposed |
 | D39 | Taking obstacles into account in the NavMesh in iterations: free-standing walls → pillars → clutter → furniture. Later, but the architecture must allow it | Decided |

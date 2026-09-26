@@ -10,7 +10,7 @@ Test HTML pages and throwaway scripts. See `03-risks.md`.
 - [x] R14b BSA + NIF + WebGL display of a tile
 - [x] R14c in-place ESP: identical round trip, then adding a REFR (covers R6)
 - [x] R10 grid derivation on existing cells
-- [ ] R2 two NAVMs in one cell (manual CK test; moved to phase 3, where it matters)
+- [x] R2 two NAVMs in one cell (manual CK test, 25 Sep 2026): disproved, one NAVM per cell (D36)
 - [x] Close the remaining open questions (MO2, non-Chromium browsers)
 
 ## Phase 1 – Imperial catalogue

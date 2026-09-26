@@ -11,8 +11,8 @@ the reason for each step. Code, comments, tests, UI and docs in English.
 - **V1 is done and released as 0.1.0** (beta, pre-release on GitHub, D63): Imperial kit, one Z
   level, plugins and cells created or edited in place, assistant offering only pieces that fit
   every neighbour, junction checks on the face profiles, safe saving with backups.
-- Phase 0 (proofs of concept) is complete except R2 (two NAVMs in one cell), a manual CK test
-  that belongs to phase 3. Phases 1 (catalogue) and 2 (editor) are complete.
+- Phase 0 (proofs of concept) is complete. R2 (two NAVMs in one cell) was tested at V2 step 1:
+  disproved, one NAVM per cell (D36). Phases 1 (catalogue) and 2 (editor) are complete.
 - Published on GitHub (`dickeyf/SkyrimDungeonPlanner`, public, GPL v3) with CI, CodeQL, a
   security scan (npm audit, Trivy), the single-file build attached to releases, and a Docker
   image on GHCR. Builds run on Node 24 LTS; Dependabot groups minor updates and ignores
