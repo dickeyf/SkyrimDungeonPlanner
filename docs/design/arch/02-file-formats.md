@@ -35,6 +35,14 @@ cell children, `8` persistent children, `9` temporary children.
 - `REFR`: `EDID`, `NAME` (base object FormID), `XSCL` (scale), `DATA` (position 3 × f32,
   rotation 3 × f32 in radians).
 - `STAT` (`stat.ts`): `EDID`, `MODL` (model path, relative to `meshes\`).
+- `NAVM` (`navm.ts`): the `NVNM` field (version 12), decoded and re-encoded byte for byte
+  (checked on all 15,966 NAVMs of Skyrim.esm): version, magic `0xA5E9A03C`, parent (worldspace 0
+  then the cell FormID for interiors, else worldspace and grid y, x as i16), vertices (3 × f32),
+  triangles (3 vertex i16, 3 edge i16, flags u16, cover flags u16), edge links (type u32, NAVM
+  u32, triangle i16), door links (triangle i16, crc u32, door REFR u32), cover triangles (i16),
+  then the search grid (divisor u32, max distances 2 × f32, bounds 6 × f32, divisor² cells of
+  count u32 + triangle i16). An edge holds a neighbour triangle, -1, or, when triangle flag bit
+  0/1/2 is set for edge 0/1/2, an index into the edge links. Other NAVM fields stay opaque.
 
 ### Editing in place (`plugin.ts`)
 

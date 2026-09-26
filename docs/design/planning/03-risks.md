@@ -180,7 +180,7 @@ Triangle adjacencies, edge flags, internal search grid, door links.
 Hypothesis: one NAVM record per baked batch, connected by the Finalize edge links.
 - **Test (no code)**: in the CK, two separate NavMeshes in a test cell with coinciding edge vertices; Finalize; check the links and the pathing of an NPC across the seam.
 - **Success**: continuous pathing. **Fallback**: a single NAVM per cell, the partial bake rewrites the record while preserving the triangles outside the selection.
-- **Result (25 Sep 2026)**: disproved. Two NAVMs meeting on the same vertices in an interior cell, after Finalize: no edge link in either record (checked in xEdit), no visual hint in the CK. Edge links seem limited to exterior cell borders. The official interior cells checked in xEdit all have a single NAVM. Fallback adopted (D36), in line with the base game.
+- **Result (25 Sep 2026)**: disproved. Two NAVMs meeting on the same vertices in an interior cell, after Finalize: no edge link in either record (checked in xEdit), no visual hint in the CK. Edge links seem limited to exterior cell borders. Most official interior cells have a single NAVM, but Skyrim.esm has 812 edge links between NAVMs of the same cell, in 80 interior cells (NAVM round trip page, 26 Sep 2026): the game supports them, only Finalize did not create them here. Decided anyway: one NAVM per cell, batches welded on shared vertices (D36); writing edge links ourselves is the fallback.
 
 ### R4 – Walkable polygon from collision
 - **Test**: on 3 tiles (hallway, room corner, door): upward-facing collision triangles → projection → union → erosion against the walls.

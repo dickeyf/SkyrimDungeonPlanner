@@ -40,8 +40,9 @@ comes first, before any interface work.
 - **Done when**: continuous pathing → D36 confirmed. Otherwise the fallback of R2: a single NAVM
   per cell, the partial bake rewrites it while keeping the triangles outside the selection.
 - **Commits to**: D36.
-- **Result (25 Sep 2026)**: no edge link between the two NAVMs after Finalize (xEdit). R2
-  disproved; fallback adopted: one NAVM per cell, D36 revised.
+- **Result (25 Sep 2026)**: no edge link between the two NAVMs after Finalize (xEdit). Step 2
+  then found 812 same-cell edge links in 80 interior cells of Skyrim.esm: the game supports
+  them. Decided: one NAVM per cell, batches welded on shared vertices, no edge links (D36).
 
 ### Step 2 – NAVM reader and round trip
 - **Why**: writing a valid NAVM (R1) starts with reading the ones the CK writes; a byte-identical
@@ -53,6 +54,9 @@ comes first, before any interface work.
 - **Done when**: every NAVM of the working cell re-encodes byte for byte; unit tests on the
   fields.
 - **Commits to**: D45 (targeted parsers).
+- **Result (26 Sep 2026)**: `format/esp/navm.ts` and the `poc/navm-roundtrip.html` page; all
+  15,966 NAVMs of Skyrim.esm and those of the working plugin re-encode byte for byte, no unknown
+  bytes, indices consistent (triangle flag bits 0-2 mark an edge as an edge link).
 
 ### Step 3 – R1: write a valid NAVM for one tile
 - **Why**: the core risk. If the CK or the game rejects a generated NavMesh, the whole phase
