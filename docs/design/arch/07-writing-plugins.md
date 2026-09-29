@@ -64,6 +64,28 @@ ESL-flagged plugins are refused (V6): their FormID range is restricted.
   game's order (`WRLD`, `DIAL`, `QUST`...). The cell is written at once, with the same checks and
   backup as a save.
 
+## Walkable polygons (`navmesh/walkable.ts`, V2)
+
+`walkablePolygons(collision, options, tileFrame(piece, module))` gives the walkable area of a
+tile as rings in piece space (outer counter-clockwise, holes clockwise), each vertex at the floor
+height:
+
+1. the collision is sampled every `step` units over the tile's footprint: upward faces (slope
+   within `maxSlope`, or steeper but no taller than a step) are floor candidates, downward faces
+   ceilings, near-vertical faces walls occupying their height band;
+2. a candidate is valid with `actorHeight` free above it (obstacles below `stepHeight` are
+   stepped over) and a ceiling above (not a wall top or a roof);
+3. floors grow from the openings (the piece's open faces, at their level): each sample takes the
+   valid floor closest to its neighbour's within a step, so a staircase is followed and a floor
+   enclosed under it or a cavity in a wall stays out;
+4. jumps above a step form ledges; the area is eroded by `actorRadius` from obstacles, voids and
+   ledges but not from the footprint edge, where the neighbour's floor continues;
+5. the outline is traced along the samples, snapped to the footprint edge and simplified
+   (Douglas-Peucker, `tolerance`).
+
+Defaults, tuned on the Imperial tiles: step 4, radius 16, height 96, step height 64 (the stairs'
+step blocks rise 52 above their ramp), slope 50 degrees, tolerance 6.
+
 ## NavMesh records (`navmesh/build.ts`, `Plugin.addNavm`, V2)
 
 `buildNavMesh(cell, vertices, triangles)` turns a triangle mesh into the `NVNM` data of an

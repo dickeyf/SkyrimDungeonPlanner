@@ -186,6 +186,7 @@ Hypothesis: one NAVM record per baked batch, connected by the Finalize edge link
 ### R4 – Walkable polygon from collision
 - **Test**: on 3 tiles (hallway, room corner, door): upward-facing collision triangles → projection → union → erosion against the walls.
 - **Success**: clean polygon, few vertices, comparable to what a designer would draw. Manual correction possible in the catalogue.
+- **Result (29 Sep 2026)**: proven on all 111 Imperial tiles (`navmesh/walkable.ts`, `poc/navm-walkable.html`). The collision (`bhkCompressedMeshShape`) is decoded, sampled every 4 units, grown from the tile's openings and eroded by the actor radius: 101 tiles give one outline (14.6 vertices on average, well under 70 ms each); the 8 large hall doors add small floor patches on the neighbour's side of the door wall, which the bake joins to the neighbour; `ImpLRoomWall01` keeps a real gap of its collision as a hole. Lessons: the stairs are a ramp under step blocks rising 52 above it (step height 64); a cavity in a thick wall and the floor enclosed under a staircase must not count, hence growing from the openings; steep bevels no taller than a step are floor.
 
 ### R11 – T junctions
 Opening narrower than the neighbor's edge; neighbor's obstacle within a margin of the boundary. Planned answer: union then triangulation (D38) rather than template variants. To be confirmed together with R4.

@@ -44,6 +44,19 @@ cell children, `8` persistent children, `9` temporary children.
   count u32 + triangle i16). An edge holds a neighbour triangle, -1, or, when triangle flag bit
   0/1/2 is set for edge 0/1/2, an index into the edge links. Other NAVM fields stay opaque.
 
+### Collision (`format/nif/collision.ts`)
+
+The Imperial tiles carry their collision as root node -> `bhkCollisionObject` (body ref at byte 6)
+-> `bhkRigidBody`/`bhkRigidBodyT` (shape ref first; the T variant's translation at byte 52 and
+rotation quaternion x y z w at byte 68) -> `bhkMoppBvTreeShape` (shape ref first) ->
+`bhkCompressedMeshShape` (scale at byte 16, data ref at byte 52) ->
+`bhkCompressedMeshShapeData`. The data holds chunks of u16 vertices (chunk translation + value x
+`error`, then one of the shared transforms), triangle strips followed by plain triangles, and
+"big" triangles with float vertices. Havok units become Skyrim units x 69.99125. Checked against
+the render meshes of the whole kit: the collision follows the inner face of the walls, and the
+small hallway floor lies at z = 10, not at the grid level. `NifFile.blockData` gives the raw bytes
+of blocks the reader does not parse.
+
 ### Editing in place (`plugin.ts`)
 
 - **FormIDs**: the top byte is an index into the file's master list; `index == masters.length`

@@ -84,6 +84,13 @@ comes first, before any interface work.
 - **Done when**: clean polygons with few vertices, comparable to what a designer would draw,
   shown over the tile in a test page.
 - **Commits to**: R4, D38.
+- **Result (29 Sep 2026)**: R4 proven. `format/nif/collision.ts` decodes the collision mesh;
+  `navmesh/walkable.ts` samples it on the tile's footprint, keeps floors with headroom and a
+  ceiling, grows them from the openings (so cavities and floors enclosed under stairs stay out),
+  erodes them by the actor radius except at the footprint edge, then traces and simplifies the
+  outline. Parameters tuned with the user: sample 4, radius 16, height 96, step 64, slope 50
+  degrees, tolerance 6. On the 111 Imperial tiles: 101 single outlines of 14.6 vertices on
+  average; see `03-risks.md` for the exceptions.
 
 ### Step 5 – R16: deep junction check, proof of concept
 - **Why**: the profiles missed a real seam (`ImpLRoomDoor02` / `ImpLHallDoor02`: door frame and

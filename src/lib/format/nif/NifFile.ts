@@ -89,6 +89,8 @@ export class NifFile {
   readonly strings: string[] = [];
   readonly blocks: NifBlock[] = [];
   readonly roots: number[] = [];
+  /** Byte range of each block in the file, for readers of block types parsed on demand. */
+  private readonly ranges: { start: number; size: number }[] = [];
 
   private constructor(private readonly data: Uint8Array) {
     this.parse();
@@ -151,11 +153,19 @@ export class NifFile {
       if (type.endsWith('Node')) this.parseNode(r, block);
       else if (type === 'BSTriShape') this.parseTriShape(r, block);
       this.blocks.push(block);
+      this.ranges.push({ start, size: blockSizes[i]! });
       r.seek(start + blockSizes[i]!); // authoritative; skips unparsed tails
     }
 
     const numRoots = r.u32();
     for (let i = 0; i < numRoots; i++) this.roots.push(r.i32());
+  }
+
+  /** Raw bytes of a block, for block types this class does not parse. */
+  blockData(index: number): Uint8Array {
+    const range = this.ranges[index];
+    if (!range) throw new RangeError(`no block ${index}`);
+    return this.data.subarray(range.start, range.start + range.size);
   }
 
   private string(index: number): string {

@@ -18,7 +18,7 @@ src/lib/mesh        mesh analysis: welding, openings, footprint, profiles, group
 src/lib/catalogue   catalogue model, kit definitions, STAT extraction, analysis,
                     annotations, validation review
 src/lib/grid        rotations, grid derivation, editing, assistant, junctions, overlaps
-src/lib/navmesh     NavMesh building: adjacencies, triangle flags, search grid (V2)
+src/lib/navmesh     NavMesh: walkable polygons from collision; NVNM building (V2)
 src/lib/level       level store over the plugin: cells, edits, saving, new plugins
 src/lib/render      three.js scene, mesh cache, placement matrices
 src/lib/session     app-wide Svelte state: folders and Data view, catalogue, annotations

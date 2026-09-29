@@ -41,7 +41,8 @@ CK. Released as 0.1.0.**
 
 ## Phase 3 – Basic NavMesh – V2, see `08-plan-v2.md`
 - [x] R1 write a valid NAVM (28 Sep 2026, NPC chase in game)
-- [ ] R4 walkable polygons; R11
+- [x] R4 walkable polygons (29 Sep 2026, all Imperial tiles reviewed)
+- [ ] R11
 - [ ] `walkable` and `navEdge` in the catalogue
 - [ ] Bake on selection, "fill" tool (tiles without NavMesh), clear all
 - [ ] Stitching to existing batches; locked flag

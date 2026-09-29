@@ -11,6 +11,7 @@ up automatically by `vite.config.ts` and served at `/poc/<name>.html` in dev.
 | `r10-grid.html`       | Grid derivation                  | On a vanilla Imperial cell and the working plugin's cell, count how many kit refs land on the grid.                                                                    |
 | `navm-roundtrip.html` | NAVM format (V2 step 2)          | Decode every `NVNM` field of a plugin (the working plugin, Skyrim.esm), re-encode it byte for byte, with no unknown trailing bytes and indices within the counts.      |
 | `navm-tile.html`      | R1 generated NavMesh (V2 step 3) | Write a NAVM over the grid cells of one placed tile to a `.navtest.esp` copy; the CK accepts it, Finalize succeeds, an NPC walks on it; compare what Finalize rewrote. |
+| `navm-walkable.html`  | R4 walkable polygons (V2 step 4) | Read a tile's collision and draw its walkable polygons over it: clean outlines with few vertices, at the floor, away from the walls, open at the tile edges.           |
 | `r15-mo2.html`        | MO2 overlay                      | Read the MO2 instance, overlay mod folders on Data, check priority order against MO2's pane.                                                                           |
 
 Pages import from `src/lib` through the `$lib` alias so the code they prove moves into the
