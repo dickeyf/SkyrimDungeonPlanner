@@ -63,3 +63,23 @@ ESL-flagged plugins are refused (V6): their FormID range is restricted.
   has no `CELL` top group yet, one is inserted before the top groups that follow `CELL` in the
   game's order (`WRLD`, `DIAL`, `QUST`...). The cell is written at once, with the same checks and
   backup as a save.
+
+## NavMesh records (`navmesh/build.ts`, `Plugin.addNavm`, V2)
+
+`buildNavMesh(cell, vertices, triangles)` turns a triangle mesh into the `NVNM` data of an
+interior NavMesh, following what the Creation Kit writes (measured on the 1,526 interior
+NavMeshes of Skyrim.esm):
+
+- triangles are counter-clockwise seen from above; edge k runs from vertex k to vertex k + 1 and
+  holds the neighbour triangle across it, or -1 (a non-manifold edge is refused);
+- every triangle gets flag `0x0800`, as nearly all vanilla triangles;
+- the search grid spans the bounding box of the vertices the triangles use, `divisor` cells per
+  side, numbered row by row along Y; each cell lists the triangles touching it (separating-axis
+  test, touching counts). The divisor is 1 up to 16 triangles, 2 below 50, then one more per 50
+  triangles, at most 12 (exact on all 1,526 meshes; cell contents match on two thirds of them,
+  the rest differ on border cases, harmless for a search grid).
+
+Edge links, door links and cover are left empty: the CK's Finalize adds door links and cover and
+writes the `NAVI` record, and keeps a generated NAVM otherwise unchanged (R1, V2 step 3).
+`Plugin.addNavm` adds the record to the cell's temporary children, like a reference, with a new
+FormID. One NAVM per cell (D36).

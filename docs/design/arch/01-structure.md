@@ -18,6 +18,7 @@ src/lib/mesh        mesh analysis: welding, openings, footprint, profiles, group
 src/lib/catalogue   catalogue model, kit definitions, STAT extraction, analysis,
                     annotations, validation review
 src/lib/grid        rotations, grid derivation, editing, assistant, junctions, overlaps
+src/lib/navmesh     NavMesh building: adjacencies, triangle flags, search grid (V2)
 src/lib/level       level store over the plugin: cells, edits, saving, new plugins
 src/lib/render      three.js scene, mesh cache, placement matrices
 src/lib/session     app-wide Svelte state: folders and Data view, catalogue, annotations
@@ -28,8 +29,8 @@ src/pages           Editor, Settings (+ sub-pages), Getting started
 
 ## Dependency rules
 
-- `binary`, `compress`, `format`, `mesh`, `grid`, `catalogue` and `level` are pure TypeScript:
-  no Svelte, no DOM beyond standard web APIs (`DecompressionStream`, `File`). They are
+- `binary`, `compress`, `format`, `mesh`, `grid`, `catalogue`, `navmesh` and `level` are pure
+  TypeScript: no Svelte, no DOM beyond standard web APIs (`DecompressionStream`, `File`). They are
   unit-tested with Vitest in Node (`*.test.ts` next to the source), using tiny synthetic
   fixtures built in code: no game file is ever committed.
 - File access goes through structural interfaces (`FsDir`, `FsFile` in `fs/paths.ts`) that the

@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { BinaryWriter } from '../../binary/BinaryWriter';
 import { fromFormKey, toFormKey } from './formId';
+import { buildNavMesh } from '../../navmesh/build';
+import { decodeNavm } from './navm';
 import { Plugin } from './plugin';
 import { GroupType, RecordFlags, countNodes, parseNodes } from './records';
 import { parseSubrecords, recordData, writeSubrecords } from './subrecords';
@@ -90,6 +92,28 @@ describe('cells and references', () => {
     const refs = await again.cellRefs((await again.interiorCells())[0]!);
     expect(refs.map((r) => r.record.formId)).toEqual([0x01000d63, 0x01000d64, 0x01000d70]);
     expect(refs[2]!.info.pos).toEqual([512, 0, 0]);
+  });
+
+  it('adds a NAVM to the cell, next to its references', async () => {
+    const plugin = Plugin.parse(sample(), 'Sample.esp');
+    const cell = (await plugin.interiorCells())[0]!;
+    const nav = buildNavMesh(
+      cell.record.formId,
+      [
+        [0, 0, 0],
+        [256, 0, 0],
+        [0, 256, 0],
+      ],
+      [[0, 1, 2]],
+    );
+    const added = plugin.addNavm(cell, nav);
+    expect(added.formId).toBe(0x01000d70);
+    const again = Plugin.parse(plugin.write(), 'Sample.esp');
+    expect(again.header.numRecords).toBe(plugin.header.numRecords);
+    const navms = again.recordsOfType('NAVM');
+    expect(navms.map((r) => r.formId)).toEqual([0x01000d70]);
+    expect(await decodeNavm(navms[0]!)).toEqual(nav);
+    expect(await again.cellRefs((await again.interiorCells())[0]!)).toHaveLength(2);
   });
 
   it('creates the child groups when a cell has none', async () => {

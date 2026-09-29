@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NAVM for one tile</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <style>
+      :root {
+        color-scheme: dark;
+        font:
+          14px/1.45 system-ui,
+          sans-serif;
+        background: #1e1d24;
+        color: #e8e6ef;
+      }
+      body {
+        max-width: 60rem;
+        margin: 0 auto;
+        padding: 1.5rem 1rem;
+      }
+      h1 {
+        font-size: 1.3rem;
+      }
+      section {
+        border: 1px solid #3d3b47;
+        border-radius: 6px;
+        padding: 0.75rem 1rem;
+        margin: 0.75rem 0;
+      }
+      section h2 {
+        font-size: 1rem;
+        margin: 0 0 0.5rem;
+      }
+      button,
+      select,
+      input {
+        font: inherit;
+        margin: 0.2rem 0.4rem 0.2rem 0;
+        padding: 0.35rem 0.6rem;
+      }
+      .ok {
+        color: #8fd18f;
+      }
+      .warn {
+        color: #d9c27a;
+      }
+      .err {
+        color: #e07a7a;
+      }
+      pre,
+      .box {
+        background: #2b2a33;
+        padding: 0.5rem;
+        border-radius: 4px;
+        max-height: 18rem;
+        overflow: auto;
+        font-size: 12px;
+      }
+      table {
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      td,
+      th {
+        padding: 0.1rem 0.6rem;
+        text-align: left;
+      }
+      td.num {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+      code {
+        color: #d9c27a;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>R1 - a generated NavMesh for one tile (V2 step 3)</h1>
+    <p id="status">Restoring saved folders...</p>
+
+    <section>
+      <h2>1. Plugin and cell</h2>
+      <p>
+        Uses the catalogue the app analysed (open its Catalogue page once if missing). The NavMesh
+        covers the grid cells of the chosen tile, at the floor of its level.
+      </p>
+      <label
+        >MO2 profile
+        <select id="profile"></select
+      ></label>
+      <label
+        >Plugin
+        <select id="plugin"></select
+      ></label>
+      <button id="parse" disabled>Parse</button>
+      <br />
+      <label
+        >Cell
+        <select id="cell"></select
+      ></label>
+      <p id="tiles-note">-</p>
+    </section>
+
+    <section>
+      <h2>2. Generate and write a copy</h2>
+      <label
+        >Tile
+        <select id="tile"></select
+      ></label>
+      <label>Raise by <input id="dz" type="number" value="0" size="4" /> units</label>
+      <button id="write" disabled>Write NAVM to a copy</button>
+      <p>
+        Writes <code>&lt;plugin&gt;.navtest.esp</code> next to the original, which is never touched.
+      </p>
+      <p id="write-result">-</p>
+    </section>
+
+    <section>
+      <h2>3. After Finalize in the CK</h2>
+      <p>
+        Load the copy in the CK, check the NavMesh shows on the floor, Finalize, save. Then compare
+        what the CK kept and rewrote. Finally, in game: an NPC must walk on it.
+      </p>
+      <button id="compare">Compare with the saved copy</button>
+      <pre id="compare-result">-</pre>
+    </section>
+
+    <section>
+      <h2>Log</h2>
+      <pre id="log"></pre>
+    </section>
+
+    <script type="module" src="./navm-tile.ts"></script>
+  </body>
+</html>

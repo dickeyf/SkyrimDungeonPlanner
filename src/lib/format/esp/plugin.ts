@@ -13,6 +13,8 @@ import {
   type RefrInfo,
 } from './cellRefr';
 import { formIdIndex, makeFormId } from './formId';
+import { encodeNvnm, type NavMeshData } from './navm';
+import { writeSubrecords } from './subrecords';
 import {
   GroupType,
   RecordFlags,
@@ -193,11 +195,8 @@ export class Plugin {
     patchHedr(this.tes4, { numRecords: this.loadedNumRecords + delta });
   }
 
-  /**
-   * Add a REFR to the cell's temporary children (creating the child groups if the cell had
-   * none). Returns the new record, whose FormID belongs to this plugin.
-   */
-  addRefr(cell: CellEntry, refr: Omit<RefrInfo, 'scale'> & { scale?: number }): EspRecord {
+  /** The cell's temporary children group, created (with the children group) when missing. */
+  private temporaryChildren(cell: CellEntry): EspGroup {
     const sub = this.subBlockOf(cell.record);
     if (!cell.children) {
       cell.children = {
@@ -226,6 +225,15 @@ export class Plugin {
       };
       cell.children.children.push(temporary);
     }
+    return temporary;
+  }
+
+  /**
+   * Add a REFR to the cell's temporary children (creating the child groups if the cell had
+   * none). Returns the new record, whose FormID belongs to this plugin.
+   */
+  addRefr(cell: CellEntry, refr: Omit<RefrInfo, 'scale'> & { scale?: number }): EspRecord {
+    const temporary = this.temporaryChildren(cell);
     const record: EspRecord = {
       kind: 'record',
       type: 'REFR',
@@ -236,6 +244,25 @@ export class Plugin {
       formVersion: 44,
       vcsInfo2: 0,
       data: encodeRefr(refr),
+    };
+    temporary.children.push(record);
+    this.syncRecordCount();
+    return record;
+  }
+
+  /** Add a NAVM holding `nav` to the cell's temporary children. */
+  addNavm(cell: CellEntry, nav: NavMeshData): EspRecord {
+    const temporary = this.temporaryChildren(cell);
+    const record: EspRecord = {
+      kind: 'record',
+      type: 'NAVM',
+      flags: 0,
+      formId: this.allocateFormId(),
+      timestamp: 0,
+      vcsInfo: 0,
+      formVersion: 44,
+      vcsInfo2: 0,
+      data: writeSubrecords([{ type: 'NVNM', data: encodeNvnm(nav) }]),
     };
     temporary.children.push(record);
     this.syncRecordCount();

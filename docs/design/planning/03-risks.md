@@ -175,6 +175,7 @@ The browser does not see the MO2 VFS: mod meshes (custom kits) are in their mod 
 Triangle adjacencies, edge flags, internal search grid, door links.
 - **Test**: generate by code the NavMesh of ONE hallway tile, open in the CK, Finalize, have an NPC walk in game.
 - **Success**: the CK accepts it without errors, the NPC moves around.
+- **Result (28 Sep 2026)**: proven. A NavMesh built by code over the grid cells of the placed tiles (`navmesh/build.ts`, `poc/navm-tile.html`) loads in the CK; Finalize leaves the NAVM byte-identical in content (same FormID, vertices, triangles, edges, flags, search grid) and adds a `NAVI` record; a hostile NPC chases the player through the dungeon in game. Finalize adds door links and cover where there are doors and walls nearby: left to it.
 
 ### R2 – Several NAVMs in an interior cell
 Hypothesis: one NAVM record per baked batch, connected by the Finalize edge links.

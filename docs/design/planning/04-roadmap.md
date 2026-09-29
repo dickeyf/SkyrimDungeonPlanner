@@ -40,7 +40,8 @@ CK. Released as 0.1.0.**
 - [ ] Later, with caves and props: where to plug a leak, verified plug
 
 ## Phase 3 – Basic NavMesh – V2, see `08-plan-v2.md`
-- [ ] R1 write a valid NAVM; R4 walkable polygons; R11
+- [x] R1 write a valid NAVM (28 Sep 2026, NPC chase in game)
+- [ ] R4 walkable polygons; R11
 - [ ] `walkable` and `navEdge` in the catalogue
 - [ ] Bake on selection, "fill" tool (tiles without NavMesh), clear all
 - [ ] Stitching to existing batches; locked flag

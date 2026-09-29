@@ -67,6 +67,13 @@ comes first, before any interface work.
 - **Done when**: the CK accepts it without errors, Finalize succeeds, the NPC moves around; what
   Finalize adds or rewrites is recorded (the tool may leave those parts to it).
 - **Commits to**: R1.
+- **Result (28 Sep 2026)**: R1 proven. `navmesh/build.ts` builds the NVNM data (adjacencies,
+  flags, search grid) following rules measured on the 1,526 interior NavMeshes of Skyrim.esm;
+  `Plugin.addNavm` writes it. The `poc/navm-tile.html` page covers the grid cells of one tile or
+  of every tile of a cell (no hand placement), at the grid level's floor. The CK loads it,
+  Finalize keeps it unchanged and adds a `NAVI` record; a hostile NPC chased the player through
+  the dungeon in game. As expected from whole cells, the mesh lies a little under the floor and
+  runs under the walls: step 4 gives the real surface.
 
 ### Step 4 – R4: walkable polygon of a tile
 - **Why**: the NavMesh of a level is assembled from per-tile walkable polygons (D38); their
