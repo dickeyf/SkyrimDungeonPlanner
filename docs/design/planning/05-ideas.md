@@ -22,3 +22,9 @@
   junctions when placed from the palette. Offer as well the pieces covering part of the face,
   at each position along it, when all their junctions are clean. Noted on 29 Sep 2026
   (`ImpRoomCorner03` +X next to `ImpRoomWall03`).
+- **Annotations published outside the repository**: users do not check out the git repository,
+  so "Save to repository" (Validation page) is a developer tool only. Target: the kit
+  annotations (`data/annotations/*.json`) published to an S3 bucket, readable by anyone, written
+  only with the author's authorization (a signed upload, or a submission the author approves);
+  the app reads them from there and the repository copy becomes a mirror or goes away. Noted on
+  29 Sep 2026.
