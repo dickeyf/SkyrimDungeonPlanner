@@ -104,6 +104,12 @@ comes first, before any interface work.
 - **Done when**: the known seam is detected, and the room pieces around `ImpLRoomMid02` (no seam in
   game) are not; timing measured per pair.
 - **Commits to**: R16.
+- **Result (29 Sep 2026)**: R16 proven. `grid/leaks.ts` (pure) finds the free borders of either
+  render mesh running along the junction plane, farther than 0.5 unit from the tiles facing the
+  opening (all of them together); `poc/leaks.html` looks at each candidate from six standing
+  points on the passage axis, drawing every tile within 1,536 units. The known seam (rebuilt by
+  the editor in a test cell) is a leak from both sides; the 681 junctions of the working cell
+  give none. About 10 to 25 ms per junction, the first read of a mesh up to 150 ms.
 
 ## Phase B – Junctions: deep check and textures
 

@@ -91,6 +91,25 @@ piece 1 unit off). When a profile is missing, the verdict falls back to the conn
 which repeat across a level; verdicts are cached per catalogue geometry, so rechecking all the
 junctions of a 200-tile cell after an edit takes a few milliseconds instead of a second or two.
 
+## Deep check (`leaks.ts`, R16, V2)
+
+The profiles only see the open edges in the junction plane. The deep check looks at the render
+meshes of the two sides, placed with their exact REFR positions:
+
+1. **Exact**: the free borders (edges of a single triangle) of either side running along the
+   junction plane, within 8 units of it, are sampled every unit; a sample farther than 0.5 unit
+   from the other side is part of a candidate gap. An opening is judged against every tile
+   facing it at once (`mergeWorldMeshes`): a border next to one tile may be closed by the next.
+2. **Visible**: each candidate is looked at from six points where the player stands, on the axis
+   of the passage, at 96, 192 and 320 units on each side, at eye height; the scene holds every
+   tile around the junction, front faces grey, back faces red, void black. Red or black within
+   two pixels of the gap is a visible leak; a view whose centre shows a back face is inside a
+   wall and is dropped.
+
+Kits hide many joints behind overlaps, so most exact candidates are not visible: the exact check
+is only a filter. Proven on the known seam and on a 681-junction cell (step 5); the editor
+integration, with a cache per pair of pieces and relative placement, is step 6.
+
 ## Marks
 
 | Mark | Meaning | Source |

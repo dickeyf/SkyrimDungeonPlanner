@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Junction leaks</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <style>
+      :root {
+        color-scheme: dark;
+        font:
+          14px/1.45 system-ui,
+          sans-serif;
+        background: #1e1d24;
+        color: #e8e6ef;
+      }
+      body {
+        max-width: 60rem;
+        margin: 0 auto;
+        padding: 1.5rem 1rem;
+      }
+      h1 {
+        font-size: 1.3rem;
+      }
+      section {
+        border: 1px solid #3d3b47;
+        border-radius: 6px;
+        padding: 0.75rem 1rem;
+        margin: 0.75rem 0;
+      }
+      section h2 {
+        font-size: 1rem;
+        margin: 0 0 0.5rem;
+      }
+      button,
+      select,
+      input {
+        font: inherit;
+        margin: 0.2rem 0.4rem 0.2rem 0;
+        padding: 0.35rem 0.6rem;
+      }
+      .ok {
+        color: #8fd18f;
+      }
+      .warn {
+        color: #d9c27a;
+      }
+      .err {
+        color: #e07a7a;
+      }
+      pre,
+      .box {
+        background: #2b2a33;
+        padding: 0.5rem;
+        border-radius: 4px;
+        max-height: 18rem;
+        overflow: auto;
+        font-size: 12px;
+      }
+      table {
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      td,
+      th {
+        padding: 0.1rem 0.6rem;
+        text-align: left;
+      }
+      td.num {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+      code {
+        color: #d9c27a;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>R16 - deep junction check (V2 step 5)</h1>
+    <p id="status">Restoring saved folders...</p>
+
+    <section>
+      <h2>Cell</h2>
+      <label
+        >MO2 profile
+        <select id="profile"></select
+      ></label>
+      <label
+        >Plugin
+        <select id="plugin"></select
+      ></label>
+      <button id="parse" disabled>Parse</button>
+      <label
+        >Cell
+        <select id="cell"></select
+      ></label>
+      <button id="load" disabled>Load junctions</button>
+    </section>
+
+    <section>
+      <h2>Check</h2>
+      <label
+        >Search <input id="search" type="search" placeholder="e.g. LHallDoor02 Stairs" size="28"
+      /></label>
+      <span id="search-count"></span>
+      <br />
+      <label
+        >Junction
+        <select id="junctions"></select
+      ></label>
+      <label
+        >Gap threshold <input id="threshold" type="number" value="0.5" step="0.1" size="3"
+      /></label>
+      <label>Eye height <input id="eye" type="number" value="120" size="3" /></label>
+      <button id="check" disabled>Check junction</button>
+      <button id="check-all" disabled>Check all</button>
+      <p>
+        Exact check: free borders of either mesh farther than the threshold from the other piece.
+        Views: grey front faces, red back faces, black void; a candidate showing red or black around
+        it is a visible leak (views that see it are shown below).
+      </p>
+      <pre id="result">-</pre>
+      <div id="gallery"></div>
+    </section>
+
+    <script type="module" src="./leaks.ts"></script>
+  </body>
+</html>

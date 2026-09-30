@@ -226,6 +226,7 @@ texture continuity (step 14b). For caves and props: say where a leak must
 be plugged (rock, column) and confirm that a placed plug covers it.
 **Proof of concept**: the `ImpLRoomDoor02` / `ImpLHallDoor02` seam is detected; the
 room pieces around `ImpLRoomMid02`, with no seam in game, are not.
+**Result (29 Sep 2026)**: proven (`grid/leaks.ts`, `poc/leaks.html`). The known seam, rebuilt in a test cell by the editor, is flagged from both sides; the working cell's 681 junctions, including those around `ImpLRoomMid02`, give no leak, about 10 to 25 ms per junction once meshes are loaded. Lessons: only free borders running along the junction plane count; an opening is judged against all the tiles facing it together; the player stands on the axis of the passage, not in front of the gap; the views must draw the tiles around the junction, or an open passage ends on void. The exact check alone is only a filter: most candidates are hidden by the kit.
 
 ## Project risk
 
