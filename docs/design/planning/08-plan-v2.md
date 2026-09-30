@@ -20,12 +20,13 @@ the other in game; the leaks and texture breaks of the working cell are flagged.
 
 The NavMesh decisions still "Proposed" become binding here; each step says when:
 
-- D35: "tile without NavMesh" = a geometric test on the existing triangles (step 12).
+- D35: "tile without NavMesh" = a geometric test on the existing triangles: **decided with D64**.
 - D36: ~~one NAVM record per baked batch~~ **decided at step 1: one NAVM per cell** (R2 fallback).
 - D37: "locked" flag per cell once in the finishing phase (step 12).
 - D38: walkable polygons per tile, union, triangulation, canonical boundary vertices (steps 4, 10).
-- Where to store the tool's own state (the triangles it baked, the lock): postponed from V1
-  (`02-data-model.md` §3); decided at step 12.
+- D64 (29 Sep 2026): a bake never touches a tile that already has triangles, unless the user
+  confirms replacing them; no record of the tool's own triangles is needed. Where to store the
+  lock (D37): decided at step 12.
 
 ## Phase A – Proofs of concept
 
@@ -203,21 +204,21 @@ comes first, before any interface work.
 ### Step 11 – Writing the NavMesh into the plugin
 - **Why**: turns a bake into NAVM records, with step 3's recipe.
 - **What**: the cell's single NAVM (D36), created or rewritten with the same safe save as the
-  tiles (backup, stamp check): the baked triangles replace the tool's previous triangles in the
-  selection, the other triangles are kept and stitched on the shared vertices; door triangles
-  left to the CK. The tool records which triangles it baked.
+  tiles (backup, stamp check): the tiles that already have triangles are skipped (D64); the new
+  triangles are added and stitched onto the existing ones on shared vertices (both sides' border
+  edges split where the other's vertices lie); door triangles left to the CK.
 - **Done when**: a baked batch opens in the CK, Finalize succeeds, an NPC walks on it.
 - **Commits to**: D36.
 
 ### Step 12 – Bake tools in the editor
 - **Why**: the designer's workflow (D30–D34, D37): bake on request, redo, fill what is missing.
-- **What**: "Bake selection", "Fill" (selects the tiles without NavMesh by the geometric test of
-  D35), "Clear the tool's NavMesh" (only the triangles it baked), a per-cell "locked" flag with a
-  warning before any destructive bake; the tool's own state stored as decided then. Stitching to
-  NavMesh already in the cell attempted (D33), otherwise left to the CK's Finalize.
+- **What**: "Bake selection" (tiles without NavMesh only, D64), "Fill" (selects the tiles without
+  NavMesh by the geometric test of D35), "Replace" (after an explicit confirmation, deletes every
+  triangle of the selected tiles and bakes them anew), "Clear" (the triangles of the selected
+  tiles, confirmed), a per-cell "locked" flag with a warning before any destructive bake.
 - **Done when**: bake, fill, clear and lock work on the working cell, undo included where it
   applies.
-- **Commits to**: D32–D37.
+- **Commits to**: D32–D37, D64.
 
 ## Step 13 – V2 milestone
 - **What**: the success criterion above, on the V1 test dungeon and on the working cell: bake
