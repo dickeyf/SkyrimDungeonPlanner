@@ -100,8 +100,10 @@ step blocks rise 52 above their ramp), slope 50 degrees, tolerance 6.
 3. every piece edge gets the vertices of the neighbouring pieces lying on it, so both sides of a
    cell line or a tile border carry the same vertices; a narrower opening leaves the rest of the
    wider border as a border (R11);
-4. each piece is triangulated (`earcut`), vertices within half a unit welded, and each cell made
-   Delaunay by edge flips (Lawson; outlines and cell lines stay).
+4. each piece is triangulated (`earcut`), vertices within half a unit welded; the flat triangles
+   ear clipping leaves along collinear border points are removed, the triangle across split at
+   the middle point where that mends a crack; then each cell is made Delaunay by edge flips
+   (Lawson; outlines and cell lines stay).
 
 A full cell is two triangles; only the cells along the walls hold small polygons, whose fans
 stay inside the cell. One triangulation per tile (long fans along the walls) and one union of the

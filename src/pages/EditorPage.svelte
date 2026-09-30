@@ -417,6 +417,22 @@
       check = 'valid NAVM';
     } catch (e) {
       check = `not a valid NAVM: ${(e as Error).message}`;
+      // where: the edge's ends and the tiles of the triangles using it
+      const m = /edge (\d+):(\d+)/.exec((e as Error).message);
+      if (m) {
+        const [u, v] = [Number(m[1]), Number(m[2])];
+        const at = (i: number) => result.vertices[i]!.map((c) => c.toFixed(1)).join(', ');
+        const users = result.triangles
+          .map((t, i) => ({ t, i }))
+          .filter(({ t }) => t.includes(u) && t.includes(v))
+          .map(({ t, i }) => {
+            const tile = layout.tiles.get(result.tileOf[i]!);
+            const name = tile ? pieces.get(tile.piece)?.editorId : result.tileOf[i];
+            return `${name} [${t.map(at).join(' | ')}]`;
+          });
+        check += ` from (${at(u)}) to (${at(v)}); triangles: ${users.join('; ')}`;
+        console.warn('NavMesh preview:', check);
+      }
     }
     navPreview = {
       ...result,

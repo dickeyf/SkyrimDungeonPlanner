@@ -196,7 +196,9 @@ comes first, before any interface work.
   cell and draws it: 222 tiles in about 0.3 s, judged by the user far better than the CK's own
   generation and needing little or no hand work. The first run on the working cell was not a
   valid NAVM (an edge shared by three triangles): tiles overlapping in a cell stacked their
-  triangles; the parts of each cell are now merged first.
+  triangles; the parts of each cell are now merged first, and the flat triangles ear clipping
+  left on collinear border points are removed. The working cell then bakes into a valid NAVM
+  (222 tiles, 2,722 vertices, 3,666 triangles, about 0.35 s).
 
 ### Step 11 – Writing the NavMesh into the plugin
 - **Why**: turns a bake into NAVM records, with step 3's recipe.

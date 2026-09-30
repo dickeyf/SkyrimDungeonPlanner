@@ -259,8 +259,68 @@ export function bake(
       }
     }
   }
+  removeFlatTriangles(weld.vertices, triangles, tileOf, cellOf);
   delaunayFlips(weld.vertices, triangles, cellOf);
   return { vertices: weld.vertices, triangles, tileOf };
+}
+
+/**
+ * Remove the flat triangles ear clipping leaves along a border carrying collinear vertices (a
+ * point inserted on a cell line, (a, p, b) with p on the segment ab): the triangle on the other
+ * side of ab is split at p instead, so the mesh stays continuous and no edge ends up shared by
+ * three triangles. A flat triangle with nothing across ab is just dropped.
+ */
+function removeFlatTriangles(
+  vertices: readonly Vec3[],
+  triangles: TriangleIndices[],
+  tileOf: string[],
+  cellOf: string[],
+): void {
+  const flat = (t: TriangleIndices): number => {
+    // the vertex lying between the two others, or -1 when the triangle is not flat
+    const [a, b, c] = t.map((i) => vertices[i]!) as [Vec3, Vec3, Vec3];
+    const lengths = [
+      Math.hypot(b[0] - c[0], b[1] - c[1]),
+      Math.hypot(c[0] - a[0], c[1] - a[1]),
+      Math.hypot(a[0] - b[0], a[1] - b[1]),
+    ];
+    const longest = Math.max(...lengths);
+    const area = Math.abs((b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0])) / 2;
+    // height over the longest side under a tenth of a unit
+    if (longest === 0 || (2 * area) / longest >= 0.1) return -1;
+    return lengths.indexOf(longest); // the vertex opposite the longest side
+  };
+  for (let guard = 0; guard < triangles.length; guard++) {
+    const t = triangles.findIndex((tri) => flat(tri) >= 0);
+    if (t < 0) return;
+    const tri = triangles[t]!;
+    const k = flat(tri);
+    const p = tri[k]!;
+    const a = tri[(k + 1) % 3]!;
+    const b = tri[(k + 2) % 3]!;
+    triangles.splice(t, 1);
+    const [tile] = tileOf.splice(t, 1);
+    const [cell] = cellOf.splice(t, 1);
+    const across = triangles.findIndex((u) => u.includes(a) && u.includes(b));
+    if (across < 0) continue;
+    // split only where it mends a crack: each half edge then has exactly two triangles
+    const users = (x: number, y: number) =>
+      triangles.filter((u) => u.includes(x) && u.includes(y)).length;
+    if (users(a, p) !== 1 || users(p, b) !== 1) continue;
+    const u = triangles[across]!;
+    const q = u.find((x) => x !== a && x !== b)!;
+    // split (a, b, q) at p into two counter-clockwise triangles
+    const ccw = (x: number, y: number, z: number): TriangleIndices => {
+      const [X, Y, Z] = [x, y, z].map((i) => vertices[i]!) as [Vec3, Vec3, Vec3];
+      return (Y[0] - X[0]) * (Z[1] - X[1]) - (Y[1] - X[1]) * (Z[0] - X[0]) >= 0
+        ? [x, y, z]
+        : [x, z, y];
+    };
+    triangles[across] = ccw(a, p, q);
+    triangles.push(ccw(p, b, q));
+    tileOf.push(tileOf[across] ?? tile ?? '');
+    cellOf.push(cellOf[across] ?? cell ?? '');
+  }
 }
 
 /** Vertices merged within `distance` (in plan, and within a step in height). */

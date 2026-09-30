@@ -87,6 +87,28 @@ describe('bake', () => {
     expect(r.triangles).toHaveLength(4 * 2); // the 2 x 2 cells, two triangles each
   });
 
+  it('leaves no flat triangle and no edge shared by three, with collinear border points', () => {
+    // three tiles meeting on a cell line: the middle one's vertices land on the others' edges
+    const r = bake(
+      [
+        tile('A', [rect(0, 128, 0, 256)]),
+        tile('B', [rect(128, 256, 36, 76)]),
+        tile('C', [rect(128, 256, 76, 256)]),
+        tile('D', [rect(128, 256, 0, 36)]),
+      ],
+      {},
+      { origin: [0, 0], cell: 128 },
+    );
+    expect(() => buildNavMesh(1, r.vertices, r.triangles)).not.toThrow();
+    for (const t of r.triangles) {
+      const [a, b, c] = t.map((i) => r.vertices[i]!) as [Vec3, Vec3, Vec3];
+      expect(
+        Math.abs((b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0])),
+      ).toBeGreaterThan(1);
+    }
+    expect(joined(r, 'A', 'B') && joined(r, 'A', 'C')).toBe(true);
+  });
+
   it('conforms a narrower opening to the wider one (R11)', () => {
     const r = bake([
       tile('A', [rect(-60, 60, -128, 128)]),
