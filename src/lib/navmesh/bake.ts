@@ -146,6 +146,10 @@ export function bake(
       });
 
   // 2. cut each tile polygon along the grid cells
+  const cells = new Map<
+    string,
+    { i: number; j: number; tile: string; parts: ReturnType<typeof polygonClipping.intersection> }
+  >();
   const pieces: { cell: string; i: number; j: number; tile: string; rings: Ring[] }[] = [];
   const size = grid.cell;
   const [gx, gy] = grid.origin;
@@ -175,18 +179,34 @@ export function bake(
           } catch {
             continue; // a degenerate sliver: nothing walkable worth keeping
           }
-          for (const part of parts) {
-            const rings = part
-              .map((ring) =>
-                simplifyClosed(
-                  ring.slice(0, -1).map((p): Vec3 => [p[0], p[1], heightAt(p[0], p[1])]),
-                  o.simplify,
-                ),
-              )
-              .filter((r) => r.length >= 3 && Math.abs(signedArea(r)) > 1);
-            if (rings.length) pieces.push({ cell: `${i},${j}`, i, j, tile: tile.key, rings });
-          }
+          const key = `${i},${j}`;
+          const entry = cells.get(key) ?? { i, j, tile: tile.key, parts: [] };
+          entry.parts.push(...parts);
+          cells.set(key, entry);
         }
+    }
+  }
+  // Tiles may overlap in a cell (nested pieces, a door's floor patch reaching into the
+  // neighbour): their parts are merged, or their triangles would overlap.
+  for (const [key, { i, j, tile, parts }] of cells) {
+    let merged = parts;
+    if (parts.length > 1) {
+      try {
+        merged = polygonClipping.union(parts[0]!, ...parts.slice(1));
+      } catch {
+        merged = parts.slice(0, 1); // keep one part rather than overlapping ones
+      }
+    }
+    for (const part of merged) {
+      const rings = part
+        .map((ring) =>
+          simplifyClosed(
+            ring.slice(0, -1).map((p): Vec3 => [p[0], p[1], heightAt(p[0], p[1])]),
+            o.simplify,
+          ),
+        )
+        .filter((r) => r.length >= 3 && Math.abs(signedArea(r)) > 1);
+      if (rings.length) pieces.push({ cell: key, i, j, tile, rings });
     }
   }
 

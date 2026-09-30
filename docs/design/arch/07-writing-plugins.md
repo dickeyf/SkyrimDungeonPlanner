@@ -95,6 +95,8 @@ step blocks rise 52 above their ramp), slope 50 degrees, tolerance 6.
 2. every tile polygon is cut along the grid cells (`polygon-clipping`, coordinates snapped to
    1/32 of a unit, on which its sweep line otherwise fails), each piece simplified in 3D (a
    change of slope stays);
+   the parts different tiles leave in one cell are merged (tiles may overlap: a nested piece, a
+   door's floor patch reaching into the neighbour), or their triangles would stack;
 3. every piece edge gets the vertices of the neighbouring pieces lying on it, so both sides of a
    cell line or a tile border carry the same vertices; a narrower opening leaves the rest of the
    wider border as a border (R11);

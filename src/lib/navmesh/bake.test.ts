@@ -76,6 +76,17 @@ describe('bake', () => {
     expect(() => buildNavMesh(1, r.vertices, r.triangles)).not.toThrow();
   });
 
+  it('merges tiles overlapping in a cell instead of stacking their triangles', () => {
+    // B's floor reaches 64 units into A's cells (a nested piece, a door's floor patch)
+    const r = bake(
+      [tile('A', [rect(0, 128, 0, 256)]), tile('B', [rect(64, 256, 0, 256)])],
+      {},
+      { origin: [0, 0], cell: 128 },
+    );
+    expect(() => buildNavMesh(1, r.vertices, r.triangles)).not.toThrow();
+    expect(r.triangles).toHaveLength(4 * 2); // the 2 x 2 cells, two triangles each
+  });
+
   it('conforms a narrower opening to the wider one (R11)', () => {
     const r = bake([
       tile('A', [rect(-60, 60, -128, 128)]),
