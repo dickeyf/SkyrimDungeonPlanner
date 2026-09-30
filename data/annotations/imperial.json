@@ -50,40 +50,51 @@
   ],
   "pieces": {
     "ImpHall1Way01": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpHall1Way02": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpHall1Way03": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpHall1Way04": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpHall1Way128D01": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpHall1Way128L01": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpHall1Way128R01": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpHall1Way128Short01": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpHall1Way128U01": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpHall1Way64D01": {
       "exclude": "-Y opening rise 64 is an ambiguous level for z-module 128"
     },
     "ImpHall1Way64L01": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpHall1Way64R01": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpHall1Way64Short01": {
       "exclude": "Y openings at -32, 32 are not on a 128 grid"
@@ -92,67 +103,87 @@
       "exclude": "+Y opening rise 64 is an ambiguous level for z-module 128"
     },
     "ImpHall2Way01": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpHall2Way02": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpHall3Way01": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpHall3Way02": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpHall4Way01": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpHallDeadEnd01": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpHallDeadEnd02": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpHallDetwist01": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpHallDetwist02": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpHallStairs01": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpHallStairs02": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLHall1Way01": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLHall1Way128D01": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLHall1Way128L01": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLHall1Way128R01": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLHall1Way128Short01": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLHall1Way128U01": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLHall1Way256Short01": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLHall1Way64D01": {
       "exclude": "-Y opening rise 64 is an ambiguous level for z-module 128"
     },
     "ImpLHall1Way64L01": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLHall1Way64R01": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLHall1Way64Short01": {
       "exclude": "Y openings at -32, 32 are not on a 128 grid"
@@ -161,226 +192,300 @@
       "exclude": "+Y opening rise 64 is an ambiguous level for z-module 128"
     },
     "ImpLHall2Way01": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLHall2Way02": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLHall3Way01": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLHall3Way02": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLHall4Way01": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLHallDeadEnd01": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLHallDeadEnd02": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLHallDetwist01": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLHallDetwist02": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLHallDoor01": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLHallDoor02": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLHallDoorB01": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLHallDoorBB01": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLHallDoorL01": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLHallDoorLB01": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLHallDoorR01": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLHallDoorRB01": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLHallStairs01": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLHallStairs02": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLRoomCorner01": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLRoomCorner01NoWall": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLRoomCorner02": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLRoomCorner02NoWall": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLRoomCorner03": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLRoomCorner03NoWall": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLRoomCorner04": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLRoomCorner04NoWall": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLRoomDoor01": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLRoomDoor02": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLRoomDoor03": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLRoomDoor04": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLRoomDoorB01": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLRoomDoorB02": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLRoomDoorB03": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLRoomDoorB04": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLRoomDoorL01": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLRoomDoorL02": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLRoomDoorL03": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLRoomDoorL04": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLRoomICorner01": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLRoomICorner02": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLRoomICorner03": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLRoomICorner04": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLRoomMid01": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLRoomMid02": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLRoomWall01": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLRoomWall01NoWall": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLRoomWall02": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLRoomWall02NoWall": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLRoomWall03": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLRoomWall03NoWall": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLRoomWall04": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpLRoomWall04NoWall": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpRoomCorner01": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpRoomCorner02": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpRoomCorner03": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpRoomCorner04": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpRoomDoor01": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpRoomDoor02": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpRoomDoor03": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpRoomDoor04": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpRoomDoorB01": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpRoomDoorB02": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpRoomDoorB03": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpRoomDoorB04": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpRoomICorner01": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpRoomICorner02": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpRoomICorner03": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpRoomICorner04": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpRoomMid01": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpRoomWall01": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpRoomWall02": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpRoomWall03": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     },
     "ImpRoomWall04": {
-      "validated": true
+      "validated": true,
+      "walkable": "reviewed"
     }
   }
 }

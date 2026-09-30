@@ -43,7 +43,7 @@ CK. Released as 0.1.0.**
 - [x] R1 write a valid NAVM (28 Sep 2026, NPC chase in game)
 - [x] R4 walkable polygons (29 Sep 2026, all Imperial tiles reviewed)
 - [ ] R11
-- [ ] `walkable` and `navEdge` in the catalogue
+- [x] `walkable` in the catalogue, reviewed (29 Sep 2026); `navEdge` with the bake
 - [ ] Bake on selection, "fill" tool (tiles without NavMesh), clear all
 - [ ] Stitching to existing batches; locked flag
 

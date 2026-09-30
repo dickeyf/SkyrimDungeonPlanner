@@ -159,6 +159,11 @@ comes first, before any interface work.
   exists since V1, `null` so far); a Validation tab to view them over the tile and exclude or
   correct a bad one (annotations).
 - **Done when**: every validated Imperial tile has a polygon, reviewed.
+- **Result (29 Sep 2026)**: done. The catalogue analysis (cache version 4) computes each tile's
+  walkable polygons from its collision into `Piece.walkable`; the annotation `walkable:
+  reviewed | none` records the review (`none` empties it). The Validation page's Walkable tab
+  draws each tile's cells, polygons and openings, with a "mark all remaining reviewed" button:
+  the 105 validated Imperial tiles are reviewed, none left without NavMesh.
 
 ### Step 9 – Selection of several tiles
 - **Why**: the partial bake works on a selection (D32); V1 selects one tile at a time.

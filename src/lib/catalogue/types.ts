@@ -57,7 +57,11 @@ export interface Piece {
   cells: CellIndex[];
   /** Open faces only; an absent face is closed. Tiles only. */
   faces: Face[];
-  /** Walkable polygon(s) in local coordinates, vertices with Z. Later (NavMesh). */
+  /**
+   * Walkable polygon(s) in local coordinates (rotation 0), vertices with Z: outer rings
+   * counter-clockwise, holes clockwise (V2, from the collision). Null when not computed; empty
+   * when the piece has no NavMesh (annotation).
+   */
   walkable: Vec3[][] | null;
   /** Floor footprint(s) that punch holes in the NavMesh. Later (obstacles). */
   obstacle: Vec3[][] | null;

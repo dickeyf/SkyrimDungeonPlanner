@@ -10,7 +10,8 @@ files** (D46), then corrected by committed human annotations; no game data is di
   kit, D51, D53).
 - **Piece**: EditorID, FormKey, model path, category (hall, room, door), `pivot` (the NIF
   origin relative to the min corner of the piece's cell (0,0,0) at rotation 0), `cells` (the
-  grid cells it occupies at rotation 0), `faces`.
+  grid cells it occupies at rotation 0), `faces`, `walkable` (its walkable polygons at rotation
+  0, from the collision; null when not computed, empty when the piece has no NavMesh).
 - **Face**: the cell behind it, a direction (`+X`, `-X`, `+Y`, `-Y`), a connection type
   `conn`, optional `extraConn` (composites, D56) and `inset` (see below). One face per cell: an
   opening two cells wide is two faces with the same direction and type.
@@ -41,7 +42,8 @@ flowchart LR
    in the kit's folders, classified by model sub-folder and EditorID (525 Imperial STATs, 111
    structural pieces). Cached in IndexedDB, keyed on the master's size and date.
 2. **Mesh analysis** (`analyze.ts` over `mesh/*`), per piece: read the NIF through the Data view,
-   weld, find openings, compute the footprint and the face profiles.
+   weld, find openings, compute the footprint and the face profiles; from the collision, the
+   walkable polygons (`navmesh/walkable.ts` on the piece's footprint and openings, V2).
 3. **Grouping**: all face profiles of the kit are grouped into connection types.
 4. **Annotations**: the committed human decisions are applied.
 
@@ -114,7 +116,9 @@ of their faces, `EditorID:dir`, which stays valid across analysis runs.
 - **Stable ids**: a final type is named after the smallest face key among its faces.
 - **Composites** (D56): every face of an outer type also accepts an inner type (a wide door
   frame around a narrower hall); stored in `Face.extraConn`.
-- **Pieces**: validated, excluded (with a reason) or re-categorized.
+- **Pieces**: validated, excluded (with a reason) or re-categorized; the walkable polygon
+  `reviewed`, or `none` (no NavMesh from the piece: `walkable` becomes empty), from the
+  Validation page's Walkable tab (V2).
 - **Accepted overlaps** (D61): see [Grid and editing](05-grid-and-editing.md).
 
 Faces or pieces that no longer exist are reported as issues, never as errors, so an annotation

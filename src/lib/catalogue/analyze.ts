@@ -1,8 +1,10 @@
 /**
  * Step 9: build the kit catalogue from the meshes (D12, D46). For every structural STAT the
  * mesh is read through the virtual Data view, analysed (R5 footprint, R3 face profiles), and
- * the face profiles of the whole kit are grouped into proposed connection types.
+ * the face profiles of the whole kit are grouped into proposed connection types. Each tile's
+ * walkable polygons come from its collision mesh (V2 step 8).
  */
+import { collisionMesh, type CollisionMesh } from '../format/nif/collision';
 import { mergeShapes } from '../format/nif/geometry';
 import { NifFile } from '../format/nif/NifFile';
 import { computeFootprint, type Footprint } from '../mesh/footprint';
@@ -10,6 +12,7 @@ import { weldMesh } from '../mesh/geometry';
 import { findOpenings, type Opening } from '../mesh/openings';
 import { extractProfile, type Profile } from '../mesh/profiles';
 import { groupProfiles, type GroupingResult } from '../mesh/signatures';
+import { tileFrame, walkablePolygons } from '../navmesh/walkable';
 import type { ArchiveIndex } from '../vfs/archiveIndex';
 import type { KitStat } from './extract';
 import type { KitDefinition } from './kits';
@@ -60,6 +63,8 @@ export async function analyseKit(
   const faces: AnalysedFace[] = [];
   const module = kit.module.xy!;
   const zModule = kit.module.z!;
+  // collision meshes by EditorID, for the walkable polygons once the pieces are known
+  const collisions = new Map<string, CollisionMesh>();
 
   for (let i = 0; i < structural.length; i++) {
     const stat = structural[i]!;
@@ -67,7 +72,10 @@ export async function analyseKit(
     try {
       const read = await index.read(stat.modelPath);
       if (!read) throw new Error('mesh not found in any layer or archive');
-      const mesh = mergeShapes(NifFile.parse(read.bytes), { skipAlpha: true });
+      const nif = NifFile.parse(read.bytes);
+      const mesh = mergeShapes(nif, { skipAlpha: true });
+      const collision = collisionMesh(nif);
+      if (collision) collisions.set(stat.editorId, collision);
       const g = weldMesh(mesh);
       const openings = findOpenings(g);
       const footprint = computeFootprint(g, openings, module, zModule);
@@ -156,8 +164,20 @@ export async function analyseKit(
         walkable: null,
         obstacle: null,
         review: { auto: true, validated: false },
-      })),
+      }))
+      .map((p) => ({ ...p, walkable: walkableOf(p, collisions.get(p.editorId), kit) })),
   };
 
   return { kit, pieces, faces, grouping, catalogue, elapsedMs: performance.now() - started };
+}
+
+/** Walkable polygons of a tile from its collision (step 4's algorithm), null without one. */
+function walkableOf(
+  piece: Piece,
+  collision: CollisionMesh | undefined,
+  kit: KitDefinition,
+): Piece['walkable'] {
+  if (!collision || !kit.module.xy || !kit.module.z) return null;
+  const frame = tileFrame(piece, { xy: kit.module.xy, z: kit.module.z });
+  return walkablePolygons(collision.positions, collision.indices, {}, frame).rings;
 }

@@ -141,6 +141,16 @@ describe('applyAnnotations', () => {
     expect(door.review.validated).toBe(true);
   });
 
+  it('leaves a piece marked without NavMesh with no walkable polygon', () => {
+    const a: Annotations = {
+      ...emptyAnnotations('Imperial'),
+      pieces: { ImpLHallDoor01: { walkable: 'none' }, ImpHall1Way01: { walkable: 'reviewed' } },
+    };
+    const { catalogue } = applyAnnotations(auto(), a);
+    expect(catalogue.pieces.find((p) => p.editorId === 'ImpLHallDoor01')!.walkable).toEqual([]);
+    expect(catalogue.pieces.find((p) => p.editorId === 'ImpHall1Way01')!.walkable).toBeNull();
+  });
+
   it('reports faces and pieces that no longer exist instead of failing', () => {
     const a: Annotations = {
       ...emptyAnnotations('Imperial'),

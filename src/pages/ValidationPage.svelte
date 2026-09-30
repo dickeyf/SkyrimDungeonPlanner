@@ -18,6 +18,7 @@
   import { applyAnnotations, serializeAnnotations } from '$lib/catalogue/annotations';
   import { buildReview } from '$lib/catalogue/review';
   import type { Piece } from '$lib/catalogue/types';
+  import { tileFrame } from '$lib/navmesh/walkable';
   import {
     HANDLE_KEYS,
     ensureAccess,
@@ -47,7 +48,7 @@
     );
   });
 
-  let tab = $state<'types' | 'near' | 'composite' | 'pieces' | 'overlaps'>('near');
+  let tab = $state<'types' | 'near' | 'composite' | 'pieces' | 'overlaps' | 'walkable'>('near');
   let openType = $state<number | null>(null);
 
   // wide cyan underneath, thin magenta on top: coinciding lines show magenta on cyan
@@ -89,6 +90,60 @@
       notes: notes.get(p.editorId) ?? [],
     }));
   });
+
+  // ---- walkable polygons (V2 step 8) ----------------------------------------------------------
+
+  /** Tiles kept in the catalogue, with their computed polygons and review status. */
+  const walkableView = $derived.by(() => {
+    if (!analysis || !annotated) return [];
+    const computed = new Map(analysis.catalogue.pieces.map((p) => [p.editorId, p.walkable]));
+    return annotated.catalogue.pieces
+      .filter((p) => p.review.validated)
+      .map((p) => ({
+        piece: p,
+        rings: computed.get(p.editorId) ?? null,
+        status: ann.current.pieces[p.editorId]?.walkable,
+      }));
+  });
+  const walkableCounts = $derived({
+    reviewed: walkableView.filter((w) => w.status === 'reviewed').length,
+    none: walkableView.filter((w) => w.status === 'none').length,
+    pending: walkableView.filter((w) => !w.status).length,
+  });
+  let walkableSelected = $state<string | null>(null);
+  const walkableItem = $derived(
+    walkableView.find((w) => w.piece.editorId === walkableSelected) ?? walkableView[0],
+  );
+  const walkableFrame = $derived(
+    walkableItem && analysis?.kit.module.xy && analysis.kit.module.z
+      ? tileFrame(walkableItem.piece, { xy: analysis.kit.module.xy, z: analysis.kit.module.z })
+      : null,
+  );
+
+  function setWalkable(editorId: string, status: 'reviewed' | 'none' | undefined): void {
+    ann.update((a) => setPiece(a, editorId, { walkable: status }));
+    // move on to the next tile still to review
+    const next = walkableView.find((w) => !w.status && w.piece.editorId !== editorId);
+    if (status && next) walkableSelected = next.piece.editorId;
+  }
+
+  function reviewAllWalkable(): void {
+    ann.update((a) => {
+      let next = a;
+      for (const w of walkableView)
+        if (!w.status && w.rings !== null)
+          next = setPiece(next, w.piece.editorId, { walkable: 'reviewed' });
+      return next;
+    });
+  }
+
+  const ringPoints = (ring: readonly (readonly number[])[]) =>
+    ring.map((p) => `${p[0]},${-p[1]!}`).join(' ');
+  const ringArea = (ring: readonly (readonly number[])[]) =>
+    ring.reduce((a, p, i) => {
+      const q = ring[(i + 1) % ring.length]!;
+      return a + p[0]! * q[1]! - q[0]! * p[1]!;
+    }, 0) / 2;
 
   function excludeNonFitting(): void {
     ann.update((a) => {
@@ -234,6 +289,7 @@
         >Composite faces ({review.containment.length})</button
       >
       <button class:active={tab === 'pieces'} onclick={() => (tab = 'pieces')}>Pieces</button>
+      <button class:active={tab === 'walkable'} onclick={() => (tab = 'walkable')}>Walkable</button>
       <button class:active={tab === 'overlaps'} onclick={() => (tab = 'overlaps')}
         >Accepted overlaps ({ann.current.overlaps.length})</button
       >
@@ -374,6 +430,96 @@
           </article>
         {/each}
       </div>
+    {:else if tab === 'walkable'}
+      <p class="hint">
+        The walkable area of every validated tile, computed from its collision (NavMesh). Check it
+        covers the floor, keeps away from the walls and reaches the openings (yellow), then mark it
+        reviewed; mark a tile without NavMesh when its polygon is wrong or it is not walkable.
+        {walkableCounts.reviewed} reviewed, {walkableCounts.none} without NavMesh, {walkableCounts.pending}
+        to review.
+      </p>
+      <p>
+        <button disabled={walkableCounts.pending === 0} onclick={reviewAllWalkable}
+          >Mark all remaining reviewed</button
+        >
+      </p>
+      <div class="walkable">
+        <ul class="walkable-list">
+          {#each walkableView as w (w.piece.editorId)}
+            <li>
+              <button
+                class:active={walkableItem?.piece.editorId === w.piece.editorId}
+                onclick={() => (walkableSelected = w.piece.editorId)}
+              >
+                <span class="status {w.status ?? 'pending'}"
+                  >{w.status === 'reviewed' ? '✓' : w.status === 'none' ? '∅' : '·'}</span
+                >
+                {w.piece.editorId}
+                <span class="hint"
+                  >{w.rings === null
+                    ? 'no collision'
+                    : `${w.rings.length} ring${w.rings.length === 1 ? '' : 's'}, ${w.rings.reduce((n, r) => n + r.length, 0)} vertices`}</span
+                >
+              </button>
+            </li>
+          {/each}
+        </ul>
+        {#if walkableItem && walkableFrame}
+          {@const f = walkableFrame}
+          {@const pad = 32}
+          <div class="walkable-detail">
+            <h3>{walkableItem.piece.editorId}</h3>
+            <svg
+              viewBox="{f.min[0] - pad} {-f.max[1] - pad} {f.max[0] - f.min[0] + 2 * pad} {f
+                .max[1] -
+                f.min[1] +
+                2 * pad}"
+              width="420"
+              height="420"
+            >
+              <rect
+                x={f.min[0]}
+                y={-f.max[1]}
+                width={f.max[0] - f.min[0]}
+                height={f.max[1] - f.min[1]}
+                class="footprint"
+              />
+              {#each walkableItem.piece.cells as c, i (i)}
+                <rect
+                  x={-walkableItem.piece.pivot[0] + c[0] * analysis!.kit.module.xy!}
+                  y={-(-walkableItem.piece.pivot[1] + (c[1] + 1) * analysis!.kit.module.xy!)}
+                  width={analysis!.kit.module.xy}
+                  height={analysis!.kit.module.xy}
+                  class="cell"
+                />
+              {/each}
+              {#each walkableItem.rings ?? [] as ring, i (i)}
+                <polygon points={ringPoints(ring)} class={ringArea(ring) > 0 ? 'outer' : 'hole'} />
+              {/each}
+              {#each f.openings as o, i (i)}
+                <line x1={o.a[0]} y1={-o.a[1]} x2={o.b[0]} y2={-o.b[1]} class="opening" />
+              {/each}
+            </svg>
+            <p>
+              <button onclick={() => setWalkable(walkableItem.piece.editorId, 'reviewed')}
+                >Reviewed</button
+              >
+              <button onclick={() => setWalkable(walkableItem.piece.editorId, 'none')}
+                >No NavMesh</button
+              >
+              {#if walkableItem.status}
+                <button onclick={() => setWalkable(walkableItem.piece.editorId, undefined)}
+                  >Clear</button
+                >
+              {/if}
+            </p>
+            <p class="hint">
+              Seen from above, +Y up. Grey: the grid cells; blue: walkable; red: holes; yellow: the
+              openings, where the NavMesh meets the neighbours.
+            </p>
+          </div>
+        {/if}
+      </div>
     {:else if tab === 'overlaps'}
       <p class="hint">
         Piece pairs that share cells on purpose, in one relative placement. They are marked from the
@@ -454,6 +600,64 @@
 </section>
 
 <style>
+  .walkable {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+  .walkable-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-height: 70vh;
+    overflow: auto;
+    min-width: 22rem;
+  }
+  .walkable-list button {
+    width: 100%;
+    text-align: left;
+  }
+  .walkable-list button.active {
+    outline: 1px solid var(--accent, #6fb7ff);
+  }
+  .status {
+    display: inline-block;
+    width: 1.2em;
+  }
+  .status.reviewed {
+    color: #8fd18f;
+  }
+  .status.none {
+    color: #d9c27a;
+  }
+  .walkable-detail svg {
+    background: #15141a;
+  }
+  .walkable-detail .footprint {
+    fill: none;
+    stroke: #8a879a;
+    stroke-width: 2;
+    stroke-dasharray: 8 6;
+  }
+  .walkable-detail .cell {
+    fill: #26252e;
+    stroke: #34323d;
+    stroke-width: 1;
+  }
+  .walkable-detail .outer {
+    fill: rgba(111, 183, 255, 0.35);
+    stroke: #6fb7ff;
+    stroke-width: 2;
+  }
+  .walkable-detail .hole {
+    fill: #15141a;
+    stroke: #ff7a7a;
+    stroke-width: 2;
+  }
+  .walkable-detail .opening {
+    stroke: #e6c84a;
+    stroke-width: 5;
+  }
   .hint {
     color: var(--fg-muted);
     font-size: 13px;

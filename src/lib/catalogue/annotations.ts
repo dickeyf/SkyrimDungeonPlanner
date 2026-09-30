@@ -46,6 +46,11 @@ export interface PieceAnnotation {
   category?: PieceCategory;
   /** Reason for leaving the piece out of the catalogue. */
   exclude?: string;
+  /**
+   * NavMesh review (V2): `reviewed` confirms the computed walkable polygon; `none` leaves the
+   * piece without NavMesh (not walkable, or a polygon to draw in the CK).
+   */
+  walkable?: 'reviewed' | 'none';
 }
 
 export interface Annotations {
@@ -187,6 +192,8 @@ export function applyAnnotations(auto: Catalogue, annotations: Annotations): Ann
       ...piece,
       category: ann?.category ?? piece.category,
       review: { ...piece.review, validated: ann?.validated ?? piece.review.validated },
+      // `none`: no NavMesh from this piece (an empty list, unlike null: not computed)
+      ...(ann?.walkable === 'none' ? { walkable: [] } : {}),
       faces: piece.faces.map((face) => {
         const conn = finalId(face.conn);
         const extra = [...(alsoAccepts.get(conn) ?? [])].filter((x) => x !== conn).sort();
