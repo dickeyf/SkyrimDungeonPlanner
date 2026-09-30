@@ -28,3 +28,10 @@
   only with the author's authorization (a signed upload, or a submission the author approves);
   the app reads them from there and the repository copy becomes a mirror or goes away. Noted on
   29 Sep 2026.
+- **MCP server for the SPA** (after the NavMesh work): let an AI assistant drive the editor
+  (read the cell, place tiles, run the checks, bake) through the Model Context Protocol. A page
+  cannot listen on a TCP port (no web API for it, in Chrome either), so the page would connect
+  out instead: a small local bridge (a Node process started by the user, or run by the MCP
+  client) speaks MCP to the assistant and relays the calls to the open page over a WebSocket
+  (`ws://localhost`); the page stays the only one touching the files (File System Access). A
+  Chrome extension with native messaging is the heavier alternative. Noted on 29 Sep 2026.
