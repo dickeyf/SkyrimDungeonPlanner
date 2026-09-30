@@ -10,6 +10,7 @@ dist-single
 logs
 *.log
 npm-debug.log*
+img*.png
 
 # Python (analysis scripts in tools/)
 tools/.venv
