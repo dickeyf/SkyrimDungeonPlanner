@@ -303,7 +303,8 @@
   const activePiece = $derived(active ? layout?.tiles.get(active.tile)?.piece : undefined);
   const validPieces = $derived(new Map([...pieces].filter(([, p]) => p.review.validated)));
   // the clicked face proposes, every neighbour of the new tile must accept (step 15b)
-  const candidates = $derived(
+  // placements that fit by profile; those with a junction known to leak are set apart
+  const fitting = $derived(
     active && layout
       ? checkCandidates(
           candidatesFor(active, layout, validPieces, types).sort((a, b) =>
@@ -313,10 +314,19 @@
           pieces,
           types,
           geometry,
-          (j, l) => (jointVerdict(j, l)?.leaks.length ?? 0) === 0,
         )
       : [],
   );
+  const leakFree = (c: Candidate): boolean => {
+    if (!layout || !anchor) return true;
+    const placed = addTile(layout, pieces, c.piece, c.cell, c.rotation);
+    if (!placed.ok) return true;
+    return jointsOfTile(placed.layout, pieces, types, placed.key).every(
+      (j) => (jointVerdict(j, placed.layout)?.leaks.length ?? 0) === 0,
+    );
+  };
+  const candidates = $derived(fitting.filter(leakFree));
+  const leakyCandidates = $derived(fitting.filter((c) => !leakFree(c)));
   let candFilter = $state('');
   let candCategory = $state<PieceCategory | 'all'>('all');
   /**
@@ -577,6 +587,37 @@
           ed.selected = r.key;
         }
         return;
+      }
+      // a leak first: open the nearest free face (within two cells), where a piece plugs it
+      const leak =
+        showFaces && anchor
+          ? faceAt(
+              info.world,
+              leaking.map((j) => j.joint),
+              anchor,
+            )
+          : undefined;
+      if (leak && anchor) {
+        const centre = (o: OpenFace) => {
+          const r = faceRect(o, anchor);
+          return [(r.min[0] + r.max[0]) / 2, (r.min[1] + r.max[1]) / 2];
+        };
+        const [lx, ly] = centre(leak);
+        let plug: OpenFace | undefined;
+        let best = 2 * anchor.module.xy;
+        for (const o of opens) {
+          const [ox, oy] = centre(o);
+          const d = Math.hypot(ox! - lx!, oy! - ly!);
+          if (d <= best) {
+            best = d;
+            plug = o;
+          }
+        }
+        if (plug) {
+          openFace(plug);
+          activeShared = null;
+          return;
+        }
       }
       const face = showFaces && anchor ? faceAt(info.world, [...opens, ...bad], anchor) : undefined;
       if (face) {
@@ -937,6 +978,14 @@
                 </select>
               </div>
               <div class="hint">Hover to preview, click to place, Esc to close.</div>
+              {#if leakyCandidates.length}
+                <div class="hint">
+                  {leakyCandidates.length} set aside, known to leak:
+                  {[...new Set(leakyCandidates.map((c) => pieces.get(c.piece)!.editorId))].join(
+                    ', ',
+                  )}
+                </div>
+              {/if}
               <ul class="candidates">
                 {#each shownCandidates as c, n (n)}
                   {@const prof = profileOf(c.piece, c.opening.dir)}
