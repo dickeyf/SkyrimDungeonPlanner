@@ -12,6 +12,7 @@
   import type { Catalogue, FormKey, Piece, PieceCategory } from '$lib/catalogue/types';
   import { editorStore as ed } from '$lib/editor/editorStore.svelte';
   import { leakChecker, type LeakVerdict } from '$lib/editor/leakChecker.svelte';
+  import { textureChecker } from '$lib/editor/textureChecker.svelte';
   import {
     addTile,
     badJoints,
@@ -49,6 +50,7 @@
     type BadJoint,
     type Candidate,
     type JointGeometry,
+    type LayoutJunction,
     type EditResult,
     type History,
     type Layout,
@@ -239,6 +241,25 @@
     return verdictOf(layoutJunction(joint, l, pieces, anchor).key);
   }
 
+  // ---- texture continuity (optional, off by default) -------------------------------------------
+
+  $effect(() => {
+    const js = junctions;
+    if (!textureChecker.enabled || js.length === 0) return;
+    const p = pieces;
+    void ed.meshes().then((m) => textureChecker.request(js, p, m));
+  });
+  const textureBroken = $derived(
+    textureChecker.enabled
+      ? junctions.filter((j) => (textureChecker.verdicts.get(j.key)?.length ?? 0) > 0)
+      : [],
+  );
+  /** Texture breaks of a joint of the layout (or of a simulated one), undefined until checked. */
+  function jointBreaks(joint: BadJoint, l: Layout) {
+    if (!anchor || joint.against.length === 0) return undefined;
+    return textureChecker.verdicts.get(layoutJunction(joint, l, pieces, anchor).key);
+  }
+
   const active = $derived(opens.find((o) => o.id === activeFace));
   const activeBad = $derived(bad.find((o) => o.id === activeFace));
   const shared = $derived(layout ? sharedCells(layout, pieces) : []);
@@ -298,15 +319,53 @@
   );
   let candFilter = $state('');
   let candCategory = $state<PieceCategory | 'all'>('all');
+  /**
+   * With the texture check on, each candidate's junctions once placed, to rank the ones that keep
+   * the texture continuous first: 0 continuous, 1 not checked yet, 2 a texture break.
+   */
+  const candidateJunctions = $derived.by((): { c: Candidate; js: LayoutJunction[] }[] => {
+    if (!textureChecker.enabled || !layout || !anchor) return [];
+    const a = anchor;
+    const l = layout;
+    return candidates.flatMap((c) => {
+      const placed = addTile(l, pieces, c.piece, c.cell, c.rotation);
+      if (!placed.ok) return [];
+      const js = jointsOfTile(placed.layout, pieces, types, placed.key)
+        .filter((j) => j.against.length > 0)
+        .map((j) => layoutJunction(j, placed.layout, pieces, a));
+      return [{ c, js }];
+    });
+  });
+  $effect(() => {
+    const needed = candidateJunctions.flatMap((x) => x.js);
+    if (needed.length === 0) return;
+    const p = pieces;
+    void ed.meshes().then((m) => textureChecker.request(needed, p, m));
+  });
+  const candidateTexture = $derived.by((): WeakMap<Candidate, 0 | 1 | 2> => {
+    const out = new WeakMap<Candidate, 0 | 1 | 2>();
+    for (const { c, js } of candidateJunctions) {
+      const verdicts = js.map((j) => textureChecker.verdicts.get(j.key));
+      out.set(c, verdicts.some((v) => v && v.length > 0) ? 2 : verdicts.every((v) => v) ? 0 : 1);
+    }
+    return out;
+  });
   const shownCandidates = $derived.by(() => {
     const needle = candFilter.trim().toLowerCase();
-    return candidates.filter((c) => {
+    const shown = candidates.filter((c) => {
       const p = pieces.get(c.piece)!;
       return (
         (candCategory === 'all' || p.category === candCategory) &&
         (!needle || p.editorId.toLowerCase().includes(needle))
       );
     });
+    // stable sort: texture-continuous placements first when the check is on
+    return textureChecker.enabled
+      ? shown
+          .map((c, i) => ({ c, i, rank: candidateTexture.get(c) ?? 1 }))
+          .sort((x, y) => x.rank - y.rank || x.i - y.i)
+          .map((x) => x.c)
+      : shown;
   });
   const around = $derived(
     active && layout && anchor && ed.loaded
@@ -338,6 +397,11 @@
         ...faceRect(j.joint, anchor),
         color: '#b04bff',
         opacity: j.joint.id === activeFace ? 0.95 : 0.75,
+      })),
+      ...textureBroken.map((j) => ({
+        ...faceRect(j.joint, anchor),
+        color: '#35c2d6',
+        opacity: j.joint.id === activeFace ? 0.95 : 0.7,
       })),
       ...shared.map((sc) => ({
         ...cellBox(sc.cell),
@@ -892,6 +956,9 @@
                         ></span>
                         {pieces.get(c.piece)!.editorId}
                         <span class="hint">by {c.opening.dir}, {c.rotation * 90}°</span>
+                        {#if textureChecker.enabled && candidateTexture.get(c) === 2}
+                          <span class="texture-break">texture break</span>
+                        {/if}
                       </span>
                     </button>
                   </li>
@@ -929,6 +996,9 @@
                       {#if layout && (jointVerdict(j, layout)?.leaks.length ?? 0) > 0}
                         <span class="leak">· leak</span>
                       {/if}
+                      {#if textureChecker.enabled && layout && (jointBreaks(j, layout)?.length ?? 0) > 0}
+                        <span class="texture-break">· texture</span>
+                      {/if}
                     </button>
                   {/each}
                 </details>
@@ -953,6 +1023,22 @@
                         ? ''
                         : 's'}).
                     </div>
+                  {/if}
+                  {#if textureChecker.enabled && layout}
+                    {@const breaks = jointBreaks(inspectedJoint, layout)}
+                    {#if breaks && breaks.length > 0}
+                      <div class="warn">
+                        Texture break:
+                        {#each breaks as b, i (i)}
+                          <br />{b.cause === 'texture'
+                            ? `${b.texture.split('/').pop()} meets ${b.other?.split('/').pop()}`
+                            : `${b.texture.split('/').pop()} shifted by ${b.offset.toFixed(2)} of a repeat`}
+                          over {b.length.toFixed(0)} units
+                        {/each}
+                      </div>
+                    {:else if breaks}
+                      <div class="hint">Texture continuous across the junction.</div>
+                    {/if}
                   {/if}
                   <ProfileView size={140} layers={jointLayers(inspectedJoint)} />
                   <div class="hint diag">
@@ -1020,6 +1106,16 @@
             <span><i style:background="#e8d23a"></i>seam {seams}</span>
             <span><i style:background="#e04040"></i>mismatch {bad.length - seams}</span>
             <span><i style:background="#ff2bd6"></i>shared cell {shared.length}</span>
+            <label
+              ><input
+                type="checkbox"
+                checked={textureChecker.enabled}
+                onchange={(e) => textureChecker.setEnabled(e.currentTarget.checked)}
+              /> Texture continuity check</label
+            >
+            {#if textureChecker.enabled}
+              <span><i style:background="#35c2d6"></i>texture break {textureBroken.length}</span>
+            {/if}
             <span
               ><i style:background="#b04bff"></i>leak {leaking.length}{leakChecker.done <
               leakChecker.total
@@ -1121,6 +1217,9 @@
   }
   .joints .leak {
     color: #c77dff;
+  }
+  .texture-break {
+    color: #35c2d6;
   }
   .joints button.active {
     border-color: var(--accent);

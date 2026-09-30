@@ -36,7 +36,7 @@ CK. Released as 0.1.0.**
 ## Phase 2b – Deep junction check (R16) – V2, see `08-plan-v2.md`
 - [x] Proof of concept on the two known cases (door seam, room pieces), 29 Sep 2026
 - [x] Exact free edges + visibility from the inside (GPU rendering), local cache per pair (29 Sep 2026)
-- [ ] Profiles = fast filter, deep test = confirmation; texture continuity (14b, optional, off by default)
+- [x] Profiles = fast filter, deep test = confirmation; texture continuity (14b, optional, off by default), 29 Sep 2026
 - [ ] Later, with caves and props: where to plug a leak, verified plug
 
 ## Phase 3 – Basic NavMesh – V2, see `08-plan-v2.md`

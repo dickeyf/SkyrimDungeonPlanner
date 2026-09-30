@@ -115,7 +115,8 @@ export function corridorMesh(
   return {
     positions,
     indices,
-    ranges: [{ name: 'Corridor', start: 0, count: indices.length, alpha: false }],
+    ranges: [{ name: 'Corridor', start: 0, count: indices.length, alpha: false, texture: '' }],
+    uvs: new Float32Array((positions.length / 3) * 2),
     min,
     max,
   };

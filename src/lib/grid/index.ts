@@ -6,3 +6,4 @@ export * from './assist';
 export * from './joints';
 export * from './overlaps';
 export * from './leaks';
+export * from './textures';

@@ -34,6 +34,12 @@ export interface NifBlock {
   /** BSTriShape only: 3 indices per triangle. */
   triangles?: Uint16Array;
   vertexFlags?: number;
+  /** BSTriShape only: texture coordinates, 2 floats per vertex (as stored, before the shader's). */
+  uvs?: Float32Array;
+  /** BSLightingShaderProperty only. */
+  shader?: { textureSet: number; uvOffset: [number, number]; uvScale: [number, number] };
+  /** BSShaderTextureSet only: texture paths, diffuse first. */
+  textures?: string[];
 }
 
 export interface ShapeInstance {
@@ -152,6 +158,11 @@ export class NifFile {
       };
       if (type.endsWith('Node')) this.parseNode(r, block);
       else if (type === 'BSTriShape') this.parseTriShape(r, block);
+      else if (type === 'BSLightingShaderProperty') this.parseLightingShader(r, block);
+      else if (type === 'BSShaderTextureSet') {
+        block.textures = [];
+        for (let n = r.u32(); n > 0; n--) block.textures.push(r.sizedString());
+      }
       this.blocks.push(block);
       this.ranges.push({ start, size: blockSizes[i]! });
       r.seek(start + blockSizes[i]!); // authoritative; skips unparsed tails
@@ -211,11 +222,12 @@ export class NifFile {
     block.shaderProperty = r.i32();
     block.alphaProperty = r.i32();
     const desc = r.u64();
-    const { vertexSize, positionBytes, flags } = decodeVertexDesc(desc);
+    const { vertexSize, positionBytes, flags, uvOffset } = decodeVertexDesc(desc);
     const numTriangles = r.u16();
     const numVertices = r.u16();
     const dataSize = r.u32();
     block.vertexFlags = flags;
+    if (uvOffset >= 0) block.uvs = new Float32Array(numVertices * 2);
     block.vertices = new Float32Array(numVertices * 3);
     block.triangles = new Uint16Array(numTriangles * 3);
     if (dataSize === 0 || numVertices === 0) return;
@@ -234,8 +246,38 @@ export class NifFile {
         block.vertices[v * 3 + 2] = halfToFloat(view.getUint16(at + 4, true));
       }
     }
+    if (block.uvs) {
+      for (let v = 0; v < numVertices; v++) {
+        const at = base + v * vertexSize + uvOffset;
+        block.uvs[v * 2] = halfToFloat(view.getUint16(at, true));
+        block.uvs[v * 2 + 1] = halfToFloat(view.getUint16(at + 2, true));
+      }
+    }
     r.skip(numVertices * vertexSize);
     for (let t = 0; t < numTriangles * 3; t++) block.triangles[t] = r.u16();
+  }
+
+  /**
+   * BSLightingShaderProperty (BS version 100): shader type u32, name, extra data refs,
+   * controller, two flag words, UV offset (2 floats), UV scale (2 floats), texture set ref.
+   */
+  private parseLightingShader(r: BinaryReader, block: NifBlock): void {
+    r.u32(); // shader type
+    r.i32(); // name
+    r.skip(4 * r.u32()); // extra data
+    r.i32(); // controller
+    r.u32(); // flags 1
+    r.u32(); // flags 2
+    const uvOffset: [number, number] = [r.f32(), r.f32()];
+    const uvScale: [number, number] = [r.f32(), r.f32()];
+    block.shader = { textureSet: r.i32(), uvOffset, uvScale };
+  }
+
+  /** Diffuse texture path of a shape (lower case, forward slashes), or '' without one. */
+  diffuseOf(shape: NifBlock): string {
+    const shader = this.blocks[shape.shaderProperty]?.shader;
+    const path = shader ? this.blocks[shader.textureSet]?.textures?.[0] : undefined;
+    return (path ?? '').toLowerCase().replace(/\\/g, '/');
   }
 
   /** All BSTriShape blocks reachable from the roots, with their accumulated transforms. */

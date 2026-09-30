@@ -140,6 +140,15 @@ comes first, before any interface work.
   continuous. A "Texture continuity check" checkbox, **off by default**.
 - **Done when**: the wrongly turned room piece is flagged, and no longer once turned; unit tests
   on the UV comparison.
+- **Result (29 Sep 2026)**: done. The NIF reader gives vertex UVs and each shape's diffuse texture
+  (shader UV offset and scale applied); `grid/textures.ts` compares, along the edges of both
+  sides lying on the junction plane within the opening's grid level, the texture file and the
+  coordinates (same file, the same whole number of repeats all along). The editor's optional
+  check marks breaks in cyan, explains them in the junction panel and ranks the assistant's
+  placements, texture-continuous first. The original wrongly turned piece could not be
+  identified any more; on the working cell, the flagged junctions are the breaks seen in game
+  (slight, but real), the others show nothing. Comparing at every height was tried and dropped:
+  the pieces' outer shells meet on the plane too and flag almost every junction.
 
 ## Phase C – NavMesh
 

@@ -4,7 +4,7 @@
  * meshes resolve to null so the scene can draw a marker instead.
  */
 import { BufferAttribute, BufferGeometry } from 'three';
-import { mergeShapes } from '../format/nif/geometry';
+import { mergeShapes, type MergedMesh } from '../format/nif/geometry';
 import { NifFile } from '../format/nif/NifFile';
 import { weldMesh, type WeldedGeometry } from '../mesh/geometry';
 import type { ArchiveIndex } from '../vfs/archiveIndex';
@@ -12,6 +12,7 @@ import type { ArchiveIndex } from '../vfs/archiveIndex';
 export class MeshCache {
   private readonly geometries = new Map<string, Promise<BufferGeometry | null>>();
   private readonly weldedMeshes = new Map<string, Promise<WeldedGeometry | null>>();
+  private readonly mergedMeshes = new Map<string, Promise<MergedMesh | null>>();
 
   constructor(private readonly index: ArchiveIndex) {}
 
@@ -24,16 +25,24 @@ export class MeshCache {
     return entry;
   }
 
+  /** The merged mesh of a model with its texture coordinates, null when unreadable. */
+  merged(modelPath: string): Promise<MergedMesh | null> {
+    let entry = this.mergedMeshes.get(modelPath);
+    if (!entry) {
+      entry = this.index
+        .read(modelPath)
+        .then((read) => (read ? mergeShapes(NifFile.parse(read.bytes), { skipAlpha: true }) : null))
+        .catch(() => null);
+      this.mergedMeshes.set(modelPath, entry);
+    }
+    return entry;
+  }
+
   /** The welded mesh of a model (for the deep junction check), null when unreadable. */
   welded(modelPath: string): Promise<WeldedGeometry | null> {
     let entry = this.weldedMeshes.get(modelPath);
     if (!entry) {
-      entry = this.index
-        .read(modelPath)
-        .then((read) =>
-          read ? weldMesh(mergeShapes(NifFile.parse(read.bytes), { skipAlpha: true })) : null,
-        )
-        .catch(() => null);
+      entry = this.merged(modelPath).then((m) => (m ? weldMesh(m) : null));
       this.weldedMeshes.set(modelPath, entry);
     }
     return entry;

@@ -4,8 +4,10 @@ import { applyTransform, type NifFile, type ShapeInstance } from './NifFile';
 export interface MergedMesh {
   positions: Float32Array; // 3 per vertex
   indices: Uint32Array; // 3 per triangle
-  /** Shape name per triangle range, for debugging. */
-  ranges: { name: string; start: number; count: number; alpha: boolean }[];
+  /** Texture coordinates, 2 per vertex, with the shader's UV offset and scale applied. */
+  uvs: Float32Array;
+  /** Per triangle range (indices start and count): shape name and diffuse texture path. */
+  ranges: { name: string; start: number; count: number; alpha: boolean; texture: string }[];
   min: [number, number, number];
   max: [number, number, number];
 }
@@ -19,6 +21,7 @@ export function mergeShapes(nif: NifFile, options: { skipAlpha?: boolean } = {})
     indexCount += s.block.triangles!.length;
   }
   const positions = new Float32Array(vertexCount * 3);
+  const uvs = new Float32Array(vertexCount * 2);
   const indices = new Uint32Array(indexCount);
   const ranges: MergedMesh['ranges'] = [];
   const min: [number, number, number] = [Infinity, Infinity, Infinity];
@@ -27,6 +30,15 @@ export function mergeShapes(nif: NifFile, options: { skipAlpha?: boolean } = {})
   let iBase = 0;
   for (const s of shapes) {
     const n = writeShape(s, positions, vBase, min, max);
+    const uv = s.block.uvs;
+    const shader = nif.blocks[s.block.shaderProperty]?.shader;
+    const [ou, ov] = shader?.uvOffset ?? [0, 0];
+    const [su, sv] = shader?.uvScale ?? [1, 1];
+    if (uv)
+      for (let i = 0; i < n; i++) {
+        uvs[(vBase + i) * 2] = uv[i * 2]! * su + ou;
+        uvs[(vBase + i) * 2 + 1] = uv[i * 2 + 1]! * sv + ov;
+      }
     const tris = s.block.triangles!;
     for (let i = 0; i < tris.length; i++) indices[iBase + i] = tris[i]! + vBase;
     ranges.push({
@@ -34,11 +46,12 @@ export function mergeShapes(nif: NifFile, options: { skipAlpha?: boolean } = {})
       start: iBase,
       count: tris.length,
       alpha: s.block.alphaProperty !== -1,
+      texture: nif.diffuseOf(s.block),
     });
     vBase += n;
     iBase += tris.length;
   }
-  return { positions, indices, ranges, min, max };
+  return { positions, uvs, indices, ranges, min, max };
 }
 
 function writeShape(

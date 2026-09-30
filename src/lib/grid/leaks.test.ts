@@ -20,7 +20,8 @@ function slab(x0: number, x1: number, y0 = -50, y1 = 50): MergedMesh {
   return {
     positions,
     indices,
-    ranges: [{ name: 'slab', start: 0, count: 6, alpha: false }],
+    ranges: [{ name: 'slab', start: 0, count: 6, alpha: false, texture: '' }],
+    uvs: new Float32Array(8),
     min: [x0, y0, 0],
     max: [x1, y1, 0],
   };

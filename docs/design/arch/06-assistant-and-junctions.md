@@ -123,6 +123,20 @@ integration came at step 6:
   that see it. `checkCandidates` takes an `accept` hook: the assistant drops a placement whose
   junction has a known leak (only once checked: an unchecked pair is offered).
 
+## Texture continuity (`textures.ts`, V2, optional)
+
+The triangle edges of both sides lying on the junction plane (triangles lying in the plane
+excluded), within the opening's width and grid level, are paired where they run along each
+other; along each pair, the texture file must be the same and the texture coordinates must
+differ by the same whole number of repeats at both ends and in the middle (0.02 of a repeat
+tolerated). Otherwise the break's cause is `texture` (another file) or `offset` (a shift,
+a flip). Breaks shorter than 4 units are ignored. Higher than the opening's level, the outer
+shells of the pieces meet on the plane too and never match: they are left out.
+
+`editor/textureChecker.svelte.ts` keeps verdicts in memory by junction key (the check is cheap
+once the meshes are read, `MeshCache.merged`). With the option on, the editor marks breaks in
+cyan and ranks the assistant's placements: continuous first, not checked yet, then breaks.
+
 ## Marks
 
 | Mark | Meaning | Source |
@@ -131,6 +145,7 @@ integration came at step 6:
 | yellow | seam, with its gap in units | `badJoints` |
 | red | mismatch, or an opening against a wall | `badJoints` |
 | violet | visible leak found by the deep check | `leakChecker` |
+| cyan | texture break (optional check) | `textureChecker` |
 | magenta | cell shared by two tiles (not an accepted overlap) | `sharedCells` |
 
 A selected tile lists all its junctions (`jointsOfTile`) with their verdict, both distances and

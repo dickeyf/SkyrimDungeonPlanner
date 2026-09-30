@@ -23,6 +23,8 @@ export interface VertexLayout {
   /** 16 (3 floats + bitangent X) or 8 (4 halfs). */
   positionBytes: 8 | 16;
   flags: number;
+  /** Byte offset of the first UV pair (two halfs) in a vertex, or -1 without UVs. */
+  uvOffset: number;
 }
 
 /**
@@ -48,5 +50,6 @@ export function decodeVertexDesc(desc: bigint): VertexLayout {
       `unexpected position block size ${positionBytes} in vertex desc 0x${desc.toString(16)}`,
     );
   }
-  return { vertexSize, positionBytes, flags };
+  const uvOffset = flags & VertexFlags.uvs && nib(2) ? nib(2) * 4 : -1;
+  return { vertexSize, positionBytes, flags, uvOffset };
 }

@@ -44,6 +44,15 @@ cell children, `8` persistent children, `9` temporary children.
   count u32 + triangle i16). An edge holds a neighbour triangle, -1, or, when triangle flag bit
   0/1/2 is set for edge 0/1/2, an index into the edge links. Other NAVM fields stay opaque.
 
+### Textures
+
+`BSTriShape` vertices carry their first UV pair as two halfs at the offset of vertex-description
+nibble 2. `BSLightingShaderProperty` (BS version 100): shader type u32, name, extra data refs,
+controller, two flag words, UV offset (2 × f32), UV scale (2 × f32), then the
+`BSShaderTextureSet` ref, whose sized strings list the textures, diffuse first.
+`mergeShapes` returns the UVs with the shader's offset and scale applied, and the diffuse
+texture of each triangle range (`NifFile.diffuseOf`).
+
 ### Collision (`format/nif/collision.ts`)
 
 The Imperial tiles carry their collision as root node -> `bhkCollisionObject` (body ref at byte 6)

@@ -59,7 +59,7 @@ describe('vertex helpers', () => {
   it('decodes the vertex description of a vanilla static mesh', () => {
     // imphall1way01: desc 0x0003b00007650408 -> 32-byte vertices, 16-byte positions
     const layout = decodeVertexDesc(0x0003b00007650408n);
-    expect(layout).toEqual({ vertexSize: 32, positionBytes: 16, flags: 0x3b });
+    expect(layout).toEqual({ vertexSize: 32, positionBytes: 16, flags: 0x3b, uvOffset: 16 });
   });
 
   it('converts half floats', () => {
