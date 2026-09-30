@@ -16,3 +16,9 @@
 - **Seeing Z in V1**: the level of tiles (ramps, stairs) is not visible in the top-down view;
   care is needed. At a minimum, show the level `k` of the hovered tile or tint tiles by their
   level, until the Z slices of phase 4. Noted during the step 16 test.
+- **Filling a face in parts**: the assistant only offers pieces whose opening is as wide as the
+  clicked free face and centred on it. A 2-cell face that two narrower pieces fill side by side
+  (a 1-cell wall next to a door piece) gets no proposal, though each piece fits with clean
+  junctions when placed from the palette. Offer as well the pieces covering part of the face,
+  at each position along it, when all their junctions are clean. Noted on 29 Sep 2026
+  (`ImpRoomCorner03` +X next to `ImpRoomWall03`).
