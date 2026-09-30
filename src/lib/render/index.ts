@@ -4,6 +4,7 @@
  * later (phase 4).
  */
 export * from './CellScene';
+export * from './leakViews';
 export * from './meshCache';
 export * from './sceneObjects';
 export * from './transform';

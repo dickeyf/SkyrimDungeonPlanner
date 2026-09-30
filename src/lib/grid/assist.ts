@@ -350,6 +350,7 @@ export function jointsOfTile(
  * Keep the candidates that fit every tile they would touch, not only the clicked face: each
  * is placed in a copy of the layout and all its junctions judged. Only placements whose
  * junctions are all clean (exact or included) are kept: a seam or a mismatch drops them.
+ * `accept` may refuse a junction for another reason (a leak found by the deep check).
  */
 export function checkCandidates(
   candidates: readonly Candidate[],
@@ -357,12 +358,13 @@ export function checkCandidates(
   pieces: Pieces,
   types: ReadonlyMap<string, ConnectionType>,
   geometry?: JointGeometry,
+  accept?: (joint: Joint, layout: Layout) => boolean,
 ): Candidate[] {
   return candidates.filter((c) => {
     const placed = addTile(layout, pieces, c.piece, c.cell, c.rotation);
     if (!placed.ok) return false;
     return jointsOfTile(placed.layout, pieces, types, placed.key, geometry).every(
-      (j) => j.fit === 'exact' || j.fit === 'included',
+      (j) => (j.fit === 'exact' || j.fit === 'included') && (!accept || accept(j, placed.layout)),
     );
   });
 }

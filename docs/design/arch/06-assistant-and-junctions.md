@@ -108,7 +108,20 @@ meshes of the two sides, placed with their exact REFR positions:
 
 Kits hide many joints behind overlaps, so most exact candidates are not visible: the exact check
 is only a filter. Proven on the known seam and on a 681-junction cell (step 5); the editor
-integration, with a cache per pair of pieces and relative placement, is step 6.
+integration came at step 6:
+
+- `layoutJunctions` lists every opening facing tiles, with its frame and a **key**: the opening's
+  piece and direction, then each facing piece with its position and quarter turn relative to the
+  opening's piece (rounded to the unit). The same configuration anywhere, turned or not, shares
+  one verdict.
+- `editor/leakChecker.svelte.ts` checks the junctions of the loaded layout in the background, one
+  at a time, and publishes verdicts as they come; they persist in IndexedDB (`leak:v1:<key>`,
+  derived from the game files, never committed). A new layout cancels the run; known keys apply
+  at once. The views use `render/leakViews.ts` (one off-screen renderer) and the welded meshes
+  of `MeshCache.welded`.
+- A leak is a violet mark; the junction panel gives its width, position and the standing points
+  that see it. `checkCandidates` takes an `accept` hook: the assistant drops a placement whose
+  junction has a known leak (only once checked: an unchecked pair is offered).
 
 ## Marks
 
@@ -117,6 +130,7 @@ integration, with a cache per pair of pieces and relative placement, is step 6.
 | orange | open face: click for compatible pieces | `openFaces` |
 | yellow | seam, with its gap in units | `badJoints` |
 | red | mismatch, or an opening against a wall | `badJoints` |
+| violet | visible leak found by the deep check | `leakChecker` |
 | magenta | cell shared by two tiles (not an accepted overlap) | `sharedCells` |
 
 A selected tile lists all its junctions (`jointsOfTile`) with their verdict, both distances and

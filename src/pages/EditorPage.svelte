@@ -11,12 +11,16 @@
   import ProfileView from '../components/ProfileView.svelte';
   import type { Catalogue, FormKey, Piece, PieceCategory } from '$lib/catalogue/types';
   import { editorStore as ed } from '$lib/editor/editorStore.svelte';
+  import { leakChecker, type LeakVerdict } from '$lib/editor/leakChecker.svelte';
   import {
     addTile,
     badJoints,
     candidatesFor,
     checkCandidates,
     jointsOfTile,
+    layoutJunction,
+    layoutJunctions,
+    layoutSides,
     cellAt,
     changeCount,
     changes,
@@ -204,6 +208,37 @@
       console.debug(`junctions checked in ${(performance.now() - started).toFixed(0)} ms`);
     return out;
   });
+  // ---- deep junction check (R16): background, cached by pieces and relative placement --------
+
+  const junctions = $derived(
+    layout && anchor ? layoutJunctions(layout, pieces, types, anchor) : [],
+  );
+  $effect(() => {
+    const js = junctions;
+    if (!layout || !anchor || js.length === 0) {
+      leakChecker.cancel();
+      return;
+    }
+    const sides = layoutSides(layout, pieces, anchor);
+    const p = pieces;
+    let alive = true;
+    void ed.meshes().then((m) => {
+      if (alive) void leakChecker.run(js, sides, p, m);
+    });
+    // leaving the editor, or a new layout, stops the run
+    return () => {
+      alive = false;
+      leakChecker.cancel();
+    };
+  });
+  const verdictOf = (key: string): LeakVerdict | undefined => leakChecker.verdicts.get(key);
+  const leaking = $derived(junctions.filter((j) => (verdictOf(j.key)?.leaks.length ?? 0) > 0));
+  /** Verdict of a joint of the layout (or of a simulated layout), undefined until checked. */
+  function jointVerdict(joint: BadJoint, l: Layout): LeakVerdict | undefined {
+    if (!anchor || joint.against.length === 0) return undefined;
+    return verdictOf(layoutJunction(joint, l, pieces, anchor).key);
+  }
+
   const active = $derived(opens.find((o) => o.id === activeFace));
   const activeBad = $derived(bad.find((o) => o.id === activeFace));
   const shared = $derived(layout ? sharedCells(layout, pieces) : []);
@@ -257,6 +292,7 @@
           pieces,
           types,
           geometry,
+          (j, l) => (jointVerdict(j, l)?.leaks.length ?? 0) === 0,
         )
       : [],
   );
@@ -297,6 +333,11 @@
               ? '#ff8080'
               : '#e04040',
         opacity: o.id === activeFace ? 0.95 : 0.7,
+      })),
+      ...leaking.map((j) => ({
+        ...faceRect(j.joint, anchor),
+        color: '#b04bff',
+        opacity: j.joint.id === activeFace ? 0.95 : 0.75,
       })),
       ...shared.map((sc) => ({
         ...cellBox(sc.cell),
@@ -885,10 +926,34 @@
                         ? `${j.dir} to ${j.against.map(nameOf).join(', ')}`
                         : `${nameOf(j.tile)} (${j.dir}) into this`}:
                       {FIT_LABEL[j.fit]}{Number.isNaN(j.gap) ? '' : ` ${j.gap.toFixed(1)}`}
+                      {#if layout && (jointVerdict(j, layout)?.leaks.length ?? 0) > 0}
+                        <span class="leak">· leak</span>
+                      {/if}
                     </button>
                   {/each}
                 </details>
                 {#if inspectedJoint}
+                  {@const verdict = layout ? jointVerdict(inspectedJoint, layout) : undefined}
+                  {#if verdict && verdict.leaks.length > 0 && layout && anchor}
+                    {@const lj = layoutJunction(inspectedJoint, layout, pieces, anchor)}
+                    <div class="warn">
+                      Visible leak (deep check):
+                      {#each verdict.leaks as leak, i (i)}
+                        <br />gap {leak.width.toFixed(1)} units at
+                        {leakChecker
+                          .leakCentre(lj, leak)
+                          .map((v) => v.toFixed(0))
+                          .join(', ')}, seen from {leak.seen} of {leak.views} standing points
+                      {/each}
+                    </div>
+                  {:else if verdict}
+                    <div class="hint">
+                      Deep check: no visible leak ({verdict.candidates} hidden gap{verdict.candidates ===
+                      1
+                        ? ''
+                        : 's'}).
+                    </div>
+                  {/if}
                   <ProfileView size={140} layers={jointLayers(inspectedJoint)} />
                   <div class="hint diag">
                     {#if inspectedJoint.detail}
@@ -955,6 +1020,12 @@
             <span><i style:background="#e8d23a"></i>seam {seams}</span>
             <span><i style:background="#e04040"></i>mismatch {bad.length - seams}</span>
             <span><i style:background="#ff2bd6"></i>shared cell {shared.length}</span>
+            <span
+              ><i style:background="#b04bff"></i>leak {leaking.length}{leakChecker.done <
+              leakChecker.total
+                ? ` (checking ${leakChecker.done}/${leakChecker.total})`
+                : ''}</span
+            >
           </div>
           <details class="hint">
             <summary>Cell info</summary>
@@ -1047,6 +1118,9 @@
   }
   .joints button.mismatch {
     color: #e04040;
+  }
+  .joints .leak {
+    color: #c77dff;
   }
   .joints button.active {
     border-color: var(--accent);

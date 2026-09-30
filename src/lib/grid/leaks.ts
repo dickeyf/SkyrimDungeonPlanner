@@ -9,8 +9,11 @@
  * samples. Whether a candidate is visible from where the player stands is decided separately
  * (the render test), since kits often hide joints behind overlaps.
  */
-import type { Vec3 } from '../catalogue/types';
+import type { CellIndex, ConnectionType, FaceDir, FormKey, Vec3 } from '../catalogue/types';
 import type { WeldedGeometry } from '../mesh/geometry';
+import { jointsOfTile, type Joint } from './assist';
+import { tileWorldPlacement, type Layout, type Pieces } from './edit';
+import type { GridAnchor } from './types';
 
 /** A welded mesh placed in the world. */
 export interface WorldMesh {
@@ -286,4 +289,140 @@ function clusterRuns(runs: { p: Vec3; d: number }[][], join: number): { p: Vec3;
     groups.set(root, [...(groups.get(root) ?? []), ...r]);
   });
   return [...groups.values()];
+}
+
+// ---- junctions of an editor layout ------------------------------------------------------------
+
+/** One side of a junction: a piece and its exact world placement. */
+export interface JunctionSide {
+  key: string;
+  piece: FormKey;
+  pos: Vec3;
+  /** Skyrim Z angle (clockwise heading), radians. */
+  heading: number;
+}
+
+/** A junction of the layout for the deep check: an opening and every tile facing it. */
+export interface LayoutJunction {
+  joint: Joint;
+  mine: JunctionSide;
+  facing: JunctionSide[];
+  frame: JunctionFrame;
+  /** Same pieces in the same relative placement give the same key, anywhere and turned. */
+  key: string;
+}
+
+/** The junction plane and extent of a world opening (the cells behind it, facing `dir`). */
+export function jointFrame(
+  dir: FaceDir,
+  cells: readonly CellIndex[],
+  anchor: GridAnchor,
+): JunctionFrame {
+  const { origin, module } = anchor;
+  const axis = dir[1] === 'X' ? 0 : 1;
+  const u = 1 - axis;
+  const along = cells.map((c) => c[axis]!);
+  const across = cells.map((c) => c[u]!);
+  const levels = cells.map((c) => c[2]);
+  const edge = dir[0] === '+' ? Math.max(...along) + 1 : Math.min(...along);
+  return {
+    axis,
+    plane: origin[axis]! + edge * module.xy,
+    uMin: origin[u]! + Math.min(...across) * module.xy,
+    uMax: origin[u]! + (Math.max(...across) + 1) * module.xy,
+    zMin: origin[2] + Math.min(...levels) * module.z,
+    zMax: origin[2] + (Math.max(...levels) + 1) * module.z,
+  };
+}
+
+function sideOf(layout: Layout, pieces: Pieces, anchor: GridAnchor, key: string): JunctionSide {
+  const tile = layout.tiles.get(key)!;
+  const placement = tileWorldPlacement(tile, pieces.get(tile.piece)!, anchor);
+  return { key, piece: tile.piece, pos: placement.pos, heading: placement.rot[2] };
+}
+
+/**
+ * Cache key of a junction: the opening's piece and direction (rotation 0), then each facing
+ * piece with its position and turn relative to the opening's piece, rounded to the unit and the
+ * quarter turn.
+ */
+export function junctionKey(
+  joint: Joint,
+  mine: JunctionSide,
+  facing: readonly JunctionSide[],
+): string {
+  const c = Math.cos(mine.heading);
+  const s = Math.sin(mine.heading);
+  const others = facing.map((f) => {
+    const dx = f.pos[0] - mine.pos[0];
+    const dy = f.pos[1] - mine.pos[1];
+    // Undo the heading: world = (x c + y s, -x s + y c).
+    const x = Math.round(dx * c - dy * s) + 0;
+    const y = Math.round(dx * s + dy * c) + 0;
+    const z = Math.round(f.pos[2] - mine.pos[2]) + 0;
+    const turn = (((Math.round(((f.heading - mine.heading) * 2) / Math.PI) % 4) + 4) % 4) as number;
+    return `${f.piece}@${x},${y},${z},${turn}`;
+  });
+  return `${mine.piece}:${joint.opening.dir}|${others.sort().join('|')}`;
+}
+
+/** Every opening of the layout that faces other tiles, as junctions for the deep check. */
+export function layoutJunctions(
+  layout: Layout,
+  pieces: Pieces,
+  types: ReadonlyMap<string, ConnectionType>,
+  anchor: GridAnchor,
+): LayoutJunction[] {
+  const out: LayoutJunction[] = [];
+  for (const tile of layout.tiles.values()) {
+    if (!pieces.has(tile.piece)) continue;
+    for (const joint of jointsOfTile(layout, pieces, types, tile.key)) {
+      if (joint.tile !== tile.key || joint.against.length === 0) continue;
+      out.push(layoutJunction(joint, layout, pieces, anchor));
+    }
+  }
+  return out;
+}
+
+export function layoutJunction(
+  joint: Joint,
+  layout: Layout,
+  pieces: Pieces,
+  anchor: GridAnchor,
+): LayoutJunction {
+  const mine = sideOf(layout, pieces, anchor, joint.tile);
+  const facing = joint.against.map((k) => sideOf(layout, pieces, anchor, k));
+  return {
+    joint,
+    mine,
+    facing,
+    frame: jointFrame(joint.dir, joint.cells, anchor),
+    key: junctionKey(joint, mine, facing),
+  };
+}
+
+/** Every tile of the layout with its exact world placement (the scene around junctions). */
+export function layoutSides(layout: Layout, pieces: Pieces, anchor: GridAnchor): JunctionSide[] {
+  return [...layout.tiles.keys()]
+    .filter((k) => pieces.has(layout.tiles.get(k)!.piece))
+    .map((k) => sideOf(layout, pieces, anchor, k));
+}
+
+/** A point in a side's own frame (origin at its position, heading undone), and back. */
+export function toSideFrame(side: JunctionSide, p: Vec3): Vec3 {
+  const c = Math.cos(side.heading);
+  const s = Math.sin(side.heading);
+  const dx = p[0] - side.pos[0];
+  const dy = p[1] - side.pos[1];
+  return [dx * c - dy * s, dx * s + dy * c, p[2] - side.pos[2]];
+}
+
+export function fromSideFrame(side: JunctionSide, p: Vec3): Vec3 {
+  const c = Math.cos(side.heading);
+  const s = Math.sin(side.heading);
+  return [
+    p[0] * c + p[1] * s + side.pos[0],
+    -p[0] * s + p[1] * c + side.pos[1],
+    p[2] + side.pos[2],
+  ];
 }

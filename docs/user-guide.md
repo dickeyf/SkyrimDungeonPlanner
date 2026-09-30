@@ -13,7 +13,7 @@ your game folder is read in place and nothing is uploaded.
 3. [The editor](#the-editor)
 4. [Building with the assistant](#building-with-the-assistant)
 5. [Placing and moving pieces](#placing-and-moving-pieces)
-6. [Marks: open faces, seams, mismatches, shared cells](#marks)
+6. [Marks: open faces, seams, mismatches, leaks, shared cells](#marks)
 7. [Saving and the Creation Kit](#saving-and-the-creation-kit)
 8. [New plugins and cells](#new-plugins-and-cells)
 9. [Settings](#settings)
@@ -91,6 +91,7 @@ Ramps and stairs are offered both ways: going up by their low end, or down by th
 | orange | open face | click it to add a piece that fits |
 | yellow | **seam**: the openings match only roughly; the gap is shown (1 unit already shows up close) | replace one of the pieces, or check it in game |
 | red | **mismatch**: the openings do not match, or an opening faces a wall | replace or move a piece |
+| violet | **leak**: a gap you can see from where the player stands (void or the back of a wall), found by the deep check | replace one of the pieces |
 | magenta | **shared cell**: two tiles overlap | if it is intended and shows no seam, mark it (below) |
 
 Click a mark to see the details. For a junction, the panel draws both openings overlaid (red:
@@ -100,6 +101,8 @@ this piece, green: the neighbour, as seen from this side) with the measured gaps
 the magenta cell and _Mark ... as intended_: that pair, in that exact placement, is then accepted
 everywhere, not flagged, and may be placed and offered. The decision is stored with the
 catalogue annotations (_Settings_, _Validation_, _Accepted overlaps_, where it can be removed).
+
+**Deep check**: besides the outlines of the openings, every junction is checked in the background for gaps anywhere around it (a door frame or a floor that stops short), then looked at from where the player stands: only a gap you could see is a leak. The legend shows the progress (_checking x/y_). A verdict depends only on the pieces and their relative placement, so it is kept in the browser and reused everywhere; the first check of a cell takes a few seconds, the next ones are instant. The assistant stops offering a placement once it is known to leak. The panel of a junction gives the leak's size and position.
 
 _Show marks_ turns all marks off and on.
 
@@ -147,8 +150,7 @@ navmesh, doors' teleport links and everything else remain the CK's job.
 - The tool edits tiles only (the kit's structural pieces); everything else in a cell passes
   through untouched.
 - No navmesh, props, lighting or door links: finish those in the Creation Kit.
-- Seams are judged on the openings' outlines; a gap elsewhere around a junction, or a texture
-  that does not continue, is not detected.
+- A texture that does not continue across a junction is not detected yet.
 - ESL-flagged plugins are not supported.
 
 ## Troubleshooting

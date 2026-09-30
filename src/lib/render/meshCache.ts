@@ -6,10 +6,12 @@
 import { BufferAttribute, BufferGeometry } from 'three';
 import { mergeShapes } from '../format/nif/geometry';
 import { NifFile } from '../format/nif/NifFile';
+import { weldMesh, type WeldedGeometry } from '../mesh/geometry';
 import type { ArchiveIndex } from '../vfs/archiveIndex';
 
 export class MeshCache {
   private readonly geometries = new Map<string, Promise<BufferGeometry | null>>();
+  private readonly weldedMeshes = new Map<string, Promise<WeldedGeometry | null>>();
 
   constructor(private readonly index: ArchiveIndex) {}
 
@@ -18,6 +20,21 @@ export class MeshCache {
     if (!entry) {
       entry = this.load(modelPath);
       this.geometries.set(modelPath, entry);
+    }
+    return entry;
+  }
+
+  /** The welded mesh of a model (for the deep junction check), null when unreadable. */
+  welded(modelPath: string): Promise<WeldedGeometry | null> {
+    let entry = this.weldedMeshes.get(modelPath);
+    if (!entry) {
+      entry = this.index
+        .read(modelPath)
+        .then((read) =>
+          read ? weldMesh(mergeShapes(NifFile.parse(read.bytes), { skipAlpha: true })) : null,
+        )
+        .catch(() => null);
+      this.weldedMeshes.set(modelPath, entry);
     }
     return entry;
   }

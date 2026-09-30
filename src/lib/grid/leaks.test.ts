@@ -2,8 +2,11 @@ import { describe, expect, it } from 'vitest';
 import type { Vec3 } from '../catalogue/types';
 import { weldMesh } from '../mesh/geometry';
 import type { MergedMesh } from '../format/nif/geometry';
+import type { Joint } from './assist';
 import {
+  jointFrame,
   junctionGaps,
+  junctionKey,
   mergeWorldMeshes,
   placeMesh,
   pointTriangleDistance,
@@ -77,5 +80,44 @@ describe('junctionGaps', () => {
     for (let i = 1; i < placed.positions.length; i += 3) ys.push(placed.positions[i]!);
     expect(Math.min(...ys)).toBeCloseTo(-100);
     expect(Math.max(...ys)).toBeCloseTo(0);
+  });
+});
+
+describe('junctionKey', () => {
+  const joint = { opening: { dir: '+X' } } as unknown as Joint;
+
+  it('is the same for a configuration moved and turned', () => {
+    const key = junctionKey(joint, { key: 'a', piece: 'P', pos: [0, 0, 0], heading: 0 }, [
+      { key: 'b', piece: 'Q', pos: [512, 0, 16], heading: Math.PI / 2 },
+    ]);
+    // Everything turned 90 degrees clockwise about the origin, then moved.
+    const turned = junctionKey(
+      joint,
+      { key: 'a', piece: 'P', pos: [100, 200, 0], heading: Math.PI / 2 },
+      [{ key: 'b', piece: 'Q', pos: [100, 200 - 512, 16], heading: Math.PI }],
+    );
+    expect(turned).toBe(key);
+    expect(key).toBe('P:+X|Q@512,0,16,1');
+  });
+
+  it('changes with the relative placement', () => {
+    const a = { key: 'a', piece: 'P', pos: [0, 0, 0] as Vec3, heading: 0 };
+    const one = junctionKey(joint, a, [{ key: 'b', piece: 'Q', pos: [512, 0, 0], heading: 0 }]);
+    const two = junctionKey(joint, a, [{ key: 'b', piece: 'Q', pos: [512, 1, 0], heading: 0 }]);
+    expect(one).not.toBe(two);
+  });
+});
+
+describe('jointFrame', () => {
+  it('puts the plane on the far side of the cells for a + direction', () => {
+    const f = jointFrame(
+      '+X',
+      [
+        [2, 0, 0],
+        [2, 1, 0],
+      ],
+      { origin: [0, 0, -64], module: { xy: 128, z: 128 } },
+    );
+    expect(f).toEqual({ axis: 0, plane: 384, uMin: 0, uMax: 256, zMin: -64, zMax: 64 });
   });
 });

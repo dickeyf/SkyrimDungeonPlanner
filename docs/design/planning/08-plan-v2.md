@@ -122,6 +122,13 @@ comes first, before any interface work.
 - **Done when**: the working cell's known leaks are marked, no false positive on the checked
   junctions; a first check of a new pair within a second, then instant.
 - **Commits to**: R16, D60 (a verdict added after the profile ones).
+- **Result (29 Sep 2026)**: done. `grid/leaks.ts` gives the junctions of a layout and their key
+  (pieces and relative placement, turn included); `render/leakViews.ts` the views;
+  `editor/leakChecker.svelte.ts` checks them in the background and keeps verdicts in memory and
+  IndexedDB (`leak:v1:<key>`). The editor marks leaks in violet, details them in the junction
+  panel, and `checkCandidates` drops placements with a known leak. The known seam is marked, the
+  working cell shows none, a second opening is instant, and the assistant no longer offers the
+  leaking door pair.
 
 ### Step 7 – Texture continuity (14b, optional)
 - **Why**: identical profiles do not guarantee a continuous texture (a symmetric room piece placed
