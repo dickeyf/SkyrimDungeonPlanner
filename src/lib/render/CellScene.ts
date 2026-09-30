@@ -88,7 +88,7 @@ export class CellScene {
   private grid: LineSegments | null = null;
   private readonly materials = new Map<string, MeshLambertMaterial>();
   private readonly byKey = new Map<string, Mesh>();
-  private selected: Mesh | null = null;
+  private readonly selected = new Set<Mesh>();
   private opaqueDisplay: OpaqueDisplay = 'visible';
   private frame = 0;
   private readonly observer: ResizeObserver;
@@ -234,7 +234,7 @@ export class CellScene {
       if (!wanted.has(key)) {
         this.objects.remove(mesh);
         this.byKey.delete(key);
-        if (this.selected === mesh) this.selected = null;
+        this.selected.delete(mesh);
       }
     }
     list.forEach((o, i) => {
@@ -313,7 +313,7 @@ export class CellScene {
   /** Material and visibility of a mesh from its colour, pickability and the display mode. */
   private styleMesh(mesh: Mesh): void {
     const { color, pickable } = mesh.userData as { color: string; pickable: boolean };
-    if (mesh === this.selected) {
+    if (this.selected.has(mesh)) {
       mesh.material = this.material(SELECTED_COLOR);
       mesh.visible = true;
       return;
@@ -323,11 +323,16 @@ export class CellScene {
     mesh.visible = pickable || this.opaqueDisplay !== 'hidden';
   }
 
-  select(key: string | null): void {
-    const previous = this.selected;
-    this.selected = key ? (this.byKey.get(key) ?? null) : null;
-    if (previous) this.styleMesh(previous);
-    if (this.selected) this.styleMesh(this.selected);
+  /** Highlight the tiles of `keys` (the selection), and only them. */
+  select(keys: readonly string[]): void {
+    const previous = [...this.selected];
+    this.selected.clear();
+    for (const key of keys) {
+      const mesh = this.byKey.get(key);
+      if (mesh) this.selected.add(mesh);
+    }
+    for (const mesh of previous) this.styleMesh(mesh);
+    for (const mesh of this.selected) this.styleMesh(mesh);
     this.requestRender();
   }
 
@@ -363,7 +368,7 @@ export class CellScene {
   private clearObjects(): void {
     this.objects.clear();
     this.byKey.clear();
-    this.selected = null;
+    this.selected.clear();
   }
 
   private halfWidth(): number {

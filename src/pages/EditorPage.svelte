@@ -42,6 +42,8 @@
     withoutTile,
     redo,
     removeTile,
+    removeTiles,
+    moveTiles,
     rotateTile,
     sharedCells,
     snapPlacement,
@@ -87,6 +89,10 @@
     rotation: 0 | 1 | 2 | 3;
   } | null>(null);
   let ghost = $state.raw<{ object: ReturnType<typeof tileObject>; ok: boolean } | null>(null);
+  /** Shift+drag: the selection rectangle, from where the drag started to the pointer. */
+  let box = $state.raw<{ from: Vec3; to: Vec3 } | null>(null);
+  /** Dragging a selection of several tiles: where the drag started and the cell offset now. */
+  let groupDrag = $state.raw<{ grab: CellIndex; delta: CellIndex } | null>(null);
   let message = $state('');
   let filter = $state('');
   let category = $state<PieceCategory | 'all'>('all');
@@ -382,6 +388,62 @@
       ? surroundings(active, layout, pieces, ed.loaded.grid.opaque, anchor)
       : null,
   );
+  /** Footprint cells of a tile, moved by `delta`. */
+  function tileCells(key: string, delta: CellIndex = [0, 0, 0]): CellIndex[] {
+    const tile = layout?.tiles.get(key);
+    const piece = tile && pieces.get(tile.piece);
+    if (!tile || !piece) return [];
+    return footprintCells(piece, tile.cell, tile.rotation).map(
+      (c) => [c[0] + delta[0], c[1] + delta[1], c[2] + delta[2]] as CellIndex,
+    );
+  }
+
+  const groupMove = $derived(
+    groupDrag && layout && (groupDrag.delta[0] || groupDrag.delta[1])
+      ? moveTiles(layout, pieces, ed.selection, groupDrag.delta)
+      : null,
+  );
+  /** The selection rectangle and, while a group is dragged, where its tiles would land. */
+  const selectionHighlights = $derived.by((): Highlight[] => {
+    if (!anchor) return [];
+    const out: Highlight[] = [];
+    if (box) {
+      out.push({
+        min: [Math.min(box.from[0], box.to[0]), Math.min(box.from[1], box.to[1])],
+        max: [Math.max(box.from[0], box.to[0]), Math.max(box.from[1], box.to[1])],
+        color: '#ffffff',
+        opacity: 0.2,
+      });
+    }
+    if (groupDrag && groupMove) {
+      for (const key of ed.selection)
+        for (const c of tileCells(key, groupDrag.delta))
+          out.push({ ...cellBox(c), color: groupMove.ok ? '#7fdc7f' : '#e05050', opacity: 0.45 });
+    }
+    return out;
+  });
+
+  /** Keys of the tiles whose footprint meets the rectangle between two world points. */
+  function tilesInBox(a: Vec3, b: Vec3): string[] {
+    if (!layout || !anchor) return [];
+    const x0 = Math.min(a[0], b[0]);
+    const x1 = Math.max(a[0], b[0]);
+    const y0 = Math.min(a[1], b[1]);
+    const y1 = Math.max(a[1], b[1]);
+    return [...layout.tiles.keys()].filter((key) =>
+      tileCells(key).some((c) => {
+        const r = cellBox(c);
+        return r.max[0] > x0 && r.min[0] < x1 && r.max[1] > y0 && r.min[1] < y1;
+      }),
+    );
+  }
+
+  function toggleSelected(key: string): void {
+    ed.selection = ed.selection.includes(key)
+      ? ed.selection.filter((k) => k !== key)
+      : [...ed.selection, key];
+  }
+
   const highlights = $derived.by((): Highlight[] => {
     if (!anchor || !showFaces || placing) return [];
     // a bad joint's strip lies inside the neighbour, over the faulty junction
@@ -633,10 +695,21 @@
         ed.selected = null;
         return;
       }
-      ed.selected = info.key;
+      if (info.shift && info.key) toggleSelected(info.key);
+      else ed.selected = info.key;
     },
     down(info: PointerInfo) {
-      if (placing || !layout || !info.key || info.key !== ed.selected) return false;
+      if (placing || !layout) return false;
+      // Shift+drag: select the tiles within a rectangle
+      if (info.shift) {
+        box = { from: info.world, to: info.world };
+        return true;
+      }
+      if (!info.key || !ed.selection.includes(info.key)) return false;
+      if (ed.selection.length > 1) {
+        groupDrag = { grab: cellUnder(info.world), delta: [0, 0, 0] };
+        return true;
+      }
       const tile = layout.tiles.get(info.key);
       if (!tile?.own) return false;
       const grab = cellUnder(info.world);
@@ -645,7 +718,15 @@
     },
     move(info: PointerInfo) {
       if (!layout || !anchor) return;
-      if (placing) {
+      if (box) {
+        box = { ...box, to: info.world };
+      } else if (groupDrag) {
+        const now = cellUnder(info.world);
+        groupDrag = {
+          ...groupDrag,
+          delta: [now[0] - groupDrag.grab[0], now[1] - groupDrag.grab[1], 0],
+        };
+      } else if (placing) {
         const { cell, rotation } = placementAt(info.world);
         showGhost(pieces.get(placing.piece)!, cell, rotation);
       } else if (drag) {
@@ -686,7 +767,28 @@
         showGhost(piece, target, rotation, tile.key);
       }
     },
-    up() {
+    up(info: PointerInfo) {
+      if (box) {
+        // hardly moved: a Shift+click, which adds or removes the tile under the pointer
+        if (
+          anchor &&
+          Math.hypot(box.to[0] - box.from[0], box.to[1] - box.from[1]) < anchor.module.xy / 8
+        ) {
+          box = null;
+          if (info.key) toggleSelected(info.key);
+          return;
+        }
+        const inside = tilesInBox(box.from, box.to);
+        // the rectangle adds to the selection
+        ed.selection = [...new Set([...ed.selection, ...inside])];
+        box = null;
+        return;
+      }
+      if (groupDrag) {
+        if (groupMove) apply(groupMove, 'Move');
+        groupDrag = null;
+        return;
+      }
       if (drag && layout) {
         const tile = layout.tiles.get(drag.key)!;
         const same =
@@ -756,9 +858,12 @@
   }
 
   function deleteSelected(): void {
-    if (layout && ed.selected && apply(removeTile(layout, ed.selected), 'Deletion')) {
-      ed.selected = null;
-    }
+    if (!layout || ed.selection.length === 0) return;
+    const r =
+      ed.selection.length === 1
+        ? removeTile(layout, ed.selection[0]!)
+        : removeTiles(layout, ed.selection);
+    if (apply(r, 'Deletion')) ed.selection = [];
   }
 
   function onKey(e: KeyboardEvent): void {
@@ -774,6 +879,8 @@
     } else if ((e.ctrlKey || e.metaKey) && (key === 'y' || (key === 'z' && e.shiftKey))) {
       history = redo(history);
       ghost = null;
+    } else if ((e.ctrlKey || e.metaKey) && key === 'a') {
+      ed.selection = layout ? [...layout.tiles.keys()] : [];
     } else if (key === 'r') {
       const turns = e.shiftKey ? -1 : 1;
       if (placing) {
@@ -1013,6 +1120,14 @@
                   </li>
                 {/each}
               </ul>
+            {:else if ed.selection.length > 1}
+              <b>{ed.selection.length} tiles selected</b><br />
+              <button onclick={deleteSelected}>Delete (Del)</button>
+              <button onclick={() => (ed.selection = [])}>Clear selection (Esc)</button>
+              <div class="hint">
+                Drag one of them to move them all. Shift+click adds or removes a tile, Shift+drag
+                adds the tiles within a rectangle, Ctrl+A selects every tile.
+              </div>
             {:else if selectedTile}
               <b>{pieces.get(selectedTile.piece)?.editorId}</b>
               {selectedTile.origin ? '' : '(new)'}<br />
@@ -1112,7 +1227,8 @@
               >
               <details class="hint">
                 <summary>Shortcuts</summary>
-                Drag: pan (or move the selected tile) · Wheel: zoom · R / Shift+R: rotate · Del: delete
+                Drag: pan (or move the selected tiles) · Shift+click: add to the selection · Shift+drag:
+                select a rectangle · Ctrl+A: select all · Wheel: zoom · R / Shift+R: rotate · Del: delete
                 · Esc: cancel · Ctrl+Z / Ctrl+Y: undo / redo · Ctrl+S: save
               </details>
             {/if}
@@ -1184,10 +1300,10 @@
           {objects}
           {grid}
           {ghost}
-          {highlights}
+          highlights={[...highlights, ...selectionHighlights]}
           {handlers}
           meshes={() => ed.meshes()}
-          selected={ed.selected}
+          selection={ed.selection}
           fitKey={ed.loaded.cell}
         />
       </div>

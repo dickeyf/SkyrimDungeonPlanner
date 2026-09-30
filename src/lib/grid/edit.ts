@@ -215,6 +215,62 @@ export function removeTile(layout: Layout, key: string): EditResult {
   return { ok: true, key, layout: { tiles, nextNew: layout.nextNew, accepted: layout.accepted } };
 }
 
+/** Delete several tiles at once (one undo step); refused if any belongs to a master. */
+export function removeTiles(layout: Layout, keys: readonly string[]): EditResult {
+  const tiles = new Map(layout.tiles);
+  for (const key of keys) {
+    const tile = layout.tiles.get(key);
+    if (!tile) return { ok: false, reason: 'missing' };
+    if (!tile.own) return { ok: false, reason: 'read-only' };
+    tiles.delete(key);
+  }
+  return {
+    ok: true,
+    key: keys[0] ?? '',
+    layout: { tiles, nextNew: layout.nextNew, accepted: layout.accepted },
+  };
+}
+
+/**
+ * Move several tiles by the same cell offset (one undo step), keeping their rotations. Refused
+ * if any belongs to a master, or if a moved tile would land on a tile left in place; the moved
+ * tiles do not conflict with each other.
+ */
+export function moveTiles(
+  layout: Layout,
+  pieces: Pieces,
+  keys: readonly string[],
+  delta: CellIndex,
+): EditResult {
+  const moving = new Set(keys);
+  const rest = new Map([...layout.tiles].filter(([k]) => !moving.has(k)));
+  const staying: Layout = { tiles: rest, nextNew: layout.nextNew, accepted: layout.accepted };
+  const tiles = new Map(layout.tiles);
+  const conflicts: CellIndex[] = [];
+  for (const key of keys) {
+    const tile = layout.tiles.get(key);
+    if (!tile) return { ok: false, reason: 'missing' };
+    if (!tile.own) return { ok: false, reason: 'read-only' };
+    const piece = pieces.get(tile.piece);
+    if (!piece) return { ok: false, reason: 'unknown-piece' };
+    const cell = addCells(tile.cell, delta);
+    conflicts.push(
+      ...conflictsFor(staying, pieces, footprintCells(piece, cell, tile.rotation), undefined, {
+        piece: tile.piece,
+        cell,
+        rotation: tile.rotation,
+      }),
+    );
+    tiles.set(key, { ...tile, cell });
+  }
+  if (conflicts.length) return { ok: false, reason: 'conflict', cells: conflicts };
+  return {
+    ok: true,
+    key: keys[0] ?? '',
+    layout: { tiles, nextNew: layout.nextNew, accepted: layout.accepted },
+  };
+}
+
 export function isMoved(tile: EditTile): boolean {
   return (
     !!tile.origin &&

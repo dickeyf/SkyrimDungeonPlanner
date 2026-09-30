@@ -13,6 +13,8 @@ import {
   placeTile,
   redo,
   removeTile,
+  removeTiles,
+  moveTiles,
   rotateTile,
   tileWorldPlacement,
   turnedPlacement,
@@ -102,6 +104,25 @@ describe('editing', () => {
     expect(moveTile(l, PIECES, 'A', [1, 0, 0])).toMatchObject({ reason: 'conflict' });
     expect(moveTile(l, PIECES, 'M', [10, 10, 0])).toMatchObject({ reason: 'read-only' });
     expect(removeTile(l, 'M')).toMatchObject({ reason: 'read-only' });
+  });
+
+  it("moves a group together: onto each other's cells, never onto the other tiles", () => {
+    const l = layout();
+    // A alone cannot go onto B, but A and B moving together can
+    expect(moveTile(l, PIECES, 'A', [2, 0, 0])).toMatchObject({ reason: 'conflict' });
+    const both = moveTiles(l, PIECES, ['A', 'B'], [2, 0, 0]);
+    expect(both.ok && both.layout.tiles.get('A')!.cell).toEqual([2, 0, 0]);
+    expect(both.ok && both.layout.tiles.get('B')!.cell).toEqual([4, 0, 0]);
+    // onto the master tile M: refused
+    expect(moveTiles(l, PIECES, ['A', 'B'], [0, 4, 0])).toMatchObject({ reason: 'conflict' });
+    expect(moveTiles(l, PIECES, ['A', 'M'], [10, 0, 0])).toMatchObject({ reason: 'read-only' });
+  });
+
+  it('deletes a group in one edit, never a master tile', () => {
+    const l = layout();
+    const r = removeTiles(l, ['A', 'B']);
+    expect(r.ok && [...r.layout.tiles.keys()].sort()).toEqual(['M', 'X']);
+    expect(removeTiles(l, ['A', 'M'])).toMatchObject({ reason: 'read-only' });
   });
 
   it('moves and turns a tile in one edit, and reasons without a tile', () => {

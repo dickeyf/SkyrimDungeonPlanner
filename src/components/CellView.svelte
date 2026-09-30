@@ -22,7 +22,7 @@
     highlights = [],
     handlers,
     meshes,
-    selected = null,
+    selection = [],
     fitKey,
   }: {
     objects: SceneObject[];
@@ -31,7 +31,8 @@
     highlights?: Highlight[];
     handlers: SceneHandlers;
     meshes: () => Promise<MeshCache>;
-    selected?: string | null;
+    /** Keys of the selected tiles. */
+    selection?: readonly string[];
     /** The view is re-framed whenever this value changes (a new cell was loaded). */
     fitKey: string;
   } = $props();
@@ -74,7 +75,7 @@
       await s.syncObjects(list, cache);
       if (import.meta.env.DEV)
         console.debug(`scene updated in ${(performance.now() - started).toFixed(0)} ms`);
-      s.select(selected);
+      s.select(selection);
       if (fitted !== key) {
         // an empty list may be a transient state: frame again once objects arrive
         if (list.length) fitted = key;
@@ -88,7 +89,7 @@
   });
 
   $effect(() => {
-    scene?.select(selected);
+    scene?.select(selection);
   });
 
   $effect(() => {

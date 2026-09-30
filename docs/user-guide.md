@@ -81,6 +81,10 @@ Ramps and stairs are offered both ways: going up by their low end, or down by th
 - **Select** a tile by clicking it: the panel shows its cell, rotation and **junctions**. Your
   own tiles can be turned (**R**), deleted (**Del**) or **dragged** to move them; a dragged tile
   snaps onto open faces too. Tiles that belong to a master file are read-only.
+- **Select several tiles**: **Shift+click** adds or removes a tile, **Shift+drag** draws a
+  rectangle that adds every tile it touches, **Ctrl+A** selects all, **Esc** clears. Drag one of
+  them to move the whole group (green where it fits, red on a conflict); **Del** deletes them.
+  A group move or deletion is undone in one step. Only a single tile turns.
 - A placement that would share a cell with another tile is refused (the preview turns red).
 - Everything can be undone and redone until you save.
 

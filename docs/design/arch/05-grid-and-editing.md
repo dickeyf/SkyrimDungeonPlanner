@@ -32,7 +32,9 @@ existing tiles the reference as loaded). Existing tiles are keyed by their REFR 
 ones `new:<n>`. Every edit returns a new layout or a refusal with its reason:
 
 - `addTile`, `moveTile`, `rotateTile` (keeps the footprint's min corner in place), `placeTile`
-  (move and turn in one edit), `removeTile`;
+  (move and turn in one edit), `removeTile`; for a selection, `moveTiles` (one cell offset; the
+  moved tiles may take each other's cells, never those of a tile left in place) and
+  `removeTiles`, each a single undo step;
 - refused when the new footprint would share a cell with another tile (`conflict`), or when the
   tile belongs to a master (`read-only`, D22);
 - **untouched tiles keep their stored position and angles exactly** (`tileWorldPlacement`): only

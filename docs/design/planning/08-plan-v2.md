@@ -171,6 +171,12 @@ comes first, before any interface work.
   delete and move apply to the selection too (the V4 wish of V1).
 - **Done when**: a selection can be built, extended and cleared; group move and delete are undone
   in one step.
+- **Result (29 Sep 2026)**: done. `grid/edit.ts` gains `moveTiles` (one offset for the group, its
+  tiles free to take each other's cells) and `removeTiles`, each one undo step, refused with a
+  master tile. The editor keeps a selection list (`ed.selected` is the single tile, for its
+  panel): Shift+click toggles a tile, Shift+drag adds a rectangle, Ctrl+A selects all, Esc
+  clears; dragging a selected tile moves the group (green or red preview), Del deletes it. The
+  scene highlights every selected tile. Turning a group was not asked for.
 
 ### Step 10 – Bake: from tiles to triangles
 - **Why**: the heart of the NavMesh: turn a set of tiles into one clean mesh.

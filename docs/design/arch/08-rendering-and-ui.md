@@ -24,6 +24,9 @@ and feeds it props.
   mismatches, shared cells).
 - **Picking**: a raycast from the pointer; the pointer-down handler runs in the capture phase so
   dragging a selected tile can claim the gesture before the controls start panning.
+- **Selection**: `CellScene.select(keys)` highlights every selected tile; the editor keeps the
+  list (`editorStore.selection`), Shift+drag draws its rectangle and a dragged group its landing
+  cells as highlights.
 
 ## State (Svelte 5 runes)
 

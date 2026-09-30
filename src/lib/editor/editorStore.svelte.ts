@@ -35,7 +35,17 @@ class EditorStore {
   cells = $state.raw<LevelCell[]>([]);
   loaded = $state.raw<LoadedCell | null>(null);
   catalogue = $state.raw<Catalogue | null>(null);
-  selected = $state<string | null>(null);
+  /** Keys of the selected tiles (step 9: several, for group moves, deletions and bakes). */
+  selection = $state<string[]>([]);
+
+  /** The selected tile when exactly one is, for its panel; setting it selects only that one. */
+  get selected(): string | null {
+    return this.selection.length === 1 ? this.selection[0]! : null;
+  }
+
+  set selected(key: string | null) {
+    this.selection = key ? [key] : [];
+  }
   busy = $state(false);
   /** Where the working plugin lives and what it looked like when loaded, for the save. */
   private source: { info: OverlayFileInfo; stamp: FileStamp } | null = null;
