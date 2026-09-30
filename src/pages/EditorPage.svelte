@@ -13,6 +13,8 @@
   import { editorStore as ed } from '$lib/editor/editorStore.svelte';
   import { leakChecker, type LeakVerdict } from '$lib/editor/leakChecker.svelte';
   import { textureChecker } from '$lib/editor/textureChecker.svelte';
+  import { bake, type BakeResult } from '$lib/navmesh/bake';
+  import { buildNavMesh } from '$lib/navmesh/build';
   import {
     addTile,
     badJoints,
@@ -44,6 +46,7 @@
     removeTile,
     removeTiles,
     moveTiles,
+    tileWorldPlacement,
     rotateTile,
     sharedCells,
     snapPlacement,
@@ -388,6 +391,41 @@
       ? surroundings(active, layout, pieces, ed.loaded.grid.opaque, anchor)
       : null,
   );
+  // ---- NavMesh preview (V2 step 10): bake the selection, or the whole cell, and draw it ------
+
+  let navPreview = $state.raw<(BakeResult & { note: string }) | null>(null);
+
+  function previewNavMesh(): void {
+    if (!layout || !anchor) return;
+    const keys = ed.selection.length ? ed.selection : [...layout.tiles.keys()];
+    const started = performance.now();
+    const tiles = keys.flatMap((key) => {
+      const tile = layout!.tiles.get(key);
+      const piece = tile && pieces.get(tile.piece);
+      if (!tile || !piece?.walkable?.length) return [];
+      const at = tileWorldPlacement(tile, piece, anchor!);
+      return [{ key, rings: piece.walkable, pos: at.pos, heading: at.rot[2] }];
+    });
+    const result = bake(
+      tiles,
+      {},
+      { origin: [anchor.origin[0], anchor.origin[1]], cell: anchor.module.xy },
+    );
+    let check: string;
+    try {
+      buildNavMesh(0, result.vertices, result.triangles);
+      check = 'valid NAVM';
+    } catch (e) {
+      check = `not a valid NAVM: ${(e as Error).message}`;
+    }
+    navPreview = {
+      ...result,
+      note:
+        `${tiles.length} of ${keys.length} tiles, ${result.vertices.length} vertices, ` +
+        `${result.triangles.length} triangles, ${(performance.now() - started).toFixed(0)} ms; ${check}`,
+    };
+  }
+
   /** Footprint cells of a tile, moved by `delta`. */
   function tileCells(key: string, delta: CellIndex = [0, 0, 0]): CellIndex[] {
     const tile = layout?.tiles.get(key);
@@ -1265,6 +1303,15 @@
               </ul>
             </div>{/if}
 
+          <div class="navmesh-preview">
+            <button onclick={previewNavMesh}
+              >Preview NavMesh ({ed.selection.length ? 'selection' : 'whole cell'})</button
+            >
+            {#if navPreview}
+              <button onclick={() => (navPreview = null)}>Hide</button>
+              <div class="hint">{navPreview.note}. Preview only: nothing is written.</div>
+            {/if}
+          </div>
           <div class="legend">
             <label><input type="checkbox" bind:checked={showFaces} /> Show marks</label>
             <span><i style:background="#e8a33a"></i>open face {opens.length}</span>
@@ -1304,6 +1351,7 @@
           {handlers}
           meshes={() => ed.meshes()}
           selection={ed.selection}
+          navmesh={navPreview}
           fitKey={ed.loaded.cell}
         />
       </div>

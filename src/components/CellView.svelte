@@ -14,6 +14,7 @@
     type SceneObject,
   } from '$lib/render';
   import { PREF_KEYS, getPref, setPref } from '$lib/fs';
+  import type { Vec3 } from '$lib/catalogue/types';
 
   let {
     objects,
@@ -23,6 +24,7 @@
     handlers,
     meshes,
     selection = [],
+    navmesh = null,
     fitKey,
   }: {
     objects: SceneObject[];
@@ -33,6 +35,8 @@
     meshes: () => Promise<MeshCache>;
     /** Keys of the selected tiles. */
     selection?: readonly string[];
+    /** A NavMesh preview drawn over the tiles. */
+    navmesh?: { vertices: readonly Vec3[]; triangles: readonly (readonly number[])[] } | null;
     /** The view is re-framed whenever this value changes (a new cell was loaded). */
     fitKey: string;
   } = $props();
@@ -94,6 +98,10 @@
 
   $effect(() => {
     scene?.setHighlights(highlights);
+  });
+
+  $effect(() => {
+    scene?.setNavMesh(navmesh);
   });
 
   $effect(() => {

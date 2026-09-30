@@ -163,6 +163,60 @@ export class CellScene {
     this.requestRender();
   }
 
+  private navmesh: Group | null = null;
+
+  /**
+   * Draw a NavMesh preview over the tiles (translucent triangles and their edges, not pickable),
+   * or remove it with null.
+   */
+  setNavMesh(
+    mesh: { vertices: readonly Vec3[]; triangles: readonly (readonly number[])[] } | null,
+  ): void {
+    if (this.navmesh) {
+      for (const child of this.navmesh.children) {
+        const m = child as Mesh | LineSegments;
+        m.geometry.dispose();
+        (m.material as MeshBasicMaterial | LineBasicMaterial).dispose();
+      }
+      this.scene.remove(this.navmesh);
+      this.navmesh = null;
+    }
+    if (mesh && mesh.triangles.length) {
+      const positions = new Float32Array(mesh.vertices.flatMap((v) => [v[0], v[1], v[2] + 2]));
+      const fill = new BufferGeometry();
+      fill.setAttribute('position', new Float32BufferAttribute(positions, 3));
+      fill.setIndex(mesh.triangles.flatMap((t) => [...t]));
+      const edges = new BufferGeometry();
+      edges.setAttribute('position', new Float32BufferAttribute(positions, 3));
+      edges.setIndex(mesh.triangles.flatMap((t) => [t[0]!, t[1]!, t[1]!, t[2]!, t[2]!, t[0]!]));
+      const group = new Group();
+      const surface = new Mesh(
+        fill,
+        new MeshBasicMaterial({
+          color: '#3a8dde',
+          transparent: true,
+          opacity: 0.35,
+          depthTest: false,
+        }),
+      );
+      const lines = new LineSegments(
+        edges,
+        new LineBasicMaterial({
+          color: '#b8dcff',
+          transparent: true,
+          opacity: 0.9,
+          depthTest: false,
+        }),
+      );
+      surface.renderOrder = 15;
+      lines.renderOrder = 16;
+      group.add(surface, lines);
+      this.navmesh = group;
+      this.scene.add(group);
+    }
+    this.requestRender();
+  }
+
   /** Replace the highlight rectangles (drawn on top of the tiles, not pickable). */
   setHighlights(list: readonly Highlight[]): void {
     for (const child of [...this.highlights.children]) {
@@ -345,6 +399,7 @@ export class CellScene {
     this.controls.dispose();
     this.clearObjects();
     this.setHighlights([]);
+    this.setNavMesh(null);
     this.setGrid(null);
     for (const m of this.materials.values()) m.dispose();
     this.renderer.dispose();

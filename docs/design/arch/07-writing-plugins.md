@@ -86,6 +86,26 @@ height:
 Defaults, tuned on the Imperial tiles: step 4, radius 16, height 96, step height 64 (the stairs'
 step blocks rise 52 above their ramp), slope 50 degrees, tolerance 6.
 
+## Bake (`navmesh/bake.ts`, V2)
+
+`bake(tiles, options, grid)` turns the walkable polygons of placed tiles into one triangle mesh:
+
+1. each tile's rings are placed in the world (its exact REFR placement) and triangulated on their
+   own, which gives the height of any point;
+2. every tile polygon is cut along the grid cells (`polygon-clipping`, coordinates snapped to
+   1/32 of a unit, on which its sweep line otherwise fails), each piece simplified in 3D (a
+   change of slope stays);
+3. every piece edge gets the vertices of the neighbouring pieces lying on it, so both sides of a
+   cell line or a tile border carry the same vertices; a narrower opening leaves the rest of the
+   wider border as a border (R11);
+4. each piece is triangulated (`earcut`), vertices within half a unit welded, and each cell made
+   Delaunay by edge flips (Lawson; outlines and cell lines stay).
+
+A full cell is two triangles; only the cells along the walls hold small polygons, whose fans
+stay inside the cell. One triangulation per tile (long fans along the walls) and one union of the
+whole selection (slivers across rooms) were tried first. The editor previews the result
+(`CellScene.setNavMesh`); writing it is the next step.
+
 ## NavMesh records (`navmesh/build.ts`, `Plugin.addNavm`, V2)
 
 `buildNavMesh(cell, vertices, triangles)` turns a triangle mesh into the `NVNM` data of an

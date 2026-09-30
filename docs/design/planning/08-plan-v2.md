@@ -187,6 +187,14 @@ comes first, before any interface work.
 - **Done when**: unit tests on synthetic tiles (straight, corner, T junction, ramp); the triangles
   of a real cell drawn in the scene for inspection.
 - **Commits to**: D38, R11.
+- **Result (29 Sep 2026)**: done. `navmesh/bake.ts` places the tiles' walkable polygons, cuts
+  each along the grid cells (`polygon-clipping`), conforms the pieces where they meet, triangulates
+  them (`earcut`), welds the vertices and makes each cell Delaunay by edge flips. A full cell is
+  two triangles; only the cells along the walls hold small polygons. Tried and dropped on the way:
+  one triangulation per tile (long fans along the walls) and one union of the whole selection
+  (large slivers across rooms). The editor's "Preview NavMesh" bakes the selection or the whole
+  cell and draws it: 222 tiles in well under a second, a valid NAVM, judged by the user far
+  better than the CK's own generation and needing little or no hand work.
 
 ### Step 11 – Writing the NavMesh into the plugin
 - **Why**: turns a bake into NAVM records, with step 3's recipe.

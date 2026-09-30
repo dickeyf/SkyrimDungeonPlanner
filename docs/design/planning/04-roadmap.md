@@ -44,7 +44,8 @@ CK. Released as 0.1.0.**
 - [x] R4 walkable polygons (29 Sep 2026, all Imperial tiles reviewed)
 - [ ] R11
 - [x] `walkable` in the catalogue, reviewed (29 Sep 2026); `navEdge` with the bake
-- [ ] Bake on selection, "fill" tool (tiles without NavMesh), clear all
+- [x] Bake of a selection into one mesh, previewed in the editor (29 Sep 2026)
+- [ ] Writing the NAVM; "fill" tool (tiles without NavMesh), clear all
 - [ ] Stitching to existing batches; locked flag
 
 ## Phase 4 – Z

@@ -2,7 +2,8 @@
 
 ## Stack
 
-TypeScript, Vite, Svelte 5 (runes, no SvelteKit), three.js, Vitest, ESLint, Prettier. The app is
+TypeScript, Vite, Svelte 5 (runes, no SvelteKit), three.js, Vitest, ESLint, Prettier; `earcut`
+and `polygon-clipping` for the NavMesh bake. The app is
 a single-page application routed with the URL hash (`#/editor`, `#/settings/...`, `#/start`).
 
 ## Layers
