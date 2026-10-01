@@ -139,6 +139,14 @@ u < v) or vertex nearest to it within a tolerance; `elementsInBox` takes triangl
 centre, edges by their middle, and vertices; `trianglesOfSelection` gives the triangles a
 deletion removes (those using a selected edge or vertex), which `removeTriangles` then drops.
 
+Hand edits (`navmesh/edit.ts`): `mergeVertices` moves the first vertex to the mean and maps
+the others onto it, removing collapsed triangles; `addTriangle` winds three vertices
+counter-clockwise. `joinNavMeshes` appends one NAVM to another (vertex, triangle, edge link,
+door link and cover indices shifted); edge links between the two are dropped, and
+`retargetLinks` points the cell's other NAVMs at the joined one. Each edit ends with `relink`:
+neighbours recomputed (an edge link welded to a neighbour becomes a plain edge) and the search
+grid rebuilt; a flipped or flat triangle, or an edge shared by three triangles, throws.
+
 ## Adding a bake to a cell's NavMesh (`navmesh/stitch.ts`, D35, D36, D64)
 
 - **Covered tiles** (D35): a tile has NavMesh when a triangle's centre falls in one of its cells,

@@ -270,6 +270,13 @@ after step 12; the V2 milestone (step 13) closes the version.
   larger, one record (D36).
 - **Done when**: the working cell's NAVMs can be joined into one, its red borders linked, an NPC
   walks across in game.
+- **Result (1 Oct 2026)**: done. `navmesh/edit.ts`: `mergeVertices` (at their mean, collapsed
+  triangles removed), `addTriangle` (wound counter-clockwise), `joinNavMeshes` (the smaller NAVM
+  appended to the larger; links between the two dropped, door links and cover moved) and
+  `retargetLinks` (the cell's other NAVMs follow); every edit recomputes adjacency and refuses a
+  flipped triangle or an edge shared by three. In the editor, vertices are selected across
+  NAVMs; Merge (M) and Create triangle (T) join two NAVMs first when the selection spans them.
+  The user reworked their working cell with it in little time; it works well in game.
 
 ### Step 16 – Finalize in the app
 - **Why**: the CK's Finalize does door links, cover and the `NAVI` record; doors and `NAVI` are

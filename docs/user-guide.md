@@ -128,6 +128,11 @@ the tiles (the piece list is hidden):
   Shift+drag a rectangle. **Del** deletes the selected triangles, or those using a selected edge
   or vertex. Ctrl+Z / Ctrl+Y undo and redo; **Write NavMesh changes** (Ctrl+S) saves them, with
   a backup.
+- With **vertices**, the selection may span the cell's NavMesh records. **Merge vertices** (M)
+  merges the selected vertices into one, at their mean: use it to weld a red border, two vertices
+  at a time. **Create triangle** (T) adds a triangle on three selected vertices. When the
+  vertices belong to two records, the smaller record is first joined into the larger one: the
+  cell keeps a single NavMesh there.
 - A Shift+drag rectangle on floor without NavMesh draws a white **region** for Bake.
 
 - **Fill** bakes every tile no NavMesh covers yet.

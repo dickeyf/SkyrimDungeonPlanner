@@ -21,6 +21,7 @@
     removeTriangles,
     trianglesInTiles,
   } from '$lib/navmesh/stitch';
+  import { addTriangle, joinNavMeshes, mergeVertices, retargetLinks } from '$lib/navmesh/edit';
   import {
     elementsInBox,
     pickElement,
@@ -28,6 +29,7 @@
     type NavElement,
   } from '$lib/navmesh/pick';
   import type { NavMeshData } from '$lib/format/esp/navm';
+  import { SvelteMap } from 'svelte/reactivity';
   import { fromFormKey } from '$lib/format/esp/formId';
   import { getPref, setPref } from '$lib/fs';
   import {
@@ -465,10 +467,10 @@
   function navTargets(): string[] {
     if (!layout) return [];
     const keys = [...navRegion];
-    const nav = activeNav?.nav;
-    if (nav && navSel.length) {
+    for (const [key, sel] of navSelByMesh()) {
+      const nav = navNow.find((n) => n.key === key)!.nav;
       const V = nav.vertices;
-      const tris = trianglesOfSelection(nav, navKind, navSel);
+      const tris = trianglesOfSelection(nav, navKind, sel);
       for (const i of tris) {
         const t = nav.triangles[i]!.vertices;
         const c: Vec3 = [0, 1, 2].map(
@@ -677,7 +679,52 @@
     navSel = [];
   }
 
+  /**
+   * The selection per NAVM: selected vertices may belong to several NAVMs (named `key#index`),
+   * triangles and edges to the active one.
+   */
+  function navSelByMesh(): Map<string, (number | string)[]> {
+    const out = new SvelteMap<string, (number | string)[]>();
+    if (navKind !== 'vertex') {
+      if (navActive && navSel.length && activeNav) out.set(navActive, navSel);
+      return out;
+    }
+    for (const id of navSel as string[]) {
+      const at = id.lastIndexOf('#');
+      const key = id.slice(0, at);
+      if (!navNow.some((n) => n.key === key)) continue;
+      out.set(key, [...(out.get(key) ?? []), Number(id.slice(at + 1))]);
+    }
+    return out;
+  }
+
   function navClick(info: PointerInfo): void {
+    if (navKind === 'vertex') {
+      // the nearest vertex of any NAVM: a merge or a new triangle may join two of them
+      const tol = anchor ? anchor.module.xy / 10 : 12;
+      let best: { id: string; d: number } | undefined;
+      for (const n of navNow) {
+        const v = pickElement(n.nav, 'vertex', info.world[0], info.world[1], tol) as
+          number | undefined;
+        if (v === undefined) continue;
+        const p = n.nav.vertices[v]!;
+        const d = Math.hypot(p[0] - info.world[0], p[1] - info.world[1]);
+        if (!best || d < best.d) best = { id: `${n.key}#${v}`, d };
+      }
+      if (!best) {
+        if (!info.shift) {
+          navSel = [];
+          navRegion = [];
+        }
+        return;
+      }
+      const id = best.id;
+      navActive = id.slice(0, id.lastIndexOf('#'));
+      if (info.shift)
+        navSel = navSel.includes(id) ? navSel.filter((x) => x !== id) : [...navSel, id];
+      else navSel = [id];
+      return;
+    }
     // a click on another NAVM's triangle makes it the active one
     const hit = (n: (typeof navNow)[number]) =>
       pickElement(n.nav, 'triangle', info.world[0], info.world[1], 0) !== undefined;
@@ -707,7 +754,16 @@
 
   function navBoxSelect(from: Vec3, to: Vec3): void {
     const nav = activeNav?.nav;
-    const inside = nav ? elementsInBox(nav, navKind, from[0], from[1], to[0], to[1]) : [];
+    const inside =
+      navKind === 'vertex'
+        ? navNow.flatMap((n) =>
+            elementsInBox(n.nav, 'vertex', from[0], from[1], to[0], to[1]).map(
+              (v) => `${n.key}#${v}`,
+            ),
+          )
+        : nav
+          ? elementsInBox(nav, navKind, from[0], from[1], to[0], to[1])
+          : [];
     navSel = [...new Set([...navSel, ...inside])];
     // a rectangle over tiles without NavMesh marks them for Bake
     navRegion = inside.length ? [] : tilesInBox(from, to);
@@ -715,17 +771,94 @@
   }
 
   function navDeleteSelection(): void {
-    const nav = activeNav?.nav;
-    if (!nav || !navActive || !navSel.length) return;
-    if (!activeNav.own) {
-      message = 'This NavMesh belongs to a master and is not edited (D22).';
-      return;
+    const groups = navSelByMesh();
+    if (!groups.size) return;
+    const next = { ...navWork };
+    let count = 0;
+    for (const [key, sel] of groups) {
+      const n = navNow.find((x) => x.key === key)!;
+      if (!n.own) {
+        message = 'This NavMesh belongs to a master and is not edited (D22).';
+        return;
+      }
+      const gone = trianglesOfSelection(n.nav, navKind, sel);
+      if (!gone.length) continue;
+      const after = removeTriangles(n.nav, gone);
+      next[key] = after.triangles.length ? after : null;
+      count += gone.length;
     }
-    const gone = trianglesOfSelection(nav, navKind, navSel);
-    if (!gone.length) return;
-    const after = removeTriangles(nav, gone);
-    navCommit({ ...navWork, [navActive]: after.triangles.length ? after : null });
-    message = `${gone.length} triangles deleted (not saved yet).`;
+    if (!count) return;
+    navCommit(next);
+    message = `${count} triangles deleted (not saved yet).`;
+  }
+
+  /**
+   * The selected vertices in one NAVM: when they span two, the smaller is joined into the larger
+   * first (D36; the links of the cell's other NAVMs follow). Undefined, after saying why, when
+   * that cannot be done.
+   */
+  function navVerticesInOne():
+    | { next: Record<string, NavMeshData | null>; key: string; nav: NavMeshData; vs: number[] }
+    | undefined {
+    const groups = [...navSelByMesh()] as [string, number[]][];
+    if (!groups.length || !ed.store) return undefined;
+    if (groups.length > 2) {
+      message = 'The selected vertices belong to more than two NavMeshes.';
+      return undefined;
+    }
+    const meshes = groups.map(([key]) => navNow.find((n) => n.key === key)!);
+    if (meshes.some((n) => !n.own)) {
+      message = 'A NavMesh of a master is not edited (D22).';
+      return undefined;
+    }
+    if (groups.length === 1) {
+      const [key, vs] = groups[0]!;
+      return { next: { ...navWork }, key, nav: meshes[0]!.nav, vs };
+    }
+    // the larger NAVM keeps its record
+    const order =
+      meshes[0]!.nav.triangles.length >= meshes[1]!.nav.triangles.length ? [0, 1] : [1, 0];
+    const into = meshes[order[0]!]!;
+    const other = meshes[order[1]!]!;
+    const intoVs = groups[order[0]!]![1];
+    const otherVs = groups[order[1]!]![1];
+    const store = ed.store;
+    const id = (key: string) => fromFormKey(key, store.masters, store.name);
+    const joined = joinNavMeshes(into.nav, other.nav, id(into.key), id(other.key));
+    const next: Record<string, NavMeshData | null> = {
+      ...navWork,
+      [into.key]: joined.nav,
+      [other.key]: null,
+    };
+    for (const n of navNow) {
+      if (n.key === into.key || n.key === other.key || !n.own) continue;
+      const moved = retargetLinks(n.nav, id(other.key), id(into.key), joined.offset);
+      if (moved) next[n.key] = moved;
+    }
+    const vo = into.nav.vertices.length;
+    return {
+      next,
+      key: into.key,
+      nav: joined.nav,
+      vs: [...intoVs, ...otherVs.map((v) => v + vo)],
+    };
+  }
+
+  function navEditVertices(what: 'merge' | 'triangle'): void {
+    const one = navVerticesInOne();
+    if (!one) return;
+    try {
+      const nav = what === 'merge' ? mergeVertices(one.nav, one.vs) : addTriangle(one.nav, one.vs);
+      const joined = navSelByMesh().size > 1;
+      navCommit({ ...one.next, [one.key]: nav });
+      navActive = one.key;
+      message =
+        (what === 'merge' ? `${one.vs.length} vertices merged` : 'Triangle created') +
+        (joined ? ', two NavMeshes joined into one' : '') +
+        ' (not saved yet).';
+    } catch (e) {
+      message = `Not done: ${(e as Error).message}.`;
+    }
   }
 
   function navWipe(key: string): void {
@@ -835,7 +968,7 @@
       };
     });
     const nav = activeNav?.nav;
-    if (nav && navSel.length) {
+    if (nav && navSel.length && navKind !== 'vertex') {
       const V = nav.vertices;
       if (navKind === 'triangle')
         layers.push({
@@ -867,12 +1000,19 @@
           triangles.push([n, n + 1, n + 2], [n, n + 2, n + 3]);
         }
         layers.push({ vertices, triangles, fill: '#ff2020', line: '#ff2020', opacity: 0.95 });
-      } else
-        layers.push({
-          points: (navSel as number[]).map((v) => V[v]!),
-          fill: '#ff3030',
-          line: '#ff3030',
-        });
+      }
+    }
+    if (navKind === 'vertex' && navSel.length) {
+      const points: Vec3[] = [];
+      for (const [key, vs] of navSelByMesh()) {
+        const V = navNow.find((n) => n.key === key)!.nav.vertices;
+        for (const v of vs as number[]) points.push(V[v]!);
+      }
+      layers.push({
+        points,
+        fill: '#ff3030',
+        line: '#ff3030',
+      });
     }
     if (layout && anchor && navRegion.length) {
       const m = anchor.module;
@@ -1412,6 +1552,8 @@
       else if ((e.ctrlKey || e.metaKey) && key === 's') void navSave();
       else if (key === 'delete' || key === 'backspace') navDeleteSelection();
       else if (key === 'escape') navSel = [];
+      else if (key === 'm' && navKind === 'vertex') navEditVertices('merge');
+      else if (key === 't' && navKind === 'vertex') navEditVertices('triangle');
       else return;
       e.preventDefault();
       return;
@@ -1870,6 +2012,18 @@
                 or remove, Shift+drag a rectangle; Del deletes (a triangle, or the triangles using a selected
                 edge or vertex); Ctrl+Z / Ctrl+Y undo and redo.
               </div>
+              {#if navKind === 'vertex'}
+                <button
+                  disabled={navSel.length < 2}
+                  title="Merge the selected vertices into one, at their mean"
+                  onclick={() => navEditVertices('merge')}>Merge vertices (M)</button
+                >
+                <button
+                  disabled={navSel.length !== 3}
+                  title="A triangle on the three selected vertices; across two NavMeshes, joins them"
+                  onclick={() => navEditVertices('triangle')}>Create triangle (T)</button
+                >
+              {/if}
               <button disabled={!navSel.length} onclick={navDeleteSelection}
                 >Delete selection</button
               >

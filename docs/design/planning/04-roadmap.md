@@ -48,6 +48,7 @@ CK. Released as 0.1.0.**
 - [x] Writing the NAVM, welded to the existing NavMesh (30 Sep 2026)
 - [x] "Fill" tool (tiles without NavMesh), replace, clear, lock (30 Sep 2026)
 - [x] "Edit NavMesh" mode: select, delete, wipe (30 Sep 2026)
+- [x] NavMesh edits: merge vertices, create triangles, join two NAVMs (1 Oct 2026)
 - [ ] NavMesh editing and Finalize in the app (D65, V2 phase D)
 - [ ] Stitching to existing batches; locked flag
 
