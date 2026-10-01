@@ -125,6 +125,8 @@ export function bake(
   tiles: readonly BakeTile[],
   options: Partial<BakeOptions> = {},
   grid?: BakeGrid,
+  /** Triangles of a NavMesh already there (world): the bake leaves out the area they cover. */
+  exclude: readonly (readonly [Vec3, Vec3, Vec3])[] = [],
 ): BakeResult {
   const o = { ...DEFAULT_BAKE_OPTIONS, ...options };
   const conformed = conform(tiles, o);
@@ -195,6 +197,32 @@ export function bake(
         merged = polygonClipping.union(parts[0]!, ...parts.slice(1));
       } catch {
         merged = parts.slice(0, 1); // keep one part rather than overlapping ones
+      }
+    }
+    // leave out what an existing NavMesh already covers in this cell (D64)
+    if (exclude.length) {
+      const x0 = gx + i * size;
+      const y0 = gy + j * size;
+      const near = exclude
+        .filter(
+          (t) =>
+            t.some(
+              (p) =>
+                p[0] >= x0 - 1 && p[0] <= x0 + size + 1 && p[1] >= y0 - 1 && p[1] <= y0 + size + 1,
+            ) ||
+            // a large triangle may cover the cell without a vertex in it
+            (Math.min(...t.map((p) => p[0])) <= x0 + size &&
+              Math.max(...t.map((p) => p[0])) >= x0 &&
+              Math.min(...t.map((p) => p[1])) <= y0 + size &&
+              Math.max(...t.map((p) => p[1])) >= y0),
+        )
+        .map((t) => [t.map((p): [number, number] => [snap(p[0]), snap(p[1])])]);
+      if (near.length && merged.length) {
+        try {
+          merged = polygonClipping.difference(merged, ...near);
+        } catch {
+          merged = []; // cannot tell what is free: leave the cell to the existing NavMesh
+        }
       }
     }
     for (const part of merged) {

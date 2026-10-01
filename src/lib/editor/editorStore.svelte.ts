@@ -222,7 +222,7 @@ class EditorStore {
       if ('requestPermission' in dir && !(await ensureAccess(dir, 'readwrite')))
         throw new Error(`write access to ${info.layer.name} was refused`);
       const store = EspLevelStore.parse(await readAll(info.handle), info.name);
-      const added = await store.applyEdits(cell, edits);
+      await store.applyEdits(cell, edits);
       const result = await savePlugin({
         dir: info.layer.dir,
         name: info.name,
@@ -239,10 +239,14 @@ class EditorStore {
       );
       this.selected = null;
       const count = (kind: LevelEdit['kind']) => edits.filter((e) => e.kind === kind).length;
+      const tiles = edits.some((e) => e.kind !== 'navmesh')
+        ? `${count('add')} added, ${count('move')} moved, ${count('remove')} removed`
+        : '';
+      const navmesh = count('navmesh') ? 'NavMesh written' : '';
       this.message =
-        `saved ${info.name}: ${added.length} added, ${count('move')} moved, ` +
-        `${count('remove')} removed; backup ${result.backup} (in ${info.layer.name}). ` +
-        'Reload the plugin in the Creation Kit before editing it there.';
+        `saved ${info.name}: ${[tiles, navmesh].filter(Boolean).join('; ')}; backup ${result.backup} ` +
+        `(in ${info.layer.name}). Reload the plugin in the Creation Kit before editing it there` +
+        (navmesh ? ', then Finalize the NavMesh (door links, cover).' : '.');
       ok = true;
     });
     return ok;

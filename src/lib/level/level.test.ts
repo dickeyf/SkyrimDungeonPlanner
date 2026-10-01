@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Catalogue, Piece } from '../catalogue/types';
 import { buildPlugin, refrRecord } from '../format/esp/testPlugin';
+import { buildNavMesh } from '../navmesh/build';
 import { EspLevelStore } from './espStore';
 import { loadCell, piecesByFormKey } from './loadCell';
 import { summarizeCell } from './summary';
@@ -51,6 +52,45 @@ function store(): EspLevelStore {
 }
 
 describe('EspLevelStore', () => {
+  it('adds the cell NavMesh, reads it back and rewrites it in place', async () => {
+    const level = store();
+    const cell = '0x00000D62:MyDungeon.esp';
+    expect(await level.readNavMeshes(cell)).toEqual([]);
+    const nav = buildNavMesh(
+      0x01000d62,
+      [
+        [0, 0, 0],
+        [128, 0, 0],
+        [0, 128, 0],
+      ],
+      [[0, 1, 2]],
+    );
+    const [key] = await level.applyEdits(cell, [{ kind: 'navmesh', nav }]);
+    const reread = EspLevelStore.parse(level.serialize(), 'MyDungeon.esp');
+    const navms = await reread.readNavMeshes(cell);
+    expect(navms.map((n) => [n.key, n.own])).toEqual([[key, true]]);
+    expect(navms[0]!.nav).toEqual(nav);
+    const bigger = buildNavMesh(
+      0x01000d62,
+      [
+        [0, 0, 0],
+        [128, 0, 0],
+        [128, 128, 0],
+        [0, 128, 0],
+      ],
+      [
+        [0, 1, 2],
+        [0, 2, 3],
+      ],
+    );
+    await reread.applyEdits(cell, [{ kind: 'navmesh', navm: key, nav: bigger }]);
+    const after = await EspLevelStore.parse(reread.serialize(), 'MyDungeon.esp').readNavMeshes(
+      cell,
+    );
+    expect(after).toHaveLength(1);
+    expect(after[0]!.nav.triangles).toHaveLength(2);
+  });
+
   it('lists interior cells by FormKey', async () => {
     const cells = await store().listCells();
     expect(cells).toEqual([

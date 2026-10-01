@@ -3,7 +3,7 @@ import { formIdIndex, fromFormKey, toFormKey } from '../format/esp/formId';
 import { Plugin, type CellEntry } from '../format/esp/plugin';
 import type { FormKey } from '../catalogue/types';
 import type { LevelEdit } from './edits';
-import type { LevelCell, LevelRef, LevelStore } from './store';
+import type { LevelCell, LevelNavMesh, LevelRef, LevelStore } from './store';
 
 export class EspLevelStore implements LevelStore {
   private cells: Map<FormKey, CellEntry> | null = null;
@@ -63,6 +63,17 @@ export class EspLevelStore implements LevelStore {
     }));
   }
 
+  async readNavMeshes(cell: FormKey): Promise<LevelNavMesh[]> {
+    const entry = (await this.cellMap()).get(cell);
+    if (!entry) throw new Error(`cell ${cell} is not an interior cell of ${this.name}`);
+    const own = this.plugin.ownIndex;
+    return (await this.plugin.cellNavms(entry)).map(({ record, nav }) => ({
+      key: this.formKey(record.formId),
+      own: formIdIndex(record.formId) === own,
+      nav,
+    }));
+  }
+
   async applyEdits(cell: FormKey, edits: readonly LevelEdit[]): Promise<FormKey[]> {
     const entry = (await this.cellMap()).get(cell);
     if (!entry) throw new Error(`cell ${cell} is not an interior cell of ${this.name}`);
@@ -72,9 +83,20 @@ export class EspLevelStore implements LevelStore {
     const own = this.plugin.ownIndex;
     const { masters, name } = this.plugin;
     // check everything first, so a refused edit leaves the plugin untouched
+    const navms = new Map(
+      (await this.plugin.cellNavms(entry)).map((n) => [this.formKey(n.record.formId), n.record]),
+    );
     for (const edit of edits) {
       if (edit.kind === 'add') {
         fromFormKey(edit.base, masters, name); // throws when the base's plugin is not a master
+        continue;
+      }
+      if (edit.kind === 'navmesh') {
+        if (!edit.navm) continue;
+        const record = navms.get(edit.navm);
+        if (!record) throw new Error(`NavMesh ${edit.navm} is not in cell ${cell}`);
+        if (formIdIndex(record.formId) !== own)
+          throw new Error(`NavMesh ${edit.navm} belongs to a master and is not edited (D22)`);
         continue;
       }
       const ref = refs.get(edit.ref);
@@ -84,7 +106,10 @@ export class EspLevelStore implements LevelStore {
     }
     const added: FormKey[] = [];
     for (const edit of edits) {
-      if (edit.kind === 'remove') this.plugin.deleteRefr(entry, refs.get(edit.ref)!);
+      if (edit.kind === 'navmesh') {
+        if (edit.navm) await this.plugin.setNavm(navms.get(edit.navm)!, edit.nav);
+        else added.push(this.formKey(this.plugin.addNavm(entry, edit.nav).formId));
+      } else if (edit.kind === 'remove') this.plugin.deleteRefr(entry, refs.get(edit.ref)!);
       else if (edit.kind === 'move') this.plugin.moveRefr(refs.get(edit.ref)!, edit);
       else {
         const record = this.plugin.addRefr(entry, {

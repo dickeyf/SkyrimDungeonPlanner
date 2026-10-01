@@ -6,6 +6,7 @@
  * Everything is addressed by FormKey (`0x00123456:Plugin.esp`), never by load-order FormIDs.
  */
 import type { FormKey, Vec3 } from '../catalogue/types';
+import type { NavMeshData } from '../format/esp/navm';
 import type { LevelEdit } from './edits';
 
 export interface LevelCell {
@@ -28,6 +29,14 @@ export interface LevelRef {
   own: boolean;
 }
 
+/** A NAVM of a cell. */
+export interface LevelNavMesh {
+  key: FormKey;
+  /** Created by the working plugin (it can be rewritten), not an override of a master's. */
+  own: boolean;
+  nav: NavMeshData;
+}
+
 export interface LevelStore {
   /** File name of the working plugin. */
   readonly name: string;
@@ -35,6 +44,8 @@ export interface LevelStore {
   listCells(): Promise<LevelCell[]>;
   /** REFRs of a cell; other placed types pass through untouched and are not listed. */
   readRefs(cell: FormKey): Promise<LevelRef[]>;
+  /** The NavMeshes of a cell (one per cell normally, D36). */
+  readNavMeshes(cell: FormKey): Promise<LevelNavMesh[]>;
   /**
    * Apply edits to a cell in memory, all or nothing: every edit is checked (own references
    * only, known bases) before any is applied. Returns the keys of the added references.

@@ -13,8 +13,8 @@ import {
   type RefrInfo,
 } from './cellRefr';
 import { formIdIndex, makeFormId } from './formId';
-import { encodeNvnm, type NavMeshData } from './navm';
-import { writeSubrecords } from './subrecords';
+import { decodeNavm, encodeNvnm, type NavMeshData } from './navm';
+import { recordSubrecords, writeSubrecords } from './subrecords';
 import {
   GroupType,
   RecordFlags,
@@ -248,6 +248,35 @@ export class Plugin {
     temporary.children.push(record);
     this.syncRecordCount();
     return record;
+  }
+
+  /** The NAVM records of a cell, with their NavMesh (those without NVNM are left out). */
+  async cellNavms(cell: CellEntry): Promise<{ record: EspRecord; nav: NavMeshData }[]> {
+    const out: { record: EspRecord; nav: NavMeshData }[] = [];
+    for (const group of cell.children?.children ?? []) {
+      if (group.kind !== 'group') continue;
+      for (const node of group.children) {
+        if (node.kind !== 'record' || node.type !== 'NAVM') continue;
+        const nav = await decodeNavm(node);
+        if (nav) out.push({ record: node, nav });
+      }
+    }
+    return out;
+  }
+
+  /**
+   * Replace the NavMesh of an own NAVM, keeping its other fields. A compressed record is written
+   * back uncompressed (the game reads both).
+   */
+  async setNavm(record: EspRecord, nav: NavMeshData): Promise<void> {
+    this.assertEditable(record);
+    const subs = await recordSubrecords(record);
+    const at = subs.findIndex((s) => s.type === 'NVNM');
+    const field = { type: 'NVNM', data: encodeNvnm(nav) };
+    if (at === -1) subs.unshift(field);
+    else subs[at] = field;
+    record.data = writeSubrecords(subs);
+    record.flags &= ~RecordFlags.compressed;
   }
 
   /** Add a NAVM holding `nav` to the cell's temporary children. */

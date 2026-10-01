@@ -5,7 +5,7 @@
 import type { Catalogue, Piece } from '../catalogue/types';
 import { deriveGrid, type DeriveResult } from '../grid/derive';
 import type { PlacedRef } from '../grid/types';
-import type { LevelRef, LevelStore } from './store';
+import type { LevelNavMesh, LevelRef, LevelStore } from './store';
 
 export interface LoadedCell {
   cell: string;
@@ -13,6 +13,8 @@ export interface LoadedCell {
   grid: DeriveResult;
   /** Tiles whose REFR belongs to a master (overrides): shown, never edited (D22). */
   foreignTiles: number;
+  /** The cell's NavMeshes (one normally, D36). */
+  navmeshes: LevelNavMesh[];
 }
 
 export function piecesByFormKey(catalogue: Catalogue): Map<string, Piece> {
@@ -44,5 +46,6 @@ export async function loadCell(
     refs,
     grid,
     foreignTiles: grid.tiles.filter((t) => !own.get(t.ref.refFormKey)).length,
+    navmeshes: await store.readNavMeshes(cell),
   };
 }
