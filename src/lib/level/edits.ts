@@ -15,10 +15,10 @@ export type LevelEdit =
   | { kind: 'move'; ref: FormKey; pos: Vec3; rot: Vec3; scale: number }
   | { kind: 'remove'; ref: FormKey }
   /**
-   * The cell's NavMesh (D36): rewrites the NAVM `navm` (an own record), or adds one to the cell
-   * without `navm`.
+   * The cell's NavMesh (D36): rewrites the NAVM `navm` (an own record), adds one to the cell
+   * without `navm`, or deletes `navm` with a null `nav` (no triangle left).
    */
-  | { kind: 'navmesh'; navm?: FormKey; nav: NavMeshData };
+  | { kind: 'navmesh'; navm?: FormKey; nav: NavMeshData | null };
 
 export function editsFromChanges(
   changes: LayoutChanges,

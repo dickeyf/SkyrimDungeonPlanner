@@ -346,6 +346,21 @@ export class Plugin {
   }
 
   /** Remove a REFR created by this plugin. Overrides of master records are never deleted (D22). */
+  /** Delete an own NAVM from its cell (compressed or not: nothing is read). */
+  deleteNavm(cell: CellEntry, record: EspRecord): void {
+    this.assertOwn(record);
+    for (const group of cell.children?.children ?? []) {
+      if (group.kind !== 'group') continue;
+      const i = group.children.indexOf(record);
+      if (i !== -1) {
+        group.children.splice(i, 1);
+        this.syncRecordCount();
+        return;
+      }
+    }
+    throw new Error('NavMesh not found in cell');
+  }
+
   deleteRefr(cell: CellEntry, ref: RefEntry): void {
     this.assertEditable(ref.record);
     for (const group of cell.children?.children ?? []) {

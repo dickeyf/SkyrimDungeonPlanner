@@ -91,6 +91,25 @@ describe('EspLevelStore', () => {
     expect(after[0]!.nav.triangles).toHaveLength(2);
   });
 
+  it('deletes a NavMesh left without triangles', async () => {
+    const level = store();
+    const cell = '0x00000D62:MyDungeon.esp';
+    const nav = buildNavMesh(
+      0x01000d62,
+      [
+        [0, 0, 0],
+        [128, 0, 0],
+        [0, 128, 0],
+      ],
+      [[0, 1, 2]],
+    );
+    const [key] = await level.applyEdits(cell, [{ kind: 'navmesh', nav }]);
+    await level.applyEdits(cell, [{ kind: 'navmesh', navm: key, nav: null }]);
+    const reread = EspLevelStore.parse(level.serialize(), 'MyDungeon.esp');
+    expect(await reread.readNavMeshes(cell)).toEqual([]);
+    expect(reread.plugin.header.numRecords).toBe(store().plugin.header.numRecords);
+  });
+
   it('rewrites a NavMesh the CK saved compressed', async () => {
     const level = store();
     const cell = '0x00000D62:MyDungeon.esp';

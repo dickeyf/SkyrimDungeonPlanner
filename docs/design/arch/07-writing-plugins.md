@@ -147,5 +147,11 @@ exposes them as `readNavMeshes` and the `navmesh` edit.
   triangle with a link to another NavMesh is never split. The existing triangles keep their
   flags, cover flags and edge links; door links and cover keep their indices; adjacency and the
   search grid are recomputed.
-- **Unlinked borders**: new border edges within 32 units of any NavMesh of the cell but not
+- **Removing** (`trianglesInTiles`, `removeTriangles`, for Replace and Clear): the triangles
+  whose centre falls in the selected tiles' cells go; the others are renumbered, their
+  neighbours across the removed ones become borders, door links and cover follow, unused
+  vertices are dropped. A NAVM left without triangles is deleted (`Plugin.deleteNavm`, a
+  `navmesh` edit with a null NavMesh).
+- **Unlinked borders**: new border edges longer than 8 units (the steps at wall corners are no
+  gap) and within 32 units of any NavMesh of the cell but not
   welded (along another NAVM, or too far) are returned and drawn in red, to link in the CK.

@@ -14,11 +14,12 @@ your game folder is read in place and nothing is uploaded.
 4. [Building with the assistant](#building-with-the-assistant)
 5. [Placing and moving pieces](#placing-and-moving-pieces)
 6. [Marks: open faces, seams, mismatches, leaks, shared cells](#marks)
-7. [Saving and the Creation Kit](#saving-and-the-creation-kit)
-8. [New plugins and cells](#new-plugins-and-cells)
-9. [Settings](#settings)
-10. [Limits of V1](#limits-of-v1)
-11. [Troubleshooting](#troubleshooting)
+7. [NavMesh](#navmesh)
+8. [Saving and the Creation Kit](#saving-and-the-creation-kit)
+9. [New plugins and cells](#new-plugins-and-cells)
+10. [Settings](#settings)
+11. [Limits](#limits)
+12. [Troubleshooting](#troubleshooting)
 
 ## Requirements
 
@@ -113,6 +114,26 @@ catalogue annotations (_Settings_, _Validation_, _Accepted overlaps_, where it c
 
 _Show marks_ turns all marks off and on.
 
+## NavMesh
+
+The tool bakes the NavMesh of your tiles from their walkable floor (computed from each piece's
+collision): two triangles per grid cell where the floor is open, small polygons along the walls.
+
+- **Fill** selects every tile no NavMesh covers yet.
+- **Bake** (the selection, or the whole cell without one) bakes the tiles that have no NavMesh
+  yet; tiles that already have triangles, whoever made them (you in the Creation Kit, or the
+  tool), are never touched. The new triangles are welded onto the NavMesh already there.
+- **Replace** deletes the NavMesh of the selected tiles and bakes them anew; **Clear** only
+  deletes it.
+- **Locked**: once you finish a cell's NavMesh by hand, lock it: Replace and Clear are then
+  disabled for that cell.
+
+Each tool first shows a **preview** (the cell's NavMesh as it would be, and a summary); nothing
+is written until **Write NavMesh**, which makes a backup first. Red marks are new borders next to
+a NavMesh that could not be welded to it (along another NavMesh record of the cell, for
+instance): link them in the Creation Kit. Then open the plugin in the Creation Kit and
+**Finalize** the NavMesh (door links, cover) before testing in game.
+
 ## Saving and the Creation Kit
 
 Edits stay in the page until you click **Save** (or press Ctrl+S). Saving:
@@ -150,13 +171,14 @@ navmesh, doors' teleport links and everything else remain the CK's job.
 - **Validation**: review of the automatic connection types (near matches, composite faces,
   pieces, accepted overlaps). The decisions are catalogue annotations.
 
-## Limits of V1
+## Limits
 
 - The **Imperial kit** only, and **one level (Z)** at a time: ramps and stairs work, but the view
   does not show heights, so take care where levels change.
 - The tool edits tiles only (the kit's structural pieces); everything else in a cell passes
   through untouched.
-- No navmesh, props, lighting or door links: finish those in the Creation Kit.
+- No props, lighting or door links; the NavMesh is baked and written, but still finalized
+  (door links, cover) in the Creation Kit.
 - Texture continuity is checked near the floor (the opening's level) only.
 - ESL-flagged plugins are not supported.
 

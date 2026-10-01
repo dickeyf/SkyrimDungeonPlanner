@@ -15,9 +15,15 @@
   import { textureChecker } from '$lib/editor/textureChecker.svelte';
   import { bake } from '$lib/navmesh/bake';
   import { buildNavMesh } from '$lib/navmesh/build';
-  import { coveredTiles, mergeNavMesh } from '$lib/navmesh/stitch';
+  import {
+    coveredTiles,
+    mergeNavMesh,
+    removeTriangles,
+    trianglesInTiles,
+  } from '$lib/navmesh/stitch';
   import type { NavMeshData } from '$lib/format/esp/navm';
   import { fromFormKey } from '$lib/format/esp/formId';
+  import { getPref, setPref } from '$lib/fs';
   import {
     addTile,
     badJoints,
@@ -394,127 +400,207 @@
       ? surroundings(active, layout, pieces, ed.loaded.grid.opaque, anchor)
       : null,
   );
-  // ---- NavMesh preview (V2 step 10): bake the selection, or the whole cell, and draw it ------
+  // ---- NavMesh tools (V2 steps 10 to 12): bake, replace, clear, fill, lock -------------------
+
+  type NavMode = 'bake' | 'replace' | 'clear';
+  type NavWrite = { navm?: string; nav: NavMeshData | null };
 
   /**
-   * What a bake would write (D64): the tiles of the selection (or of the cell) without NavMesh
-   * yet are baked beside the cell's existing NavMesh, welded onto it.
+   * An operation on the cell's NavMeshes, computed before anything is written: the state of every
+   * NAVM after it (drawn), the edits that write it, and why it cannot be written, if so.
    */
   let navPreview = $state.raw<{
+    mode: NavMode;
     vertices: readonly Vec3[];
     triangles: readonly (readonly number[])[];
-    nav: NavMeshData | null;
-    /** The NAVM to rewrite (own), or none to add one. */
-    navm?: string;
+    writes: NavWrite[];
     unlinked: [Vec3, Vec3][];
     note: string;
     /** Why it cannot be written, if so. */
     blocked?: string;
   } | null>(null);
 
-  function previewNavMesh(): void {
-    if (!layout || !anchor || !ed.loaded) return;
+  /** Per-cell "locked" flag (D37): the finishing phase, no replace or clear. Kept in the browser. */
+  const lockKey = $derived(
+    ed.store && ed.loaded ? `navLock.${ed.store.name}.${ed.loaded.cell}` : '',
+  );
+  let lockVersion = $state(0);
+  const locked = $derived(lockVersion >= 0 && !!lockKey && getPref(lockKey) === '1');
+  function setLocked(on: boolean): void {
+    if (lockKey) setPref(lockKey, on ? '1' : undefined);
+    lockVersion++;
+    navPreview = null;
+  }
+
+  const navGrid = $derived(anchor ? { origin: anchor.origin, module: anchor.module } : null);
+
+  /** "Fill": select the tiles no NavMesh of the cell covers yet (with a walkable area). */
+  function fillSelection(): void {
+    if (!layout || !ed.loaded || !navGrid) return;
+    const footprints = [...layout.tiles.keys()].map((key) => ({ key, cells: tileCells(key) }));
+    const covered = new Set(
+      ed.loaded.navmeshes.flatMap((n) => [...coveredTiles(n.nav, footprints, navGrid)]),
+    );
+    ed.selection = footprints
+      .map((f) => f.key)
+      .filter((key) => {
+        const piece = pieces.get(layout!.tiles.get(key)!.piece);
+        return !covered.has(key) && !!piece?.walkable?.length;
+      });
+    message = `${ed.selection.length} tiles without NavMesh selected.`;
+  }
+
+  function planNavMesh(mode: NavMode): void {
+    if (!layout || !anchor || !ed.loaded || !ed.store || !navGrid) return;
     const keys = ed.selection.length ? ed.selection : [...layout.tiles.keys()];
     const started = performance.now();
-    const navmeshes = ed.loaded.navmeshes;
     let blocked: string | undefined;
     if (pending && changeCount(pending)) blocked = 'save the tile edits first';
-    // coverage and exclusion over every NavMesh of the cell (a CK cell often has several)
+    if (mode !== 'bake' && locked) blocked = 'the cell NavMesh is locked (finishing phase)';
     const footprints = keys.map((key) => ({ key, cells: tileCells(key) }));
-    const grid = { origin: anchor.origin, module: anchor.module };
-    // keys of the tiles some NavMesh of the cell already covers
-    const covered = navmeshes
-      .flatMap((n) => [...coveredTiles(n.nav, footprints, grid)])
-      .filter((k, i, all) => all.indexOf(k) === i);
-    const tiles = keys.flatMap((key) => {
-      const tile = layout!.tiles.get(key);
-      const piece = tile && pieces.get(tile.piece);
-      if (!tile || covered.includes(key) || !piece?.walkable?.length) return [];
-      const at = tileWorldPlacement(tile, piece, anchor!);
-      return [{ key, rings: piece.walkable, pos: at.pos, heading: at.rot[2] }];
-    });
-    const exclude = navmeshes.flatMap((n) =>
-      n.nav.triangles.map(
-        (t) => t.vertices.map((v) => n.nav.vertices[v]!) as unknown as [Vec3, Vec3, Vec3],
-      ),
-    );
-    const baked = bake(
-      tiles,
-      {},
-      { origin: [anchor.origin[0], anchor.origin[1]], cell: anchor.module.xy },
-      exclude,
-    );
     // the NAVM's parent cell, as a FormID of the plugin itself (its index after the masters)
-    if (!ed.store) return;
     const cellFormId = fromFormKey(ed.loaded.cell, ed.store.masters, ed.store.name);
-    // the NavMesh the bake joins: the own one sharing the most vertices with it (welded), else
-    // the largest own one, else a new one; the others stay as they are
-    const own = navmeshes.filter((n) => n.own);
-    const touching = (n: (typeof navmeshes)[number]) =>
-      baked.vertices.filter((p) =>
-        n.nav.vertices.some(
-          (q) => Math.hypot(q[0] - p[0], q[1] - p[1]) <= 1 && Math.abs(q[2] - p[2]) <= 64,
-        ),
-      ).length;
-    const scored = own.map((n) => ({ n, touch: touching(n) }));
-    scored.sort((x, y) => y.touch - x.touch || y.n.nav.triangles.length - x.n.nav.triangles.length);
-    const current = scored[0]?.n ?? null;
-    if (!current && navmeshes.length)
-      blocked ??= 'every NavMesh of the cell belongs to a master (D22)';
-    const existing = current?.nav ?? null;
-    const others = navmeshes.filter((n) => n !== current).flatMap((n) => n.nav.vertices);
-    let check: string;
-    let merged: ReturnType<typeof mergeNavMesh> | null = null;
-    try {
-      merged = mergeNavMesh(existing, baked, cellFormId, { weld: 0.5, step: 64, others });
-      // the same validity rules as a fresh NavMesh: no edge shared by three triangles
-      buildNavMesh(
-        cellFormId,
-        merged.nav.vertices,
-        merged.nav.triangles.map((t) => t.vertices),
-      );
-      check = 'valid NAVM';
-    } catch (e) {
-      check = `not a valid NAVM: ${(e as Error).message}`;
-      blocked ??= 'the result is not a valid NAVM';
-      console.warn('NavMesh preview:', check);
+
+    // 1. replace and clear: the selected tiles' triangles go, from every NAVM holding some
+    let navmeshes = ed.loaded.navmeshes.map((n) => ({ ...n }));
+    // one write per NAVM key, the last one winning
+    const writes: Record<string, NavWrite> = {};
+    let removed = 0;
+    if (mode !== 'bake') {
+      navmeshes = navmeshes.map((n) => {
+        const inside = trianglesInTiles(n.nav, footprints, navGrid);
+        if (!inside.length) return n;
+        if (!n.own) blocked ??= `the NavMesh ${n.key} belongs to a master (D22)`;
+        removed += inside.length;
+        const nav = removeTriangles(n.nav, inside);
+        writes[n.key] = { navm: n.key, nav: nav.triangles.length ? nav : null };
+        return { ...n, nav };
+      });
+      navmeshes = navmeshes.filter((n) => n.nav.triangles.length > 0);
     }
+
+    // 2. bake and replace: the tiles still without NavMesh are baked beside the others (D64)
+    let baked = 0;
+    let target: (typeof navmeshes)[number] | null = null;
+    let unlinked: [Vec3, Vec3][] = [];
+    let skipped = 0;
+    let tileCount = 0;
+    if (mode !== 'clear') {
+      const covered = new Set(
+        navmeshes.flatMap((n) => [...coveredTiles(n.nav, footprints, navGrid)]),
+      );
+      skipped = covered.size;
+      const tiles = keys.flatMap((key) => {
+        const tile = layout!.tiles.get(key);
+        const piece = tile && pieces.get(tile.piece);
+        if (!tile || covered.has(key) || !piece?.walkable?.length) return [];
+        const at = tileWorldPlacement(tile, piece, anchor!);
+        return [{ key, rings: piece.walkable, pos: at.pos, heading: at.rot[2] }];
+      });
+      tileCount = tiles.length;
+      const exclude = navmeshes.flatMap((n) =>
+        n.nav.triangles.map(
+          (t) => t.vertices.map((v) => n.nav.vertices[v]!) as unknown as [Vec3, Vec3, Vec3],
+        ),
+      );
+      const result = bake(
+        tiles,
+        {},
+        { origin: [anchor.origin[0], anchor.origin[1]], cell: anchor.module.xy },
+        exclude,
+      );
+      if (result.triangles.length) {
+        // the bake joins the own NAVM sharing the most vertices with it, else the largest own
+        // one, else a new one; the others stay as they are
+        const touching = (n: (typeof navmeshes)[number]) =>
+          result.vertices.filter((p) =>
+            n.nav.vertices.some(
+              (q) => Math.hypot(q[0] - p[0], q[1] - p[1]) <= 1 && Math.abs(q[2] - p[2]) <= 64,
+            ),
+          ).length;
+        const scored = navmeshes.filter((n) => n.own).map((n) => ({ n, touch: touching(n) }));
+        scored.sort(
+          (x, y) => y.touch - x.touch || y.n.nav.triangles.length - x.n.nav.triangles.length,
+        );
+        target = scored[0]?.n ?? null;
+        const others = navmeshes.filter((n) => n !== target).flatMap((n) => n.nav.vertices);
+        try {
+          const merged = mergeNavMesh(target?.nav ?? null, result, cellFormId, {
+            weld: 0.5,
+            step: 64,
+            others,
+          });
+          // the same validity rules as a fresh NavMesh: no edge shared by three triangles
+          buildNavMesh(
+            cellFormId,
+            merged.nav.vertices,
+            merged.nav.triangles.map((t) => t.vertices),
+          );
+          baked = merged.added;
+          unlinked = merged.unlinked;
+          if (target) {
+            writes[target.key] = { navm: target.key, nav: merged.nav };
+            navmeshes = navmeshes.map((n) => (n === target ? { ...n, nav: merged.nav } : n));
+          } else {
+            writes['new'] = { nav: merged.nav };
+            navmeshes = [...navmeshes, { key: 'new', own: true, nav: merged.nav }];
+          }
+        } catch (e) {
+          blocked ??= `the result is not a valid NAVM: ${(e as Error).message}`;
+          console.warn('NavMesh preview:', e);
+        }
+      }
+    }
+
+    // draw every NavMesh of the cell as it would be
+    const vertices: Vec3[] = [];
+    const triangles: (readonly number[])[] = [];
+    for (const n of navmeshes) {
+      const base = vertices.length;
+      vertices.push(...n.nav.vertices);
+      for (const t of n.nav.triangles) triangles.push(t.vertices.map((v) => v + base));
+    }
+    const parts = [
+      mode !== 'bake' ? `${removed} triangles removed from the selected tiles` : '',
+      mode !== 'clear'
+        ? `${tileCount} tiles baked (${skipped} with NavMesh skipped), ${baked} triangles added to ` +
+          (target ? `the NavMesh ${target.key}` : baked ? 'a new NavMesh' : 'nothing') +
+          `, ${unlinked.length} unlinked border edges`
+        : '',
+      `${Object.keys(writes).length} NavMesh record${Object.keys(writes).length === 1 ? '' : 's'} to write`,
+      `${(performance.now() - started).toFixed(0)} ms`,
+    ];
+    if (!Object.keys(writes).length) blocked ??= 'nothing to write';
     navPreview = {
-      vertices: merged?.nav.vertices ?? baked.vertices,
-      triangles: merged?.nav.triangles.map((t) => t.vertices) ?? baked.triangles,
-      nav: merged?.nav ?? null,
-      ...(current ? { navm: current.key } : {}),
-      unlinked: merged?.unlinked ?? [],
-      note:
-        `${tiles.length} tiles baked (${covered.length} with NavMesh skipped, ` +
-        `${keys.length - tiles.length - covered.length} without walkable area), ` +
-        `${merged?.added ?? baked.triangles.length} triangles added to ` +
-        (existing
-          ? `the NavMesh ${current!.key} (${existing.triangles.length} triangles` +
-            (navmeshes.length > 1
-              ? `; ${navmeshes.length - 1} other NavMeshes left as they are), `
-              : '), ')
-          : 'a new NavMesh, ') +
-        `${merged?.unlinked.length ?? 0} unlinked border edges, ` +
-        `${(performance.now() - started).toFixed(0)} ms; ${check}`,
+      mode,
+      vertices,
+      triangles,
+      writes: Object.values(writes),
+      unlinked,
+      note: parts.filter(Boolean).join('; '),
       ...(blocked ? { blocked } : {}),
     };
   }
 
   async function writeNavMesh(): Promise<void> {
     const p = navPreview;
-    if (!p?.nav || p.blocked) return;
+    if (!p || p.blocked) return;
+    const what =
+      p.mode === 'bake'
+        ? 'Write this NavMesh into the plugin now?'
+        : p.mode === 'replace'
+          ? 'Delete the NavMesh of the selected tiles and write the new bake in its place?'
+          : 'Delete the NavMesh of the selected tiles?';
     if (
       !window.confirm(
-        'Write this NavMesh into the plugin now?\n\n' +
-          'A timestamped backup of the current file is made first. Then open the plugin in the ' +
-          'Creation Kit and Finalize the NavMesh (door links, cover).',
+        `${what}\n\nA timestamped backup of the current file is made first. Then open the ` +
+          'plugin in the Creation Kit and Finalize the NavMesh (door links, cover).',
       )
     )
       return;
-    const ok = await ed.save([
-      { kind: 'navmesh', nav: p.nav, ...(p.navm ? { navm: p.navm } : {}) },
-    ]);
+    const ok = await ed.save(
+      p.writes.map((w) => ({ kind: 'navmesh', nav: w.nav, ...(w.navm ? { navm: w.navm } : {}) })),
+    );
     if (ok) navPreview = null;
   }
 
@@ -1404,24 +1490,43 @@
             </div>{/if}
 
           <div class="navmesh-preview">
-            <button onclick={previewNavMesh}
-              >Preview NavMesh ({ed.selection.length ? 'selection' : 'whole cell'})</button
+            <b>NavMesh</b>
+            <button onclick={fillSelection} title="Select the tiles no NavMesh covers yet"
+              >Fill</button
+            >
+            <button onclick={() => planNavMesh('bake')}
+              >Bake {ed.selection.length ? 'selection' : 'whole cell'}</button
+            >
+            <button disabled={locked} onclick={() => planNavMesh('replace')}>Replace</button>
+            <button disabled={locked} onclick={() => planNavMesh('clear')}>Clear</button>
+            <label title="Finishing phase: no replace or clear in this cell"
+              ><input
+                type="checkbox"
+                checked={locked}
+                onchange={(e) => setLocked(e.currentTarget.checked)}
+              /> Locked</label
             >
             {#if navPreview}
+              <div class="hint">
+                {navPreview.mode === 'bake'
+                  ? 'Bake'
+                  : navPreview.mode === 'replace'
+                    ? 'Replace'
+                    : 'Clear'} preview: {navPreview.note}.
+              </div>
               <button
-                disabled={!!navPreview.blocked || !navPreview.nav}
-                title={navPreview.blocked ?? 'Write the NavMesh into the plugin'}
+                disabled={!!navPreview.blocked}
+                title={navPreview.blocked ?? 'Write it into the plugin'}
                 onclick={writeNavMesh}>Write NavMesh</button
               >
-              <button onclick={() => (navPreview = null)}>Hide</button>
-              <div class="hint">{navPreview.note}.</div>
+              <button onclick={() => (navPreview = null)}>Cancel</button>
               {#if navPreview.blocked}<div class="warn">
                   Cannot write: {navPreview.blocked}.
                 </div>{/if}
               {#if navPreview.unlinked.length}
                 <div class="hint">
-                  Red: new border edges next to the existing NavMesh but not welded to it; link them
-                  in the Creation Kit.
+                  Red: new border edges next to a NavMesh but not welded to it; link them in the
+                  Creation Kit.
                 </div>
               {/if}
             {/if}

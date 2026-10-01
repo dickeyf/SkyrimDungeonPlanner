@@ -41,7 +41,7 @@ Statuses: **Decided** (settled), **Proposed** (suggested, to be confirmed), **Op
 | D34 | Manual finalization in the CK only happens at the very end; the tool does not try to preserve or merge manual touch-ups | Decided |
 | D35 | "Tile without NavMesh" determined by a geometric test (a triangle whose center falls within the tile's volume), not by internal tracking | Decided (29 Sep 2026, with D64) |
 | D36 | **One NAVM record per cell**: a bake is merged into the cell's NavMesh, its boundary vertices welded onto the neighbours' (canonical junction vertices, D38), so a partial bake rewrites the single NAVM and keeps the triangles outside the selection. No edge links between the tool's own batches or pieces: the game supports them inside a cell (812 in 80 interior cells of Skyrim.esm) but the CK's Finalize did not create them in the R2 test, and welding is simpler and matches most vanilla cells; edge links stay the fallback if welding fails. Which triangles a bake may replace: see D64 | Decided (26 Sep 2026) |
-| D37 | "Locked" flag per cell once in the finishing phase: warning before any destructive bake | Proposed |
+| D37 | "Locked" flag per cell once in the finishing phase: Replace and Clear are disabled while it is on. A UI safeguard, kept in the browser per plugin and cell (not in the .esp) | Decided (30 Sep 2026) |
 | D38 | NavMesh templates = **walkable polygons** per tile (not triangles); at bake: union → subtraction of obstacles → triangulation; canonical vertices forced at the boundaries according to the connection type | Proposed |
 | D39 | Taking obstacles into account in the NavMesh in iterations: free-standing walls → pillars → clutter → furniture. Later, but the architecture must allow it | Decided |
 
@@ -99,9 +99,10 @@ The questions opened for V1 and how each was settled (24 Sep 2026, V1 released a
 | V13 | License, repository, project name | GNU GPL v3; `github.com/dickeyf/SkyrimDungeonPlanner`; Skyrim Dungeon Planner |
 | V14 | V1 success criterion | "Imperial dungeon of 30 tiles on one Z in under 10 minutes, opened in the CK with no error and no visible gap": **met** at step 16 ("very fast; limited, but fast, faster than with the CK") |
 
-Still "Proposed" above, for later phases: D15 (props, phase 5) and D35–D37 (NavMesh, phase 3).
+Still "Proposed" above, for later phases: D15 (props, phase 5) and D38 (obstacles in the bake).
 
-Postponed to phase 3 (NavMesh): where to store the tool's own state (lock, list of created NAVMs).
+Settled in V2: the tool keeps no list of the NAVMs or triangles it made (D64); the lock lives in
+the browser (D37).
 
 ## Open questions
 - **MO2**: settled by D50 (the tool rebuilds the MO2 overlay from `modlist.txt`, validated by

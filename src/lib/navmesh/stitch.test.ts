@@ -3,7 +3,7 @@ import type { Vec3 } from '../catalogue/types';
 import { decodeNvnm, encodeNvnm } from '../format/esp/navm';
 import { bake } from './bake';
 import { buildNavMesh, triangleAdjacency, type TriangleIndices } from './build';
-import { coveredTiles, mergeNavMesh } from './stitch';
+import { coveredTiles, mergeNavMesh, removeTriangles, trianglesInTiles } from './stitch';
 
 const GRID = { origin: [0, 0, 0] as Vec3, module: { xy: 128, z: 128 } };
 
@@ -148,5 +148,46 @@ describe('bake beside an existing NavMesh', () => {
     );
     expect(r.triangles).toHaveLength(2); // the free cell only
     expect(Math.min(...r.vertices.map((v) => v[0]))).toBe(128);
+  });
+});
+
+describe('removeTriangles', () => {
+  it('renumbers the rest, its door links and cover, and drops unused vertices', () => {
+    // two squares side by side: triangles 0, 1 in [0, 128], 2, 3 in [128, 256]
+    const nav = buildNavMesh(
+      0x01000d62,
+      [
+        [0, 0, 0],
+        [128, 0, 0],
+        [128, 128, 0],
+        [0, 128, 0],
+        [256, 0, 0],
+        [256, 128, 0],
+      ],
+      [
+        [0, 1, 2],
+        [0, 2, 3],
+        [1, 4, 5],
+        [1, 5, 2],
+      ],
+    );
+    nav.doorLinks.push({ triangle: 0, crc: 1, door: 2 }, { triangle: 3, crc: 3, door: 4 });
+    nav.cover.push(1, 2);
+    const inFirst = trianglesInTiles(nav, [{ key: 'A', cells: [[0, 0, 0]] }], GRID);
+    expect(inFirst).toEqual([0, 1]);
+    const r = removeTriangles(nav, inFirst);
+    expect(r.triangles).toHaveLength(2);
+    expect(r.vertices).toEqual([
+      [128, 0, 0],
+      [128, 128, 0],
+      [256, 0, 0],
+      [256, 128, 0],
+    ]);
+    expect(r.doorLinks).toEqual([{ triangle: 1, crc: 3, door: 4 }]);
+    expect(r.cover).toEqual([0]);
+    // the remaining pair still neighbours each other; the removed side is a border now
+    expect(r.triangles[0]!.edges.filter((e) => e === 1)).toHaveLength(1);
+    expect(r.triangles.flatMap((t) => t.edges).filter((e) => e >= 2)).toHaveLength(0);
+    expect(decodeNvnm(encodeNvnm(r))).toEqual(r);
   });
 });

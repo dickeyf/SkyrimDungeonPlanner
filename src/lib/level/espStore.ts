@@ -92,7 +92,10 @@ export class EspLevelStore implements LevelStore {
         continue;
       }
       if (edit.kind === 'navmesh') {
-        if (!edit.navm) continue;
+        if (!edit.navm) {
+          if (!edit.nav) throw new Error('a NavMesh edit without NAVM must carry a NavMesh');
+          continue;
+        }
         const record = navms.get(edit.navm);
         if (!record) throw new Error(`NavMesh ${edit.navm} is not in cell ${cell}`);
         if (formIdIndex(record.formId) !== own)
@@ -107,8 +110,9 @@ export class EspLevelStore implements LevelStore {
     const added: FormKey[] = [];
     for (const edit of edits) {
       if (edit.kind === 'navmesh') {
-        if (edit.navm) await this.plugin.setNavm(navms.get(edit.navm)!, edit.nav);
-        else added.push(this.formKey(this.plugin.addNavm(entry, edit.nav).formId));
+        if (edit.navm && !edit.nav) this.plugin.deleteNavm(entry, navms.get(edit.navm)!);
+        else if (edit.navm) await this.plugin.setNavm(navms.get(edit.navm)!, edit.nav!);
+        else added.push(this.formKey(this.plugin.addNavm(entry, edit.nav!).formId));
       } else if (edit.kind === 'remove') this.plugin.deleteRefr(entry, refs.get(edit.ref)!);
       else if (edit.kind === 'move') this.plugin.moveRefr(refs.get(edit.ref)!, edit);
       else {

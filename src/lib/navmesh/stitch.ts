@@ -252,6 +252,8 @@ export function mergeNavMesh(
       const [u, v] = id.split(':').map(Number) as [number, number];
       const a = vertices[u]!;
       const b = vertices[v]!;
+      // the short steps two outlines leave at a wall corner are no gap in the passage
+      if (Math.hypot(b[0] - a[0], b[1] - a[1]) < 8) continue;
       const mid: Vec3 = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2];
       if (near(mid)) unlinked.push([a, b]);
     }
@@ -267,5 +269,79 @@ export function mergeNavMesh(
     },
     added: triangles.length - existingCount,
     unlinked,
+  };
+}
+
+/** Indices of the triangles whose centre falls in the given tiles' cells (D35's test). */
+export function trianglesInTiles(
+  nav: Pick<NavMeshData, 'vertices' | 'triangles'>,
+  tiles: readonly TileFootprint[],
+  grid: GridFrame,
+): number[] {
+  const cells = new Set<string>();
+  for (const t of tiles) for (const c of t.cells) cells.add(c.join(','));
+  const { origin, module } = grid;
+  const out: number[] = [];
+  nav.triangles.forEach((t, i) => {
+    const [x, y, z] = [0, 1, 2].map(
+      (k) => t.vertices.reduce((sum, v) => sum + nav.vertices[v]![k]!, 0) / 3,
+    ) as [number, number, number];
+    const ci = Math.floor((x - origin[0]) / module.xy);
+    const cj = Math.floor((y - origin[1]) / module.xy);
+    const k = Math.floor((z - origin[2]) / module.z + 0.5);
+    if (cells.has(`${ci},${cj},${k}`) || cells.has(`${ci},${cj},${k - 1}`)) out.push(i);
+  });
+  return out;
+}
+
+/**
+ * The NavMesh without some triangles: the others are renumbered, their neighbours across the
+ * removed ones become borders, and the door links and cover triangles follow (those of removed
+ * triangles go); unused vertices are dropped and the search grid recomputed.
+ */
+export function removeTriangles(nav: NavMeshData, remove: readonly number[]): NavMeshData {
+  const gone = new Set(remove);
+  const newIndex = new Map<number, number>();
+  nav.triangles.forEach((_, i) => {
+    if (!gone.has(i)) newIndex.set(i, newIndex.size);
+  });
+  const kept = nav.triangles.filter((_, i) => !gone.has(i));
+  // vertices still used, renumbered in order
+  const used = new Map<number, number>();
+  for (const t of kept) for (const v of t.vertices) if (!used.has(v)) used.set(v, -1);
+  const order = [...used.keys()].sort((a, b) => a - b);
+  order.forEach((v, i) => used.set(v, i));
+  const vertices = order.map((v) => nav.vertices[v]!);
+  const triangles: NavTriangle[] = kept.map((t) => ({
+    vertices: t.vertices.map((v) => used.get(v)!) as [number, number, number],
+    edges: t.edges.map((e, k) =>
+      // an edge link keeps its index into the edge links; a neighbour is renumbered or gone
+      t.flags & (1 << k) ? e : e < 0 ? e : (newIndex.get(e) ?? -1),
+    ) as [number, number, number],
+    flags: t.flags,
+    coverFlags: t.coverFlags,
+  }));
+  return {
+    ...nav,
+    vertices,
+    triangles,
+    doorLinks: nav.doorLinks
+      .filter((d) => newIndex.has(d.triangle))
+      .map((d) => ({ ...d, triangle: newIndex.get(d.triangle)! })),
+    cover: nav.cover.filter((c) => newIndex.has(c)).map((c) => newIndex.get(c)!),
+    grid:
+      triangles.length > 0
+        ? searchGrid(
+            vertices,
+            triangles.map((t) => t.vertices),
+          )
+        : {
+            divisor: 1,
+            maxDistanceX: 0,
+            maxDistanceY: 0,
+            min: [0, 0, 0],
+            max: [0, 0, 0],
+            cells: [[]],
+          },
   };
 }

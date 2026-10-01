@@ -233,6 +233,14 @@ comes first, before any interface work.
 - **Done when**: bake, fill, clear and lock work on the working cell, undo included where it
   applies.
 - **Commits to**: D32–D37, D64.
+- **Result (30 Sep 2026)**: done. The editor's NavMesh tools: Fill, Bake (selection or whole
+  cell), Replace and Clear, each previewed (the cell's NavMeshes as they would be, with a summary)
+  before "Write NavMesh" saves every changed NAVM at once, with a backup; a NAVM left without
+  triangles is deleted. `navmesh/stitch.ts` gains `trianglesInTiles` and `removeTriangles`
+  (renumbering neighbours, door links and cover). The per-cell lock (D37) disables Replace and
+  Clear; it is a UI safeguard, kept in the browser. Writing a NAVM the CK saved compressed works.
+  Tested by the user in a test plugin. Still to see in game: an NPC crossing from an old NavMesh
+  to a bake welded onto it (welded and valid in the preview).
 
 ## Phase D – NavMesh editing and Finalize (D65)
 

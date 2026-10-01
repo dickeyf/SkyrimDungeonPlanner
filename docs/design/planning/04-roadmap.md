@@ -46,7 +46,8 @@ CK. Released as 0.1.0.**
 - [x] `walkable` in the catalogue, reviewed (29 Sep 2026); `navEdge` with the bake
 - [x] Bake of a selection into one mesh, previewed in the editor (29 Sep 2026)
 - [x] Writing the NAVM, welded to the existing NavMesh (30 Sep 2026)
-- [ ] "Fill" tool (tiles without NavMesh), replace, clear, lock
+- [x] "Fill" tool (tiles without NavMesh), replace, clear, lock (30 Sep 2026)
+- [ ] NavMesh editing and Finalize in the app (D65, V2 phase D)
 - [ ] Stitching to existing batches; locked flag
 
 ## Phase 4 – Z
