@@ -7,6 +7,9 @@ chosen on 25 Sep 2026:
 2. **Deep junction check** (R16, phase 2b of the roadmap): detect the visible leaks the profiles
    cannot see.
 3. **Basic NavMesh** (phase 3): bake a NavMesh on the tiles, on request.
+4. **NavMesh editing and Finalize in the app** (added on 30 Sep 2026, D65): edit the cell's
+   NavMeshes by triangle, edge and vertex, merge NAVMs, and finalize (door links and the `NAVI`
+   record; cover later), so the designer no longer goes back and forth with the CK.
 
 Each step says **why** it comes at that point, what it produces and when it is done. As for V1, a
 step is done only when `npm test` and `npm run check` pass, and the risky parts are proven before
@@ -230,6 +233,37 @@ comes first, before any interface work.
 - **Done when**: bake, fill, clear and lock work on the working cell, undo included where it
   applies.
 - **Commits to**: D32–D37, D64.
+
+## Phase D – NavMesh editing and Finalize (D65)
+
+Added after step 11: going to the CK for every NavMesh touch-up is tiring. Steps 14 to 16 come
+after step 12; the V2 milestone (step 13) closes the version.
+
+### Step 14 – "Edit NavMesh" mode
+- **Why**: the base of every NavMesh edit in the app.
+- **What**: an editor mode where the selection is the NavMesh, not the tiles: triangle, edge or
+  vertex sub-modes; the list of the cell's NAVMs, the chosen one drawn in its own colour; delete
+  the selected triangles; wipe a whole NAVM (clean-up). Undo, and the same safe save.
+- **Done when**: the working cell's NAVMs are listed, picked and highlighted; triangles are
+  selected and deleted, a NAVM wiped, all undone and saved.
+
+### Step 15 – Edit operations
+- **Why**: link and repair by hand what the bake leaves (the red borders, a CK cell's many
+  NAVMs).
+- **What**: merge the selected vertices into one (at their mean); create a triangle from three
+  vertices, even of two NAVMs; when a triangle joins two NAVMs, the smaller is merged into the
+  larger, one record (D36).
+- **Done when**: the working cell's NAVMs can be joined into one, its red borders linked, an NPC
+  walks across in game.
+
+### Step 16 – Finalize in the app
+- **Why**: the CK's Finalize does door links, cover and the `NAVI` record; doors and `NAVI` are
+  needed for NPCs to path through doors and between cells. Cover comes later.
+- **What**: a proof of concept first (the `NAVI` format, as R1 was proven for `NAVM`): read and
+  write it byte for byte, then add or update the cell's entries. Door links: the triangles
+  under each load door linked to it. A "Finalize" button.
+- **Done when**: a cell finalized in the app works in game (NPCs path through its doors, to
+  another cell), and the CK opens it without errors.
 
 ## Step 13 – V2 milestone
 - **What**: the success criterion above, on the V1 test dungeon and on the working cell: bake
