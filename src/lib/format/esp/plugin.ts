@@ -269,7 +269,8 @@ export class Plugin {
    * back uncompressed (the game reads both).
    */
   async setNavm(record: EspRecord, nav: NavMeshData): Promise<void> {
-    this.assertEditable(record);
+    // a NAVM saved by the CK's Finalize is compressed: it is inflated here and written back plain
+    this.assertOwn(record);
     const subs = await recordSubrecords(record);
     const at = subs.findIndex((s) => s.type === 'NVNM');
     const field = { type: 'NVNM', data: encodeNvnm(nav) };
@@ -362,6 +363,11 @@ export class Plugin {
   private assertEditable(record: EspRecord): void {
     if (record.flags & RecordFlags.compressed)
       throw new Error('compressed records are not edited in V1');
+    this.assertOwn(record);
+  }
+
+  /** Only the plugin's own records are edited, never overrides of a master's (D22). */
+  private assertOwn(record: EspRecord): void {
     if (formIdIndex(record.formId) !== this.ownIndex) {
       throw new Error(
         `0x${record.formId.toString(16)} belongs to a master; overrides are not edited in V1`,

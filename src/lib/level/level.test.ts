@@ -91,6 +91,49 @@ describe('EspLevelStore', () => {
     expect(after[0]!.nav.triangles).toHaveLength(2);
   });
 
+  it('rewrites a NavMesh the CK saved compressed', async () => {
+    const level = store();
+    const cell = '0x00000D62:MyDungeon.esp';
+    const nav = buildNavMesh(
+      0x01000d62,
+      [
+        [0, 0, 0],
+        [128, 0, 0],
+        [0, 128, 0],
+      ],
+      [[0, 1, 2]],
+    );
+    const [key] = await level.applyEdits(cell, [{ kind: 'navmesh', nav }]);
+    // compress the record as the CK does: u32 size, then a zlib stream
+    const record = level.plugin.recordsOfType('NAVM')[0]!;
+    const zlib = new Uint8Array(
+      await new Response(
+        new Blob([record.data.slice()]).stream().pipeThrough(new CompressionStream('deflate')),
+      ).arrayBuffer(),
+    );
+    const packed = new Uint8Array(4 + zlib.length);
+    new DataView(packed.buffer).setUint32(0, record.data.length, true);
+    packed.set(zlib, 4);
+    record.data = packed;
+    record.flags |= 0x00040000;
+    const bigger = buildNavMesh(
+      0x01000d62,
+      [
+        [0, 0, 0],
+        [128, 0, 0],
+        [128, 128, 0],
+        [0, 128, 0],
+      ],
+      [
+        [0, 1, 2],
+        [0, 2, 3],
+      ],
+    );
+    await level.applyEdits(cell, [{ kind: 'navmesh', navm: key, nav: bigger }]);
+    const after = await EspLevelStore.parse(level.serialize(), 'MyDungeon.esp').readNavMeshes(cell);
+    expect(after[0]!.nav.triangles).toHaveLength(2);
+  });
+
   it('lists interior cells by FormKey', async () => {
     const cells = await store().listCells();
     expect(cells).toEqual([
