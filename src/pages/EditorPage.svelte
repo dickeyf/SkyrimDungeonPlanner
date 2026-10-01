@@ -471,7 +471,9 @@
       const tris = trianglesOfSelection(nav, navKind, navSel);
       for (const i of tris) {
         const t = nav.triangles[i]!.vertices;
-        const c: Vec3 = [0, 1, 2].map((a) => t.reduce((s, v) => s + V[v]![a]!, 0) / 3) as Vec3;
+        const c: Vec3 = [0, 1, 2].map(
+          (a) => t.reduce((s, v) => s + V[v]![a]!, 0) / 3,
+        ) as unknown as Vec3;
         for (const key of tilesInBox(c, c)) keys.push(key);
       }
     }
