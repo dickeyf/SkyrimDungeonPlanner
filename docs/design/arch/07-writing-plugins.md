@@ -128,4 +128,24 @@ NavMeshes of Skyrim.esm):
 Edge links, door links and cover are left empty: the CK's Finalize adds door links and cover and
 writes the `NAVI` record, and keeps a generated NAVM otherwise unchanged (R1, V2 step 3).
 `Plugin.addNavm` adds the record to the cell's temporary children, like a reference, with a new
-FormID. One NAVM per cell (D36).
+FormID; `Plugin.setNavm` replaces an own NAVM's `NVNM` field, keeping the others (a compressed
+record is written back uncompressed); `Plugin.cellNavms` lists a cell's NAVMs. The level store
+exposes them as `readNavMeshes` and the `navmesh` edit.
+
+## Adding a bake to a cell's NavMesh (`navmesh/stitch.ts`, D35, D36, D64)
+
+- **Covered tiles** (D35): a tile has NavMesh when a triangle's centre falls in one of its cells,
+  at that cell's level. A bake skips them (D64), over every NAVM of the cell.
+- **No overlap**: the bake leaves out the area the existing triangles cover (each cell's pieces
+  minus the triangles over that cell, `polygon-clipping`).
+- **Target**: the own NAVM sharing the most vertices with the bake, else the largest own one,
+  else a new one. A CK cell may hold several NAVMs; the others are left untouched.
+- **Merge** (`mergeNavMesh`): the bake's vertices weld onto the target's (half a unit, a step in
+  height), its triangles are appended; `conformMesh` then splits the border edges of either side
+  at the other side's border vertices lying on them (an existing triangle keeps its index, its
+  new half goes to the end, with the same flags), so the borders share their vertices. A
+  triangle with a link to another NavMesh is never split. The existing triangles keep their
+  flags, cover flags and edge links; door links and cover keep their indices; adjacency and the
+  search grid are recomputed.
+- **Unlinked borders**: new border edges within 32 units of any NavMesh of the cell but not
+  welded (along another NAVM, or too far) are returned and drawn in red, to link in the CK.

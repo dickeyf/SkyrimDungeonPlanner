@@ -209,6 +209,17 @@ comes first, before any interface work.
   edges split where the other's vertices lie); door triangles left to the CK.
 - **Done when**: a baked batch opens in the CK, Finalize succeeds, an NPC walks on it.
 - **Commits to**: D36.
+- **Result (30 Sep 2026)**: done. The level store reads a cell's NavMeshes and writes a
+  `navmesh` edit (an own NAVM's `NVNM` rewritten, other fields kept, or a NAVM added).
+  `navmesh/stitch.ts` finds the covered tiles (D35), appends the bake to a NavMesh, splits the
+  border edges of both sides where the other's vertices lie, keeps the existing triangles' data
+  and lists the new borders left unlinked. A cell made in the CK may hold several NAVMs (the
+  working cell has 13): coverage and exclusion use them all, the bake joins the own NAVM it
+  touches most, the others stay untouched and the borders along them show in red, to link in the
+  CK. The editor's "Write NavMesh" saves it with a backup. Checked in a test plugin: written,
+  loaded in the CK, an NPC chases the player across the baked tiles in game. On the working cell
+  (preview only): 198 of 222 tiles already covered, 24 baked into the main NAVM, 10 border
+  edges to link by hand, a valid NAVM.
 
 ### Step 12 – Bake tools in the editor
 - **Why**: the designer's workflow (D30–D34, D37): bake on request, redo, fill what is missing.
