@@ -32,7 +32,7 @@ cells), and the result is written back into the plugin, with a backup, for the C
 - **Chrome or Edge only** (File System Access API), **ESL-flagged plugins are refused**, and a
   plugin must not be saved from the Creation Kit while it has unsaved edits in the tool.
 
-See the [user guide](docs/user-guide.md#limits-of-v1) for details and the
+See the [user guide](docs/user-guide.md#limits) for details and the
 [roadmap](docs/design/planning/04-roadmap.md) for what comes next.
 
 ## Use it
