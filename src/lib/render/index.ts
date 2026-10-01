@@ -8,3 +8,4 @@ export * from './leakViews';
 export * from './meshCache';
 export * from './sceneObjects';
 export * from './transform';
+export type { NavLayer } from './CellScene';

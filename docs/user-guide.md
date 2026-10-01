@@ -119,11 +119,22 @@ _Show marks_ turns all marks off and on.
 The tool bakes the NavMesh of your tiles from their walkable floor (computed from each piece's
 collision): two triangles per grid cell where the floor is open, small polygons along the walls.
 
-- **Fill** selects every tile no NavMesh covers yet.
-- **Bake** (the selection, or the whole cell without one) bakes the tiles that have no NavMesh
-  yet; tiles that already have triangles, whoever made them (you in the Creation Kit, or the
+Every NavMesh tool is in **Edit NavMesh** mode, where the selection is the NavMesh instead of
+the tiles (the piece list is hidden):
+
+- The list shows the cell's NavMesh records; the active one is orange. Click one, or click its
+  triangles in the view, to make it active. **Wipe** empties a record.
+- Select **triangles**, **edges** or **vertices**: click, Shift+click to add or remove,
+  Shift+drag a rectangle. **Del** deletes the selected triangles, or those using a selected edge
+  or vertex. Ctrl+Z / Ctrl+Y undo and redo; **Write NavMesh changes** (Ctrl+S) saves them, with
+  a backup.
+- A Shift+drag rectangle on floor without NavMesh draws a white **region** for Bake.
+
+- **Fill** bakes every tile no NavMesh covers yet.
+- **Bake** (the region, the selected triangles' tiles, or the whole cell) bakes the tiles that
+  have no NavMesh yet; tiles that already have triangles, whoever made them (you in the Creation Kit, or the
   tool), are never touched. The new triangles are welded onto the NavMesh already there.
-- **Replace** deletes the NavMesh of the selected tiles and bakes them anew; **Clear** only
+- **Replace** deletes the NavMesh of the selected triangles' tiles (or the region's) and bakes them anew; **Clear** only
   deletes it.
 - **Locked**: once you finish a cell's NavMesh by hand, lock it: Replace and Clear are then
   disabled for that cell.

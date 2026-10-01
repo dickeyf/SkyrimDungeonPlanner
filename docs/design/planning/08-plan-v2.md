@@ -254,6 +254,13 @@ after step 12; the V2 milestone (step 13) closes the version.
   the selected triangles; wipe a whole NAVM (clean-up). Undo, and the same safe save.
 - **Done when**: the working cell's NAVMs are listed, picked and highlighted; triangles are
   selected and deleted, a NAVM wiped, all undone and saved.
+- **Result (30 Sep 2026)**: done. "Edit NavMesh" holds every NavMesh tool: the tile selection
+  and the piece list are hidden, the NAVM list picks the active one (orange, the others in their
+  own colour), clicks and Shift+drag select its triangles, edges (drawn as red ribbons) or
+  vertices (`navmesh/pick.ts`); Del deletes the triangles using them, Wipe empties a NAVM, with
+  undo and a save that deletes emptied NAVMs. Fill, Bake, Replace and Clear moved into the mode:
+  Fill bakes the uncovered tiles; the others work on the tiles of a white rectangle (Shift+drag
+  on empty floor) or of the selected triangles, else the cell. Tested by the user.
 
 ### Step 15 – Edit operations
 - **Why**: link and repair by hand what the bake leaves (the red borders, a CK cell's many

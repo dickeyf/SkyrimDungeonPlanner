@@ -21,6 +21,12 @@
     removeTriangles,
     trianglesInTiles,
   } from '$lib/navmesh/stitch';
+  import {
+    elementsInBox,
+    pickElement,
+    trianglesOfSelection,
+    type NavElement,
+  } from '$lib/navmesh/pick';
   import type { NavMeshData } from '$lib/format/esp/navm';
   import { fromFormKey } from '$lib/format/esp/formId';
   import { getPref, setPref } from '$lib/fs';
@@ -78,6 +84,7 @@
     sceneGrid,
     tileObject,
     type Highlight,
+    type NavLayer,
     type PointerInfo,
     type SceneHandlers,
   } from '$lib/render';
@@ -434,28 +441,50 @@
 
   const navGrid = $derived(anchor ? { origin: anchor.origin, module: anchor.module } : null);
 
-  /** "Fill": select the tiles no NavMesh of the cell covers yet (with a walkable area). */
-  function fillSelection(): void {
+  /** "Fill": bake the tiles no NavMesh of the cell covers yet (with a walkable area). */
+  function fillNavMesh(): void {
     if (!layout || !ed.loaded || !navGrid) return;
     const footprints = [...layout.tiles.keys()].map((key) => ({ key, cells: tileCells(key) }));
     const covered = new Set(
       ed.loaded.navmeshes.flatMap((n) => [...coveredTiles(n.nav, footprints, navGrid)]),
     );
-    ed.selection = footprints
+    const keys = footprints
       .map((f) => f.key)
       .filter((key) => {
         const piece = pieces.get(layout!.tiles.get(key)!.piece);
         return !covered.has(key) && !!piece?.walkable?.length;
       });
-    message = `${ed.selection.length} tiles without NavMesh selected.`;
+    if (!keys.length) {
+      message = 'Every tile with a walkable floor already has a NavMesh.';
+      return;
+    }
+    planNavMesh('bake', keys);
   }
 
-  function planNavMesh(mode: NavMode): void {
+  /** The tiles the NavMesh tools work on: the region and the selected elements' tiles, or all. */
+  function navTargets(): string[] {
+    if (!layout) return [];
+    const keys = [...navRegion];
+    const nav = activeNav?.nav;
+    if (nav && navSel.length) {
+      const V = nav.vertices;
+      const tris = trianglesOfSelection(nav, navKind, navSel);
+      for (const i of tris) {
+        const t = nav.triangles[i]!.vertices;
+        const c: Vec3 = [0, 1, 2].map((a) => t.reduce((s, v) => s + V[v]![a]!, 0) / 3) as Vec3;
+        for (const key of tilesInBox(c, c)) keys.push(key);
+      }
+    }
+    return keys.length ? [...new Set(keys)] : [...layout.tiles.keys()];
+  }
+
+  function planNavMesh(mode: NavMode, only?: string[]): void {
     if (!layout || !anchor || !ed.loaded || !ed.store || !navGrid) return;
-    const keys = ed.selection.length ? ed.selection : [...layout.tiles.keys()];
+    const keys = only ?? navTargets();
     const started = performance.now();
     let blocked: string | undefined;
     if (pending && changeCount(pending)) blocked = 'save the tile edits first';
+    if (navChanged) blocked = 'write or undo the NavMesh edits first';
     if (mode !== 'bake' && locked) blocked = 'the cell NavMesh is locked (finishing phase)';
     const footprints = keys.map((key) => ({ key, cells: tileCells(key) }));
     // the NAVM's parent cell, as a FormID of the plugin itself (its index after the masters)
@@ -603,6 +632,266 @@
     );
     if (ok) navPreview = null;
   }
+
+  // ---- "Edit NavMesh" mode (V2 step 14): select and delete NavMesh elements, wipe a NAVM ------
+
+  let navEdit = $state(false);
+  let navKind = $state<NavElement>('triangle');
+  /** The NAVM being edited (its key). */
+  let navActive = $state<string | null>(null);
+  /** Edited NavMeshes by key, null once wiped; the others are as loaded. */
+  let navWork = $state.raw<Record<string, NavMeshData | null>>({});
+  let navUndo = $state.raw<Record<string, NavMeshData | null>[]>([]);
+  let navRedo = $state.raw<Record<string, NavMeshData | null>[]>([]);
+  let navSel = $state.raw<(number | string)[]>([]);
+  /** Tiles within the last Shift+drag rectangle drawn on empty floor: where the tools bake. */
+  let navRegion = $state.raw<string[]>([]);
+
+  // a new cell starts a fresh NavMesh edit
+  $effect(() => {
+    void ed.loaded;
+    navWork = {};
+    navUndo = [];
+    navRedo = [];
+    navSel = [];
+    navRegion = [];
+    navActive = null;
+  });
+
+  /** The cell's NavMeshes with the edits applied (wiped ones left out). */
+  const navNow = $derived(
+    (ed.loaded?.navmeshes ?? []).flatMap((n) => {
+      const work = n.key in navWork ? navWork[n.key] : n.nav;
+      return work ? [{ ...n, nav: work }] : [];
+    }),
+  );
+  const navChanged = $derived(Object.keys(navWork).length > 0);
+  const activeNav = $derived(navNow.find((n) => n.key === navActive));
+
+  function navCommit(next: Record<string, NavMeshData | null>): void {
+    navUndo = [...navUndo, navWork];
+    navRedo = [];
+    navWork = next;
+    navSel = [];
+  }
+
+  function navClick(info: PointerInfo): void {
+    // a click on another NAVM's triangle makes it the active one
+    const hit = (n: (typeof navNow)[number]) =>
+      pickElement(n.nav, 'triangle', info.world[0], info.world[1], 0) !== undefined;
+    if (!activeNav || !hit(activeNav)) {
+      const other = navNow.find(hit);
+      if (other && other.key !== navActive) {
+        navActive = other.key;
+        navSel = [];
+        if (navKind === 'triangle') return;
+      }
+    }
+    const nav = navNow.find((n) => n.key === navActive)?.nav;
+    if (!nav) return;
+    const tol = anchor ? anchor.module.xy / 10 : 12;
+    const picked = pickElement(nav, navKind, info.world[0], info.world[1], tol);
+    if (picked === undefined) {
+      if (!info.shift) {
+        navSel = [];
+        navRegion = [];
+      }
+      return;
+    }
+    if (info.shift)
+      navSel = navSel.includes(picked) ? navSel.filter((x) => x !== picked) : [...navSel, picked];
+    else navSel = [picked];
+  }
+
+  function navBoxSelect(from: Vec3, to: Vec3): void {
+    const nav = activeNav?.nav;
+    const inside = nav ? elementsInBox(nav, navKind, from[0], from[1], to[0], to[1]) : [];
+    navSel = [...new Set([...navSel, ...inside])];
+    // a rectangle over tiles without NavMesh marks them for Bake
+    navRegion = inside.length ? [] : tilesInBox(from, to);
+    navPreview = null;
+  }
+
+  function navDeleteSelection(): void {
+    const nav = activeNav?.nav;
+    if (!nav || !navActive || !navSel.length) return;
+    if (!activeNav.own) {
+      message = 'This NavMesh belongs to a master and is not edited (D22).';
+      return;
+    }
+    const gone = trianglesOfSelection(nav, navKind, navSel);
+    if (!gone.length) return;
+    const after = removeTriangles(nav, gone);
+    navCommit({ ...navWork, [navActive]: after.triangles.length ? after : null });
+    message = `${gone.length} triangles deleted (not saved yet).`;
+  }
+
+  function navWipe(key: string): void {
+    const n = navNow.find((x) => x.key === key);
+    if (!n) return;
+    if (!n.own) {
+      message = 'This NavMesh belongs to a master and is not edited (D22).';
+      return;
+    }
+    if (!window.confirm(`Wipe the whole NavMesh ${key} (${n.nav.triangles.length} triangles)?`))
+      return;
+    navCommit({ ...navWork, [key]: null });
+    message = `NavMesh ${key} wiped (not saved yet).`;
+  }
+
+  function navUndoStep(): void {
+    if (!navUndo.length) return;
+    navRedo = [...navRedo, navWork];
+    navWork = navUndo[navUndo.length - 1]!;
+    navUndo = navUndo.slice(0, -1);
+    navSel = [];
+  }
+
+  function navRedoStep(): void {
+    if (!navRedo.length) return;
+    navUndo = [...navUndo, navWork];
+    navWork = navRedo[navRedo.length - 1]!;
+    navRedo = navRedo.slice(0, -1);
+    navSel = [];
+  }
+
+  async function navSave(): Promise<void> {
+    if (!navChanged) return;
+    if (pending && changeCount(pending)) {
+      window.alert('Save or undo the tile edits first.');
+      return;
+    }
+    if (
+      !window.confirm(
+        'Write the NavMesh changes into the plugin now?\n\nA timestamped backup of the current ' +
+          'file is made first.',
+      )
+    )
+      return;
+    const ok = await ed.save(
+      Object.entries(navWork).map(([navm, nav]) => ({ kind: 'navmesh', navm, nav })),
+    );
+    if (ok) {
+      navWork = {};
+      navUndo = [];
+      navRedo = [];
+    }
+  }
+
+  function toggleNavEdit(): void {
+    if (
+      navEdit &&
+      navChanged &&
+      !window.confirm('Leave NavMesh editing and drop its unsaved changes?')
+    )
+      return;
+    navEdit = !navEdit;
+    navWork = {};
+    navUndo = [];
+    navRedo = [];
+    navSel = [];
+    navRegion = [];
+    navPreview = null;
+    ed.selection = [];
+    if (navEdit && !navActive) navActive = ed.loaded?.navmeshes[0]?.key ?? null;
+  }
+
+  /** Colour of a NAVM in the list and the view, by its rank. */
+  const NAV_COLORS = ['#3a8dde', '#46b07a', '#c58b3a', '#a565c9', '#d0576f', '#4fb6b8'];
+
+  /** What the scene draws: the NavMeshes being edited and the selection, or a bake preview. */
+  const navLayers = $derived.by((): NavLayer[] | null => {
+    if (!navEdit) {
+      return navPreview
+        ? [
+            {
+              vertices: navPreview.vertices,
+              triangles: navPreview.triangles,
+              fill: '#3a8dde',
+              line: '#b8dcff',
+            },
+          ]
+        : null;
+    }
+    if (navPreview)
+      return [
+        {
+          vertices: navPreview.vertices,
+          triangles: navPreview.triangles,
+          fill: '#3a8dde',
+          line: '#b8dcff',
+        },
+      ];
+    const layers: NavLayer[] = navNow.map((n, i) => {
+      const active = n.key === navActive;
+      return {
+        vertices: n.nav.vertices,
+        triangles: n.nav.triangles.map((t) => t.vertices),
+        fill: active ? '#ffb347' : NAV_COLORS[i % NAV_COLORS.length]!,
+        line: active ? '#ffe2b8' : '#b8dcff',
+        opacity: active ? 0.4 : 0.2,
+      };
+    });
+    const nav = activeNav?.nav;
+    if (nav && navSel.length) {
+      const V = nav.vertices;
+      if (navKind === 'triangle')
+        layers.push({
+          vertices: V,
+          triangles: (navSel as number[]).map((i) => nav.triangles[i]!.vertices),
+          fill: '#ff3030',
+          line: '#ffffff',
+          opacity: 0.55,
+        });
+      else if (navKind === 'edge') {
+        // a WebGL line is one pixel wide: selected edges are drawn as red ribbons
+        const w = (anchor ? anchor.module.xy : 128) / 40;
+        const vertices: Vec3[] = [];
+        const triangles: number[][] = [];
+        for (const name of navSel as string[]) {
+          const [u, v] = name.split(':').map(Number) as [number, number];
+          const p = V[u]!;
+          const q = V[v]!;
+          const len = Math.hypot(q[0] - p[0], q[1] - p[1]) || 1;
+          const nx = (-(q[1] - p[1]) / len) * w;
+          const ny = ((q[0] - p[0]) / len) * w;
+          const n = vertices.length;
+          vertices.push(
+            [p[0] + nx, p[1] + ny, p[2]],
+            [p[0] - nx, p[1] - ny, p[2]],
+            [q[0] - nx, q[1] - ny, q[2]],
+            [q[0] + nx, q[1] + ny, q[2]],
+          );
+          triangles.push([n, n + 1, n + 2], [n, n + 2, n + 3]);
+        }
+        layers.push({ vertices, triangles, fill: '#ff2020', line: '#ff2020', opacity: 0.95 });
+      } else
+        layers.push({
+          points: (navSel as number[]).map((v) => V[v]!),
+          fill: '#ff3030',
+          line: '#ff3030',
+        });
+    }
+    if (layout && anchor && navRegion.length) {
+      const m = anchor.module;
+      const lines: (readonly [Vec3, Vec3])[] = [];
+      for (const key of navRegion)
+        for (const [i, j, k] of tileCells(key)) {
+          const x = anchor.origin[0] + i * m.xy;
+          const y = anchor.origin[1] + j * m.xy;
+          const z = anchor.origin[2] + k * m.z;
+          const c: Vec3[] = [
+            [x, y, z],
+            [x + m.xy, y, z],
+            [x + m.xy, y + m.xy, z],
+            [x, y + m.xy, z],
+          ];
+          for (let a = 0; a < 4; a++) lines.push([c[a]!, c[(a + 1) % 4]!]);
+        }
+      layers.push({ lines, fill: '#ffffff', line: '#ffffff' });
+    }
+    return layers;
+  });
 
   /** Footprint cells of a tile, moved by `delta`. */
   function tileCells(key: string, delta: CellIndex = [0, 0, 0]): CellIndex[] {
@@ -861,6 +1150,10 @@
 
   const handlers: SceneHandlers = {
     click(info: PointerInfo) {
+      if (navEdit) {
+        navClick(info);
+        return;
+      }
       if (placing && layout && anchor) {
         const { cell, rotation } = placementAt(info.world);
         const r = addTile(layout, pieces, placing.piece, cell, rotation);
@@ -923,6 +1216,11 @@
       else ed.selected = info.key;
     },
     down(info: PointerInfo) {
+      if (navEdit) {
+        if (!info.shift) return false;
+        box = { from: info.world, to: info.world };
+        return true;
+      }
       if (placing || !layout) return false;
       // Shift+drag: select the tiles within a rectangle
       if (info.shift) {
@@ -992,6 +1290,16 @@
       }
     },
     up(info: PointerInfo) {
+      if (box && navEdit) {
+        if (
+          anchor &&
+          Math.hypot(box.to[0] - box.from[0], box.to[1] - box.from[1]) < anchor.module.xy / 8
+        )
+          navClick(info);
+        else navBoxSelect(box.from, box.to);
+        box = null;
+        return;
+      }
       if (box) {
         // hardly moved: a Shift+click, which adds or removes the tile under the pointer
         if (
@@ -1095,6 +1403,17 @@
     if (target && ['INPUT', 'SELECT', 'TEXTAREA'].includes(target.tagName)) return;
     if (!history) return;
     const key = e.key.toLowerCase();
+    if (navEdit) {
+      if ((e.ctrlKey || e.metaKey) && key === 'z' && !e.shiftKey) navUndoStep();
+      else if ((e.ctrlKey || e.metaKey) && (key === 'y' || (key === 'z' && e.shiftKey)))
+        navRedoStep();
+      else if ((e.ctrlKey || e.metaKey) && key === 's') void navSave();
+      else if (key === 'delete' || key === 'backspace') navDeleteSelection();
+      else if (key === 'escape') navSel = [];
+      else return;
+      e.preventDefault();
+      return;
+    }
     if ((e.ctrlKey || e.metaKey) && key === 's') {
       void save();
     } else if ((e.ctrlKey || e.metaKey) && key === 'z' && !e.shiftKey) {
@@ -1459,7 +1778,7 @@
             {#if message}<div class="warn">{message}</div>{/if}
           </div>
 
-          {#if !active}<div class="palette">
+          {#if !active && !navEdit}<div class="palette">
               <h3 class="list-title">Pieces</h3>
               <div class="filters">
                 <input placeholder="search pieces" bind:value={filter} />
@@ -1489,13 +1808,84 @@
               </ul>
             </div>{/if}
 
-          <div class="navmesh-preview">
-            <b>NavMesh</b>
-            <button onclick={fillSelection} title="Select the tiles no NavMesh covers yet"
-              >Fill</button
+          <div class="navmesh-edit">
+            <button class:active={navEdit} onclick={toggleNavEdit}
+              >{navEdit ? 'Leave NavMesh editing' : 'Edit NavMesh'}</button
             >
-            <button onclick={() => planNavMesh('bake')}
-              >Bake {ed.selection.length ? 'selection' : 'whole cell'}</button
+            {#if navEdit}
+              <div class="kinds">
+                Select:
+                {#each ['triangle', 'edge', 'vertex'] as const as k (k)}
+                  <label
+                    ><input
+                      type="radio"
+                      name="navkind"
+                      checked={navKind === k}
+                      onchange={() => {
+                        navKind = k;
+                        navSel = [];
+                      }}
+                    />
+                    {k}s</label
+                  >
+                {/each}
+              </div>
+              <ul class="navms">
+                {#each navNow as n, i (n.key)}
+                  <li>
+                    <button
+                      class:active={n.key === navActive}
+                      onclick={() => {
+                        navActive = n.key;
+                        navSel = [];
+                      }}
+                    >
+                      <span
+                        class="swatch"
+                        style:background={n.key === navActive
+                          ? '#ffb347'
+                          : NAV_COLORS[i % NAV_COLORS.length]}
+                      ></span>
+                      {n.key.split(':')[0]}
+                      <span class="hint"
+                        >{n.nav.triangles.length} triangles{n.own ? '' : ', master'}{n.key in
+                        navWork
+                          ? ', edited'
+                          : ''}</span
+                      >
+                    </button>
+                    {#if n.own}<button title="Wipe this NavMesh" onclick={() => navWipe(n.key)}
+                        >Wipe</button
+                      >{/if}
+                  </li>
+                {:else}
+                  <li class="hint">No NavMesh in this cell.</li>
+                {/each}
+              </ul>
+              <div class="hint">
+                {navSel.length}
+                {navKind}{navSel.length === 1 ? '' : 's'} selected. Click to select, Shift+click to add
+                or remove, Shift+drag a rectangle; Del deletes (a triangle, or the triangles using a selected
+                edge or vertex); Ctrl+Z / Ctrl+Y undo and redo.
+              </div>
+              <button disabled={!navSel.length} onclick={navDeleteSelection}
+                >Delete selection</button
+              >
+              <button disabled={!navChanged} onclick={navSave}>Write NavMesh changes</button>
+            {/if}
+          </div>
+          <div class="navmesh-preview" class:hidden={!navEdit}>
+            <b>Bake</b>
+            <button onclick={fillNavMesh} title="Bake every tile no NavMesh covers yet">Fill</button
+            >
+            <button
+              onclick={() => planNavMesh('bake')}
+              title="Bake the tiles of the white rectangle (Shift+drag on empty floor), or the cell"
+              >Bake {navRegion.length
+                ? 'region'
+                : navSel.length
+                  ? 'selection'
+                  : 'whole cell'}</button
             >
             <button disabled={locked} onclick={() => planNavMesh('replace')}>Replace</button>
             <button disabled={locked} onclick={() => planNavMesh('clear')}>Clear</button>
@@ -1569,8 +1959,8 @@
           highlights={[...highlights, ...selectionHighlights]}
           {handlers}
           meshes={() => ed.meshes()}
-          selection={ed.selection}
-          navmesh={navPreview}
+          selection={navEdit ? [] : ed.selection}
+          navmesh={navLayers}
           fitKey={ed.loaded.cell}
         />
       </div>
@@ -1652,6 +2042,28 @@
   }
   .texture-break {
     color: #35c2d6;
+  }
+  .navmesh-preview.hidden {
+    display: none;
+  }
+  .navms {
+    list-style: none;
+    margin: 0.3rem 0;
+    padding: 0;
+    max-height: 12rem;
+    overflow: auto;
+  }
+  .navms li {
+    display: flex;
+    gap: 0.3rem;
+  }
+  .navms li button:first-child {
+    flex: 1;
+    text-align: left;
+  }
+  .navms button.active,
+  .navmesh-edit > button.active {
+    outline: 1px solid #ffb347;
   }
   .joints button.active {
     border-color: var(--accent);

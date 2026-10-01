@@ -132,6 +132,13 @@ FormID; `Plugin.setNavm` replaces an own NAVM's `NVNM` field, keeping the others
 record is written back uncompressed); `Plugin.cellNavms` lists a cell's NAVMs. The level store
 exposes them as `readNavMeshes` and the `navmesh` edit.
 
+## Editing a NavMesh (`navmesh/pick.ts`, V2)
+
+Seen from above: `pickElement` finds the triangle containing a point, or the edge (named `u:v`,
+u < v) or vertex nearest to it within a tolerance; `elementsInBox` takes triangles by their
+centre, edges by their middle, and vertices; `trianglesOfSelection` gives the triangles a
+deletion removes (those using a selected edge or vertex), which `removeTriangles` then drops.
+
 ## Adding a bake to a cell's NavMesh (`navmesh/stitch.ts`, D35, D36, D64)
 
 - **Covered tiles** (D35): a tile has NavMesh when a triangle's centre falls in one of its cells,

@@ -9,6 +9,7 @@ import {
   BufferGeometry,
   Color,
   DirectionalLight,
+  DoubleSide,
   Float32BufferAttribute,
   Group,
   LineBasicMaterial,
@@ -17,6 +18,8 @@ import {
   MeshBasicMaterial,
   MeshLambertMaterial,
   OrthographicCamera,
+  Points,
+  PointsMaterial,
   Raycaster,
   Scene,
   Vector2,
@@ -41,6 +44,21 @@ export interface SceneObject {
 }
 
 /** Pointer event in the scene: the point on the grid plane and the pickable object under it. */
+/** A NavMesh layer drawn over the tiles. */
+export interface NavLayer {
+  vertices?: readonly Vec3[];
+  triangles?: readonly (readonly number[])[];
+  /** Loose edges (a selection), drawn in `line`. */
+  lines?: readonly (readonly [Vec3, Vec3])[];
+  /** Vertex points (a selection), drawn in `line`. */
+  points?: readonly Vec3[];
+  fill: string;
+  line: string;
+  opacity?: number;
+  /** Draw the triangles' edges (default true). */
+  edges?: boolean;
+}
+
 export interface PointerInfo {
   world: Vec3;
   key: string | null;
@@ -166,51 +184,100 @@ export class CellScene {
   private navmesh: Group | null = null;
 
   /**
-   * Draw a NavMesh preview over the tiles (translucent triangles and their edges, not pickable),
-   * or remove it with null.
+   * Draw NavMesh layers over the tiles (not pickable): each its triangles (translucent fill and
+   * edges), loose edges and vertex points, in its own colours; null removes them.
    */
-  setNavMesh(
-    mesh: { vertices: readonly Vec3[]; triangles: readonly (readonly number[])[] } | null,
-  ): void {
+  setNavMesh(layers: readonly NavLayer[] | null): void {
     if (this.navmesh) {
       for (const child of this.navmesh.children) {
-        const m = child as Mesh | LineSegments;
+        const m = child as Mesh | LineSegments | Points;
         m.geometry.dispose();
-        (m.material as MeshBasicMaterial | LineBasicMaterial).dispose();
+        (m.material as MeshBasicMaterial | LineBasicMaterial | PointsMaterial).dispose();
       }
       this.scene.remove(this.navmesh);
       this.navmesh = null;
     }
-    if (mesh && mesh.triangles.length) {
-      const positions = new Float32Array(mesh.vertices.flatMap((v) => [v[0], v[1], v[2] + 2]));
-      const fill = new BufferGeometry();
-      fill.setAttribute('position', new Float32BufferAttribute(positions, 3));
-      fill.setIndex(mesh.triangles.flatMap((t) => [...t]));
-      const edges = new BufferGeometry();
-      edges.setAttribute('position', new Float32BufferAttribute(positions, 3));
-      edges.setIndex(mesh.triangles.flatMap((t) => [t[0]!, t[1]!, t[1]!, t[2]!, t[2]!, t[0]!]));
+    if (layers?.length) {
       const group = new Group();
-      const surface = new Mesh(
-        fill,
-        new MeshBasicMaterial({
-          color: '#3a8dde',
-          transparent: true,
-          opacity: 0.35,
-          depthTest: false,
-        }),
-      );
-      const lines = new LineSegments(
-        edges,
-        new LineBasicMaterial({
-          color: '#b8dcff',
-          transparent: true,
-          opacity: 0.9,
-          depthTest: false,
-        }),
-      );
-      surface.renderOrder = 15;
-      lines.renderOrder = 16;
-      group.add(surface, lines);
+      layers.forEach((layer, n) => {
+        const order = 15 + n * 3;
+        const lift = 2 + n * 0.01;
+        if (layer.triangles?.length && layer.vertices) {
+          const positions = new Float32Array(
+            layer.vertices.flatMap((v) => [v[0], v[1], v[2] + lift]),
+          );
+          const fill = new BufferGeometry();
+          fill.setAttribute('position', new Float32BufferAttribute(positions, 3));
+          fill.setIndex(layer.triangles.flatMap((t) => [...t]));
+          const surface = new Mesh(
+            fill,
+            new MeshBasicMaterial({
+              color: layer.fill,
+              transparent: true,
+              opacity: layer.opacity ?? 0.35,
+              depthTest: false,
+              side: DoubleSide,
+            }),
+          );
+          surface.renderOrder = order;
+          group.add(surface);
+          if (layer.edges !== false) {
+            const edges = new BufferGeometry();
+            edges.setAttribute('position', new Float32BufferAttribute(positions, 3));
+            edges.setIndex(
+              layer.triangles.flatMap((t) => [t[0]!, t[1]!, t[1]!, t[2]!, t[2]!, t[0]!]),
+            );
+            const lines = new LineSegments(
+              edges,
+              new LineBasicMaterial({
+                color: layer.line,
+                transparent: true,
+                opacity: 0.9,
+                depthTest: false,
+              }),
+            );
+            lines.renderOrder = order + 1;
+            group.add(lines);
+          }
+        }
+        if (layer.lines?.length) {
+          const g = new BufferGeometry();
+          g.setAttribute(
+            'position',
+            new Float32BufferAttribute(
+              layer.lines.flatMap(([p, q]) => [p[0], p[1], p[2] + lift, q[0], q[1], q[2] + lift]),
+              3,
+            ),
+          );
+          const lines = new LineSegments(
+            g,
+            new LineBasicMaterial({ color: layer.line, depthTest: false }),
+          );
+          lines.renderOrder = order + 1;
+          group.add(lines);
+        }
+        if (layer.points?.length) {
+          const g = new BufferGeometry();
+          g.setAttribute(
+            'position',
+            new Float32BufferAttribute(
+              layer.points.flatMap((p) => [p[0], p[1], p[2] + lift]),
+              3,
+            ),
+          );
+          const points = new Points(
+            g,
+            new PointsMaterial({
+              color: layer.line,
+              size: 7,
+              sizeAttenuation: false,
+              depthTest: false,
+            }),
+          );
+          points.renderOrder = order + 2;
+          group.add(points);
+        }
+      });
       this.navmesh = group;
       this.scene.add(group);
     }
