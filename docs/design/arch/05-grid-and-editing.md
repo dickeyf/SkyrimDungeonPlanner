@@ -62,6 +62,10 @@ of the same pieces is still refused.
 
 ## Placing from the palette (`cellAt`)
 
+With an active level (V3), the piece's own level 0 goes on that level; the editor then keeps the
+open faces, snapping and marks to the faces and cells of that level.
+
+
 Without a nearby open face, the piece is centred on the pointer: its rotated footprint's centre
 is aligned with the pointer and the corner rounded to the grid. Near an open face, placement
 snaps instead (see [Assistant and junctions](06-assistant-and-junctions.md)).

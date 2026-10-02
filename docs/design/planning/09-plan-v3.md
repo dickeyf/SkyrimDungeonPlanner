@@ -120,6 +120,10 @@ does not merge two stacked floors (R7).
   already). A ramp or stairs placed from its lower level.
 - **Done when**: a two-level layout (rooms, stairs, halls above) is built from an empty cell, with
   the assistant offering the stairs' upper continuation on the upper level.
+- **Result (2 Oct 2026)**: done, tested by the user. With an active level, a piece from the
+  palette goes there (`cellAt(..., level)`: its own level 0 on the active one), the open faces,
+  the assistant, snapping and the marks keep to the faces and cells of that level (a stair's
+  upper opening is on the level above), moves keep their level; with "all", as before.
 
 ### Step 7 – Checks on several levels
 - **Why**: the deep leak check and the texture continuity were tuned on one level; stairs and

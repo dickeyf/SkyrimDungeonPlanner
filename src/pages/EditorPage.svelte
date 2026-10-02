@@ -255,7 +255,15 @@
   // ---- assistant -----------------------------------------------------------------------------
 
   const types = $derived(new Map(catalogue.connectionTypes.map((t) => [t.id, t])));
-  const opens = $derived(layout ? openFaces(layout, pieces) : []);
+  const allOpens = $derived(layout ? openFaces(layout, pieces) : []);
+  /**
+   * Whether a face, a junction or a cell is on the active level (V3 step 6): the assistant,
+   * snapping and the marks work on that level only; all of them when every level is shown.
+   */
+  function onLevel(cells: readonly CellIndex[]): boolean {
+    return activeLevel === null || cells.some((c) => c[2] === activeLevel);
+  }
+  const opens = $derived(allOpens.filter((o) => onLevel([...o.cells, ...o.outside])));
   /**
    * Stable between edits (it changes only with the cell or the catalogue analysis), so the
    * profile verdicts cached per geometry are reused from one edit to the next.
@@ -1173,33 +1181,41 @@
         color: o.id === activeFace ? '#ffd24a' : '#e8a33a',
         opacity: o.id === activeFace ? 0.95 : 0.55,
       })),
-      ...bad.map((o) => ({
-        ...faceRect(o, anchor),
-        color:
-          o.fit === 'seam'
-            ? o.id === activeFace
-              ? '#fff27a'
-              : '#e8d23a'
-            : o.id === activeFace
-              ? '#ff8080'
-              : '#e04040',
-        opacity: o.id === activeFace ? 0.95 : 0.7,
-      })),
-      ...leaking.map((j) => ({
-        ...faceRect(j.joint, anchor),
-        color: '#b04bff',
-        opacity: j.joint.id === activeFace ? 0.95 : 0.75,
-      })),
-      ...textureBroken.map((j) => ({
-        ...faceRect(j.joint, anchor),
-        color: '#35c2d6',
-        opacity: j.joint.id === activeFace ? 0.95 : 0.7,
-      })),
-      ...shared.map((sc) => ({
-        ...cellBox(sc.cell),
-        color: '#ff2bd6',
-        opacity: sc === activeShared ? 0.8 : 0.45,
-      })),
+      ...bad
+        .filter((o) => onLevel(o.cells))
+        .map((o) => ({
+          ...faceRect(o, anchor),
+          color:
+            o.fit === 'seam'
+              ? o.id === activeFace
+                ? '#fff27a'
+                : '#e8d23a'
+              : o.id === activeFace
+                ? '#ff8080'
+                : '#e04040',
+          opacity: o.id === activeFace ? 0.95 : 0.7,
+        })),
+      ...leaking
+        .filter((j) => onLevel(j.joint.cells))
+        .map((j) => ({
+          ...faceRect(j.joint, anchor),
+          color: '#b04bff',
+          opacity: j.joint.id === activeFace ? 0.95 : 0.75,
+        })),
+      ...textureBroken
+        .filter((j) => onLevel(j.joint.cells))
+        .map((j) => ({
+          ...faceRect(j.joint, anchor),
+          color: '#35c2d6',
+          opacity: j.joint.id === activeFace ? 0.95 : 0.7,
+        })),
+      ...shared
+        .filter((sc) => onLevel([sc.cell]))
+        .map((sc) => ({
+          ...cellBox(sc.cell),
+          color: '#ff2bd6',
+          opacity: sc === activeShared ? 0.8 : 0.45,
+        })),
     ];
   });
 
@@ -1337,7 +1353,7 @@
         : null;
     return (
       snapped ?? {
-        cell: cellAt(world, anchor!, pieces.get(p.piece)!, p.rotation),
+        cell: cellAt(world, anchor!, pieces.get(p.piece)!, p.rotation, activeLevel ?? 0),
         rotation: p.rotation,
       }
     );
@@ -1405,7 +1421,10 @@
           return;
         }
       }
-      const face = showFaces && anchor ? faceAt(info.world, [...opens, ...bad], anchor) : undefined;
+      const face =
+        showFaces && anchor
+          ? faceAt(info.world, [...opens, ...bad.filter((o) => onLevel(o.cells))], anchor)
+          : undefined;
       if (face) {
         openFace(face);
         activeShared = null;
@@ -1487,7 +1506,7 @@
           types,
           piece: tile.piece,
           rotation: tile.rotation,
-          opens: openFaces(rest, pieces),
+          opens: openFaces(rest, pieces).filter((o) => onLevel([...o.cells, ...o.outside])),
           geometry,
         });
         const target = snapped?.cell ?? onGrid;

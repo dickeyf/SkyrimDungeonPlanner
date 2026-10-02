@@ -170,8 +170,9 @@ seconds for Skyrim.esm). Prefix your EditorIDs with your mod's own prefix.
 When a cell spans several levels (stairs, ramps), a **Level** selector appears in the top bar:
 pick a level (or **Page Up** / **Page Down**) to see it alone, the levels below dimmed (or hidden
 with **hide below**) and the ones above hidden; **all** shows everything. Stairs and ramps show on
-every level they join. Only the shown level's pieces can be clicked. The camera view always shows
-every level.
+every level they join. Only the shown level's pieces can be clicked, a new piece goes on the shown level, and the open
+faces, the assistant and the marks are those of that level (a staircase's top opening is on the
+level above: go up to continue it). The camera view always shows every level.
 
 ## Textures
 

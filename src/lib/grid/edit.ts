@@ -308,6 +308,8 @@ export function cellAt(
   anchor: GridAnchor,
   piece: Piece,
   rotation: Rotation,
+  /** The grid level the piece's own level 0 goes on (the active level, V3). */
+  level = 0,
 ): CellIndex {
   // centre the piece's footprint on the pointer: offset by half the rotated footprint
   const cells = footprintCells(piece, [0, 0, 0], rotation);
@@ -315,7 +317,7 @@ export function cellAt(
   const hi = [Math.max(...cells.map((c) => c[0])) + 1, Math.max(...cells.map((c) => c[1])) + 1];
   const fx = (world[0] - anchor.origin[0]) / anchor.module.xy - (lo[0] + hi[0]!) / 2;
   const fy = (world[1] - anchor.origin[1]) / anchor.module.xy - (lo[1] + hi[1]!) / 2;
-  return [Math.round(fx) + 0, Math.round(fy) + 0, 0]; // `+ 0` turns -0 into 0
+  return [Math.round(fx) + 0, Math.round(fy) + 0, level + 0]; // `+ 0` turns -0 into 0
 }
 
 export interface LayoutChanges {

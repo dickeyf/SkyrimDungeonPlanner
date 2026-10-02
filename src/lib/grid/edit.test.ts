@@ -162,6 +162,8 @@ describe('editing', () => {
   it('finds the cell under the pointer, centring the footprint', () => {
     expect(cellAt([128, 128, 0], ANCHOR, HALL, 0)).toEqual([0, 0, 0]);
     expect(cellAt([140, 120, 0], ANCHOR, HALL, 0)).toEqual([0, 0, 0]);
+    // on the active level (V3): the piece's own level 0 goes there
+    expect(cellAt([128, 128, 0], ANCHOR, HALL, 0, 2)).toEqual([0, 0, 2]);
     expect(cellAt([384, 128, 0], ANCHOR, HALL, 0)).toEqual([2, 0, 0]);
   });
 
