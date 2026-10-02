@@ -55,6 +55,58 @@
   let insetOpen = $state(getPref(PREF_KEYS.insetOpen) !== '0');
   let eye = $state.raw<Eye | null>(null);
 
+  // ---- walking the camera from the keyboard, once the inset has the focus (W/S, A/D) ----
+  /** Walking and turning speeds, in game units and degrees per second. */
+  const WALK_SPEED = 320;
+  const TURN_SPEED = 100;
+  const WALK_KEYS = new Set(['w', 'a', 's', 'd']);
+  /** Keys held down (w, a, s, d, shift). */
+  let held: string[] = [];
+  let walkFrame = 0;
+  let walkLast = 0;
+
+  function walkStep(now: number): void {
+    const dt = Math.min(0.1, (now - walkLast) / 1000);
+    walkLast = now;
+    if (eye && scene && held.length) {
+      const fast = held.includes('shift') ? 2 : 1;
+      const turn = (held.includes('d') ? 1 : 0) - (held.includes('a') ? 1 : 0);
+      const move = (held.includes('w') ? 1 : 0) - (held.includes('s') ? 1 : 0);
+      const heading = eye.heading + (turn * TURN_SPEED * fast * dt * Math.PI) / 180;
+      const step = move * WALK_SPEED * fast * dt;
+      const [x0, y0, z0] = eye.pos;
+      const x = x0 + Math.sin(heading) * step;
+      const y = y0 + Math.cos(heading) * step;
+      // a little above the floor under the camera: up a ramp, down a step, not through a ceiling
+      const floor = move ? scene.floorAt(x, y, z0 + 64) : undefined;
+      eye = { heading, pos: [x, y, floor === undefined ? z0 : floor + EYE_HEIGHT] };
+    }
+    walkFrame = held.length ? requestAnimationFrame(walkStep) : 0;
+  }
+
+  function walkKey(e: KeyboardEvent, down: boolean): void {
+    const key = e.key.toLowerCase();
+    if (e.key === 'Shift') {
+      held = down ? [...new Set([...held, 'shift'])] : held.filter((k) => k !== 'shift');
+      return;
+    }
+    if (!WALK_KEYS.has(key) || e.ctrlKey || e.metaKey || e.altKey) return;
+    // the editor's own shortcuts do not see these keys while the inset has the focus
+    e.preventDefault();
+    e.stopPropagation();
+    held = down ? [...new Set([...held, key])] : held.filter((k) => k !== key);
+    if (held.length && !walkFrame) {
+      walkLast = performance.now();
+      walkFrame = requestAnimationFrame(walkStep);
+    }
+  }
+
+  function stopWalking(): void {
+    held = [];
+    cancelAnimationFrame(walkFrame);
+    walkFrame = 0;
+  }
+
   /** Raise or lower the camera by `dz` game units. */
   function raise(dz: number): void {
     if (eye) eye = { ...eye, pos: [eye.pos[0], eye.pos[1], eye.pos[2] + dz] };
@@ -145,7 +197,19 @@
 
 <div class="view">
   <canvas bind:this={canvas}></canvas>
-  <div class="inset" class:closed={!insetOpen} bind:this={insetBox}>
+  <!-- svelte-ignore a11y_no_noninteractive_tabindex, a11y_no_noninteractive_element_interactions -->
+  <div
+    class="inset"
+    class:closed={!insetOpen}
+    bind:this={insetBox}
+    tabindex={insetOpen ? 0 : -1}
+    role="application"
+    aria-label="Camera view: W and S walk, A and D turn"
+    onpointerdown={() => insetBox?.focus()}
+    onkeydown={(e) => walkKey(e, true)}
+    onkeyup={(e) => walkKey(e, false)}
+    onblur={stopWalking}
+  >
     <button
       title={insetOpen ? 'Hide the camera view' : 'Show the camera view'}
       onclick={() => (insetOpen = !insetOpen)}>{insetOpen ? '–' : 'Camera'}</button
@@ -153,7 +217,7 @@
     {#if insetOpen && eye}
       <div
         class="eye-info"
-        title="Drag the yellow disc in the top-down view to move the camera, its handle to turn it; the wheel over the disc raises or lowers it"
+        title="Drag the yellow disc in the top-down view to move the camera, its handle to turn it; the wheel over the disc raises or lowers it. Click this view, then W / S walk and A / D turn (Shift: faster)"
       >
         <button onclick={() => raise(16)} title="Raise the camera">▲</button>
         <button onclick={() => raise(-16)} title="Lower the camera">▼</button>
@@ -201,6 +265,10 @@
     max-height: calc(100% - 2px);
     border-left: 1px solid var(--border);
     border-bottom: 1px solid var(--border);
+  }
+  .inset:focus {
+    outline: 2px solid #ffd166;
+    outline-offset: -2px;
   }
   .inset.closed {
     width: auto;

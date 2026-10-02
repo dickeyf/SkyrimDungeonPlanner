@@ -655,7 +655,8 @@ export class CellScene {
 
   /**
    * The inset, drawn into its box over the top-down view (one renderer, two cameras, R18): the
-   * tiles and other objects only, without the grid, marks, NavMesh or ghost.
+   * tiles and other objects, and the ghost of a piece being placed or moved; without the grid,
+   * marks or NavMesh.
    */
   private renderInset(): void {
     if (!this.eye || !this.insetBox) return;
@@ -668,7 +669,7 @@ export class CellScene {
     const y = Math.round(c.bottom - b.bottom); // WebGL counts from the bottom
     this.eyeCamera.aspect = w / h;
     this.eyeCamera.updateProjectionMatrix();
-    const hidden = [this.grid, this.highlights, this.navmesh, this.ghost, this.eyeShape].filter(
+    const hidden = [this.grid, this.highlights, this.navmesh, this.eyeShape].filter(
       (o): o is NonNullable<typeof o> => !!o && o.visible,
     );
     for (const o of hidden) o.visible = false;

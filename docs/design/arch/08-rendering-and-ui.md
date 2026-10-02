@@ -27,12 +27,14 @@ and feeds it props.
 - **Camera viewport** (V3, D67): a perspective camera (`Eye`: position and heading around Z)
   drawn in a square inset over the top right of the canvas, by the same renderer and scene in a
   second scissored pass after the top-down one (one copy of every geometry, R18); the grid,
-  marks, NavMesh, ghost and the camera's own shapes are hidden for that pass. `CellView` places
+  marks, NavMesh and the camera's own shapes are hidden for that pass (the ghost of a piece being
+  placed or moved stays, as feedback). `CellView` places
   an element over the inset, which keeps the pointer off the top-down view there and gives the
   pass its box. In the top-down view the camera is a disc, a field-of-view wedge and a handle,
   sized in pixels: dragging the disc moves it (it follows the floor under it at eye level,
   `floorAt`, a ray straight down from just above it), the handle turns it, the wheel over the
-  disc raises it. These gestures are claimed in the capture phase, before the controls.
+  disc raises it. Once the inset has the focus (a click), W / S walk and A / D turn, Shift faster,
+  at eye level over the floor; the editor's shortcuts do not see these keys then. These gestures are claimed in the capture phase, before the controls.
 - **Selection**: `CellScene.select(keys)` highlights every selected tile; the editor keeps the
   list (`editorStore.selection`), Shift+drag draws its rectangle and a dragged group its landing
   cells as highlights.
