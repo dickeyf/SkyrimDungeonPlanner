@@ -13,7 +13,7 @@
   import { editorStore as ed } from '$lib/editor/editorStore.svelte';
   import { leakChecker, type LeakVerdict } from '$lib/editor/leakChecker.svelte';
   import { textureChecker } from '$lib/editor/textureChecker.svelte';
-  import { bake } from '$lib/navmesh/bake';
+  import { bake, dropSmallIslands } from '$lib/navmesh/bake';
   import { buildNavMesh } from '$lib/navmesh/build';
   import {
     coveredTiles,
@@ -79,7 +79,7 @@
     type OpenFace,
   } from '$lib/grid';
   import type { CellIndex, Vec3 } from '$lib/catalogue/types';
-  import { editsFromChanges, piecesByFormKey, summarizeCell } from '$lib/level';
+  import { editsFromChanges, piecesByFormKey, summarizeCell, type LevelEdit } from '$lib/level';
   import {
     CATEGORY_COLORS,
     layoutObjects,
@@ -447,9 +447,7 @@
   function fillNavMesh(): void {
     if (!layout || !ed.loaded || !navGrid) return;
     const footprints = [...layout.tiles.keys()].map((key) => ({ key, cells: tileCells(key) }));
-    const covered = new Set(
-      ed.loaded.navmeshes.flatMap((n) => [...coveredTiles(n.nav, footprints, navGrid)]),
-    );
+    const covered = new Set(navNow.flatMap((n) => [...coveredTiles(n.nav, footprints, navGrid)]));
     const keys = footprints
       .map((f) => f.key)
       .filter((key) => {
@@ -488,14 +486,13 @@
     const started = performance.now();
     let blocked: string | undefined;
     if (pending && changeCount(pending)) blocked = 'save the tile edits first';
-    if (navChanged) blocked = 'write or undo the NavMesh edits first';
     if (mode !== 'bake' && locked) blocked = 'the cell NavMesh is locked (finishing phase)';
     const footprints = keys.map((key) => ({ key, cells: tileCells(key) }));
     // the NAVM's parent cell, as a FormID of the plugin itself (its index after the masters)
     const cellFormId = fromFormKey(ed.loaded.cell, ed.store.masters, ed.store.name);
 
     // 1. replace and clear: the selected tiles' triangles go, from every NAVM holding some
-    let navmeshes = ed.loaded.navmeshes.map((n) => ({ ...n }));
+    let navmeshes = navNow.map((n) => ({ ...n }));
     // one write per NAVM key, the last one winning
     const writes: Record<string, NavWrite> = {};
     let removed = 0;
@@ -518,6 +515,7 @@
     let unlinked: [Vec3, Vec3][] = [];
     let skipped = 0;
     let tileCount = 0;
+    let islands = 0;
     if (mode !== 'clear') {
       const covered = new Set(
         navmeshes.flatMap((n) => [...coveredTiles(n.nav, footprints, navGrid)]),
@@ -536,12 +534,21 @@
           (t) => t.vertices.map((v) => n.nav.vertices[v]!) as unknown as [Vec3, Vec3, Vec3],
         ),
       );
-      const result = bake(
+      const raw = bake(
         tiles,
         {},
         { origin: [anchor.origin[0], anchor.origin[1]], cell: anchor.module.xy },
         exclude,
       );
+      // floor patches apart from the rest and smaller than a grid cell (a plinth's top) are
+      // left out, unless they touch a NavMesh already there
+      const existing = navmeshes.flatMap((n) => n.nav.vertices);
+      const result = dropSmallIslands(raw, anchor.module.xy * anchor.module.xy, (p) =>
+        existing.some(
+          (q) => Math.hypot(q[0] - p[0], q[1] - p[1]) <= 1 && Math.abs(q[2] - p[2]) <= 64,
+        ),
+      );
+      islands = raw.triangles.length - result.triangles.length;
       if (result.triangles.length) {
         // the bake joins the own NAVM sharing the most vertices with it, else the largest own
         // one, else a new one; the others stay as they are
@@ -575,8 +582,11 @@
             writes[target.key] = { navm: target.key, nav: merged.nav };
             navmeshes = navmeshes.map((n) => (n === target ? { ...n, nav: merged.nav } : n));
           } else {
-            writes['new'] = { nav: merged.nav };
-            navmeshes = [...navmeshes, { key: 'new', own: true, nav: merged.nav }];
+            // a new NAVM, written as such; its key lives only in the page
+            let n = 1;
+            while (`new-${n}` in navWork) n++;
+            writes[`new-${n}`] = { navm: `new-${n}`, nav: merged.nav };
+            navmeshes = [...navmeshes, { key: `new-${n}`, own: true, nav: merged.nav }];
           }
         } catch (e) {
           blocked ??= `the result is not a valid NAVM: ${(e as Error).message}`;
@@ -598,12 +608,13 @@
       mode !== 'clear'
         ? `${tileCount} tiles baked (${skipped} with NavMesh skipped), ${baked} triangles added to ` +
           (target ? `the NavMesh ${target.key}` : baked ? 'a new NavMesh' : 'nothing') +
-          `, ${unlinked.length} unlinked border edges`
+          `, ${unlinked.length} unlinked border edges` +
+          (islands ? `, ${islands} triangles of isolated floor patches left out` : '')
         : '',
       `${Object.keys(writes).length} NavMesh record${Object.keys(writes).length === 1 ? '' : 's'} to write`,
       `${(performance.now() - started).toFixed(0)} ms`,
     ];
-    if (!Object.keys(writes).length) blocked ??= 'nothing to write';
+    if (!Object.keys(writes).length) blocked ??= 'nothing to change';
     navPreview = {
       mode,
       vertices,
@@ -615,26 +626,13 @@
     };
   }
 
-  async function writeNavMesh(): Promise<void> {
+  /** Keeps the previewed result as a NavMesh edit (undoable), written with the others. */
+  function applyNavPreview(): void {
     const p = navPreview;
     if (!p || p.blocked) return;
-    const what =
-      p.mode === 'bake'
-        ? 'Write this NavMesh into the plugin now?'
-        : p.mode === 'replace'
-          ? 'Delete the NavMesh of the selected tiles and write the new bake in its place?'
-          : 'Delete the NavMesh of the selected tiles?';
-    if (
-      !window.confirm(
-        `${what}\n\nA timestamped backup of the current file is made first. Then open the ` +
-          'plugin in the Creation Kit and Finalize the NavMesh (door links, cover).',
-      )
-    )
-      return;
-    const ok = await ed.save(
-      p.writes.map((w) => ({ kind: 'navmesh', nav: w.nav, ...(w.navm ? { navm: w.navm } : {}) })),
-    );
-    if (ok) navPreview = null;
+    navCommit({ ...navWork, ...Object.fromEntries(p.writes.map((w) => [w.navm!, w.nav])) });
+    navPreview = null;
+    message = 'Applied (not saved yet): Write NavMesh saves it.';
   }
 
   // ---- "Edit NavMesh" mode (V2 step 14): select and delete NavMesh elements, wipe a NAVM ------
@@ -663,12 +661,16 @@
   });
 
   /** The cell's NavMeshes with the edits applied (wiped ones left out). */
-  const navNow = $derived(
-    (ed.loaded?.navmeshes ?? []).flatMap((n) => {
+  const navNow = $derived([
+    ...(ed.loaded?.navmeshes ?? []).flatMap((n) => {
       const work = n.key in navWork ? navWork[n.key] : n.nav;
       return work ? [{ ...n, nav: work }] : [];
     }),
-  );
+    // NAVMs made by a bake, not written yet
+    ...Object.entries(navWork).flatMap(([key, nav]) =>
+      key.startsWith('new-') && nav ? [{ key, own: true, nav }] : [],
+    ),
+  ]);
   const navChanged = $derived(Object.keys(navWork).length > 0);
   const activeNav = $derived(navNow.find((n) => n.key === navActive));
 
@@ -899,18 +901,41 @@
     if (
       !window.confirm(
         'Write the NavMesh changes into the plugin now?\n\nA timestamped backup of the current ' +
-          'file is made first.',
+          'file is made first. Then open the plugin in the Creation Kit and Finalize the NavMesh ' +
+          '(door links, cover).',
       )
     )
       return;
     const ok = await ed.save(
-      Object.entries(navWork).map(([navm, nav]) => ({ kind: 'navmesh', navm, nav })),
+      Object.entries(navWork).flatMap(([navm, nav]): LevelEdit[] =>
+        !navm.startsWith('new-')
+          ? [{ kind: 'navmesh', navm, nav }]
+          : nav
+            ? [{ kind: 'navmesh', nav }]
+            : [],
+      ),
     );
     if (ok) {
       navWork = {};
       navUndo = [];
       navRedo = [];
     }
+  }
+
+  async function navFinalize(): Promise<void> {
+    if (pending && changeCount(pending)) {
+      window.alert('Save or undo the tile edits first.');
+      return;
+    }
+    if (
+      !window.confirm(
+        'Finalize the NavMesh of this cell now?\n\nLoad doors are linked to the NavMesh and the ' +
+          "plugin's NAVI record updated, as the Creation Kit does (no cover). A timestamped " +
+          'backup of the current file is made first.',
+      )
+    )
+      return;
+    await ed.finalize();
   }
 
   function toggleNavEdit(): void {
@@ -1609,7 +1634,9 @@
         onchange={(e) => chooseCell((e.currentTarget as HTMLSelectElement).value)}
       >
         {#each ed.cells as c (c.key)}
-          <option value={c.key}>{c.editorId} ({c.placedCount} placed)</option>
+          <option value={c.key}
+            >{c.editorId} [{c.key.split(':')[0]}] ({c.placedCount} placed)</option
+          >
         {/each}
       </select>
       <button disabled={ed.busy} onclick={newCell}>New cell...</button>
@@ -2027,7 +2054,12 @@
               <button disabled={!navSel.length} onclick={navDeleteSelection}
                 >Delete selection</button
               >
-              <button disabled={!navChanged} onclick={navSave}>Write NavMesh changes</button>
+              <button disabled={!navChanged} onclick={navSave}>Write NavMesh (Ctrl+S)</button>
+              <button
+                disabled={navChanged || !!navPreview || !navNow.length}
+                title="Door links and NAVI entries, as the Creation Kit does (no cover); write the NavMesh first"
+                onclick={navFinalize}>Finalize</button
+              >
             {/if}
           </div>
           <div class="navmesh-preview" class:hidden={!navEdit}>
@@ -2062,12 +2094,12 @@
               </div>
               <button
                 disabled={!!navPreview.blocked}
-                title={navPreview.blocked ?? 'Write it into the plugin'}
-                onclick={writeNavMesh}>Write NavMesh</button
+                title={navPreview.blocked ?? 'Keep it as an edit; Write NavMesh saves it'}
+                onclick={applyNavPreview}>Apply</button
               >
               <button onclick={() => (navPreview = null)}>Cancel</button>
               {#if navPreview.blocked}<div class="warn">
-                  Cannot write: {navPreview.blocked}.
+                  Cannot apply: {navPreview.blocked}.
                 </div>{/if}
               {#if navPreview.unlinked.length}
                 <div class="hint">

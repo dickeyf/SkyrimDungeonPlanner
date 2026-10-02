@@ -18,13 +18,26 @@ import {
   type LevelCell,
   type LevelStore,
   type LoadedCell,
+  type MasterNavi,
 } from '$lib/level';
 import { annotationStore } from '$lib/session/annotationStore.svelte';
 import { catalogueStore } from '$lib/session/catalogueStore.svelte';
 import { session } from '$lib/session/session.svelte';
-import { newPluginBytes } from '$lib/format/esp';
+import {
+  Plugin,
+  findSubrecord,
+  newPluginBytes,
+  recordSubrecords,
+  toFormKey,
+  zStringOf,
+} from '$lib/format/esp';
 import { MeshCache } from '$lib/render';
 import { ArchiveIndex, type Layer, type OverlayFileInfo } from '$lib/vfs';
+
+interface MasterInfo {
+  cells: ReadonlySet<string>;
+  navi?: MasterNavi;
+}
 
 /** Where a new plugin goes: an enabled mod folder of the Data view, or a new MO2 mod. */
 export type PluginTarget = { kind: 'layer'; layer: Layer } | { kind: 'new-mod'; modName: string };
@@ -51,6 +64,8 @@ class EditorStore {
   private source: { info: OverlayFileInfo; stamp: FileStamp } | null = null;
   private meshCache: MeshCache | null = null;
   private meshCacheView: unknown = null;
+  /** What was read from each master, by lower-case file name. */
+  private masterCache = new Map<string, MasterInfo>();
   message = $state('');
   error = $state('');
 
@@ -143,6 +158,15 @@ class EditorStore {
       const dir = info.layer.dir as unknown as FileSystemHandle;
       if ('requestPermission' in dir && !(await ensureAccess(dir, 'readwrite')))
         throw new Error(`write access to ${info.layer.name} was refused`);
+      // EditorIDs are not case sensitive and shared with the masters: the Creation Kit renames
+      // a duplicate (NavmeshTest2 is a Skyrim.esm cell)
+      for (const name of this.store?.masters ?? []) {
+        if ((await this.master(name))?.cells.has(editorId.toLowerCase()))
+          throw new Error(
+            `${name} already has a cell named ${editorId} (EditorIDs are not case sensitive); ` +
+              'choose another one, ideally with your own prefix',
+          );
+      }
       const store = EspLevelStore.parse(await readAll(info.handle), info.name);
       key = await store.addCell(editorId);
       const result = await savePlugin({
@@ -247,6 +271,103 @@ class EditorStore {
         `saved ${info.name}: ${[tiles, navmesh].filter(Boolean).join('; ')}; backup ${result.backup} ` +
         `(in ${info.layer.name}). Reload the plugin in the Creation Kit before editing it there` +
         (navmesh ? ', then Finalize the NavMesh (door links, cover).' : '.');
+      ok = true;
+    });
+    return ok;
+  }
+
+  /**
+   * What the tool needs from a master, read once per master (Skyrim.esm is large): its NAVI,
+   * for a plugin finalized for the first time, and its cells' EditorIDs (lower case), which a
+   * new cell must not reuse.
+   */
+  private async master(name: string): Promise<MasterInfo | undefined> {
+    const cached = this.masterCache.get(name.toLowerCase());
+    if (cached) return cached;
+    if (!session.view) return undefined;
+    const overlay = session.view.overlay;
+    const files = [
+      ...(await overlay.listFiles('', { suffix: '.esm' })),
+      ...(await overlay.listFiles('', { suffix: '.esp' })),
+    ];
+    const info = files.find((f) => f.name.toLowerCase() === name.toLowerCase());
+    if (!info) return undefined;
+    const plugin = Plugin.parse(await readAll(info.handle), info.name);
+    const ids: string[] = [];
+    for (const record of plugin.recordsOfType('CELL')) {
+      const edid = zStringOf(findSubrecord(await recordSubrecords(record), 'EDID'));
+      if (edid) ids.push(edid.toLowerCase());
+    }
+    const cells: ReadonlySet<string> = new Set(ids);
+    let navi: MasterNavi | undefined;
+    const record = plugin.recordsOfType('NAVI')[0];
+    if (record) {
+      const fields = await recordSubrecords(record);
+      const nver = findSubrecord(fields, 'NVER');
+      const nvpp = findSubrecord(fields, 'NVPP');
+      navi = {
+        key: toFormKey(record.formId, plugin.masters, plugin.name),
+        version: nver
+          ? new DataView(nver.data.buffer, nver.data.byteOffset).getUint32(0, true)
+          : 12,
+        ...(nvpp ? { nvpp: nvpp.data.slice() } : {}),
+      };
+    }
+    const out: MasterInfo = { cells, ...(navi ? { navi } : {}) };
+    this.masterCache.set(name.toLowerCase(), out);
+    return out;
+  }
+
+  /** The NAVI of the working plugin's first master that has one. */
+  private async masterNavi(): Promise<MasterNavi | undefined> {
+    for (const name of this.store?.masters ?? []) {
+      const navi = (await this.master(name))?.navi;
+      if (navi) return navi;
+    }
+    return undefined;
+  }
+
+  /**
+   * Finalize the loaded cell's NavMeshes in the plugin (V2 step 16): door links and the NAVI
+   * entries, as the Creation Kit does (no cover). Saved like an edit, with a backup.
+   */
+  async finalize(): Promise<boolean> {
+    let ok = false;
+    await this.run(async () => {
+      const cell = this.loaded?.cell;
+      if (!this.source || !cell) throw new Error('no cell loaded');
+      const { info, stamp } = this.source;
+      const dir = info.layer.dir as unknown as FileSystemHandle;
+      if ('requestPermission' in dir && !(await ensureAccess(dir, 'readwrite')))
+        throw new Error(`write access to ${info.layer.name} was refused`);
+      const store = EspLevelStore.parse(await readAll(info.handle), info.name);
+      const report = await store.finalize(cell, () => this.masterNavi());
+      const result = await savePlugin({
+        dir: info.layer.dir,
+        name: info.name,
+        loaded: stamp,
+        bytes: store.serialize(),
+      });
+      this.source = { info, stamp: result.stamp };
+      this.store = EspLevelStore.parse(await readAll(info.handle), info.name);
+      this.cells = await this.store.listCells();
+      this.loaded = await loadCell(
+        this.store,
+        cell,
+        this.catalogue ?? (await this.finalCatalogue()),
+      );
+      const notes = [
+        `${report.navmeshes} NavMesh${report.navmeshes === 1 ? '' : 'es'}`,
+        `${report.doors} door${report.doors === 1 ? '' : 's'} linked`,
+        report.islands ? `${report.islands} island${report.islands === 1 ? '' : 's'}` : '',
+        report.missed.length ? `no floor found for ${report.missed.join(', ')}` : '',
+        report.masterDoors.length
+          ? `doors of a master left to the Creation Kit: ${report.masterDoors.join(', ')}`
+          : '',
+      ];
+      this.message =
+        `finalized ${info.name}: ${notes.filter(Boolean).join('; ')}; backup ${result.backup}. ` +
+        'Cover is not computed; reload the plugin in the Creation Kit before editing it there.';
       ok = true;
     });
     return ok;

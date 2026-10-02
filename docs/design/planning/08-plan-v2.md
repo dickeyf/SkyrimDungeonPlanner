@@ -286,6 +286,20 @@ after step 12; the V2 milestone (step 13) closes the version.
   under each load door linked to it. A "Finalize" button.
 - **Done when**: a cell finalized in the app works in game (NPCs path through its doors, to
   another cell), and the CK opens it without errors.
+- **Result (1 Oct 2026)**: done. Proof of concept `poc/navi.html` (`format/esp/navi.ts`): the
+  15,462 NVMI fields of Skyrim.esm and those of a plugin finalized by the CK re-encode byte for
+  byte, with xEdit's layout. Measured: a load door is linked to the triangle containing its
+  arrival marker (the XTEL of the door leading to it), flag `0x400`, a door link with the
+  PathingDoor CRC `0xE48B73F3` and an XNDP on the door; an NVMI's location is its vertices' mean;
+  a NavMesh apart from the cell's main one is an island (flag `0x20`, its geometry copied); a
+  plugin's NAVI overrides the master's and carries its NVPP unchanged. `navmesh/finalize.ts` and
+  `EspLevelStore.finalize` do the same for one cell (the cell's NVMI entries replaced, the others
+  kept; the master's NAVI read when the plugin has none), behind a Finalize button in "Edit
+  NavMesh". A hostile NPC followed the user through a door finalized in the app. Doors of a
+  master and cover are left to the CK. Along the way: the bake drops isolated floor patches
+  smaller than a grid cell (`dropSmallIslands`); a preview is applied as an undoable edit and a
+  single "Write NavMesh" saves every NavMesh change. "New cell" refuses an EditorID a master's cell already has (not case
+  sensitive; Skyrim.esm has `NavmeshTest2`, which the CK renamed `...DUPLICATE003`).
 
 ## Step 13 – V2 milestone
 - **What**: the success criterion above, on the V1 test dungeon and on the working cell: bake

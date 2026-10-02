@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NAVI round trip</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <style>
+      :root {
+        color-scheme: dark;
+        font:
+          14px/1.45 system-ui,
+          sans-serif;
+        background: #1e1d24;
+        color: #e8e6ef;
+      }
+      body {
+        max-width: 60rem;
+        margin: 0 auto;
+        padding: 1.5rem 1rem;
+      }
+      h1 {
+        font-size: 1.3rem;
+      }
+      section {
+        border: 1px solid #3d3b47;
+        border-radius: 6px;
+        padding: 0.75rem 1rem;
+        margin: 0.75rem 0;
+      }
+      section h2 {
+        font-size: 1rem;
+        margin: 0 0 0.5rem;
+      }
+      button,
+      select,
+      input {
+        font: inherit;
+        margin: 0.2rem 0.4rem 0.2rem 0;
+        padding: 0.35rem 0.6rem;
+      }
+      .ok {
+        color: #8fd18f;
+      }
+      .warn {
+        color: #d9c27a;
+      }
+      .err {
+        color: #e07a7a;
+      }
+      pre,
+      .box {
+        background: #2b2a33;
+        padding: 0.5rem;
+        border-radius: 4px;
+        max-height: 18rem;
+        overflow: auto;
+        font-size: 12px;
+      }
+      table {
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      td,
+      th {
+        padding: 0.1rem 0.6rem;
+        text-align: left;
+      }
+      td.num {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+      code {
+        color: #d9c27a;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>NAVI round trip and Finalize data (V2 step 16)</h1>
+    <p id="status">Restoring saved folders...</p>
+
+    <section>
+      <h2>1. Plugin</h2>
+      <label
+        >MO2 profile
+        <select id="profile"></select
+      ></label>
+      <label
+        >Plugin
+        <select id="plugin"></select
+      ></label>
+      <button id="check" disabled>Decode and re-encode NAVI, list door links</button>
+      <p>
+        Success criterion: every <code>NVMI</code> field of the plugin's NAVI re-encodes byte for
+        byte, with no unknown trailing bytes. Works on <code>.esm</code> files too (Skyrim.esm is a
+        good stress test).
+      </p>
+      <div id="result" class="box">-</div>
+    </section>
+
+    <section>
+      <h2>2. NAVI entries, doors and door links</h2>
+      <div id="list" class="box">-</div>
+    </section>
+
+    <section>
+      <h2>Log</h2>
+      <pre id="log"></pre>
+    </section>
+
+    <script type="module" src="./navi.ts"></script>
+  </body>
+</html>

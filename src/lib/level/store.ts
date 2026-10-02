@@ -37,6 +37,25 @@ export interface LevelNavMesh {
   nav: NavMeshData;
 }
 
+/** The master's NAVI, for a plugin that has none yet: its override starts from it. */
+export interface MasterNavi {
+  key: FormKey;
+  version: number;
+  /** The precomputed paths (NVPP), which the Creation Kit copies into the override. */
+  nvpp?: Uint8Array;
+}
+
+/** What a Finalize did (V2 step 16). */
+export interface FinalizeReport {
+  navmeshes: number;
+  doors: number;
+  /** Load doors no triangle was found for. */
+  missed: FormKey[];
+  /** Linked doors that belong to a master: their XNDP is left to the Creation Kit. */
+  masterDoors: FormKey[];
+  islands: number;
+}
+
 export interface LevelStore {
   /** File name of the working plugin. */
   readonly name: string;
@@ -51,6 +70,14 @@ export interface LevelStore {
    * only, known bases) before any is applied. Returns the keys of the added references.
    */
   applyEdits(cell: FormKey, edits: readonly LevelEdit[]): Promise<FormKey[]>;
+  /**
+   * Finalize the cell's NavMeshes (door links, NAVI entries; no cover), as the Creation Kit
+   * does. `masterNavi` is asked only when the plugin has no NAVI yet.
+   */
+  finalize(
+    cell: FormKey,
+    masterNavi: () => Promise<MasterNavi | undefined>,
+  ): Promise<FinalizeReport>;
   /** Add an empty interior cell; its EditorID must be new in this plugin. */
   addCell(editorId: string): Promise<FormKey>;
   /** The level in its file format, ready to be written. */

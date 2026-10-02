@@ -8,6 +8,7 @@
 export * from './cellRefr';
 export * from './create';
 export * from './formId';
+export * from './navi';
 export * from './navm';
 export * from './plugin';
 export * from './records';

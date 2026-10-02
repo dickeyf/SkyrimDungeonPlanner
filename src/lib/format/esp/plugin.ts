@@ -14,7 +14,7 @@ import {
 } from './cellRefr';
 import { formIdIndex, makeFormId } from './formId';
 import { decodeNavm, encodeNvnm, type NavMeshData } from './navm';
-import { recordSubrecords, writeSubrecords } from './subrecords';
+import { recordSubrecords, writeSubrecords, type Subrecord } from './subrecords';
 import {
   GroupType,
   RecordFlags,
@@ -51,6 +51,11 @@ export interface RefEntry {
 }
 
 const PLACED_TYPES = new Set(['REFR', 'ACHR', 'PGRE', 'PHZD', 'NAVM']);
+
+/** REFR fields that follow XNDP in a record (xEdit's TES5 order). */
+const FIELDS_AFTER_XNDP = new Set(
+  'XLRT XIS2 XRGD XCNT XCHG XLRL XLKR XPRD XPPA XHTW XFVC XMRK XATR XESP XSCL DATA'.split(' '),
+);
 
 /** Interior cells of a CELL top group: block -> sub-block -> CELL [+ children group]. */
 export async function listInteriorCells(top: EspGroup): Promise<CellEntry[]> {
@@ -334,6 +339,64 @@ export class Plugin {
     sub.children.push(record);
     this.syncRecordCount();
     return { record, info: { editorId, name: '', flags: 1, interior: true } };
+  }
+
+  /** The plugin's NAVI record (its override of the master's Navmesh Info Map), if any. */
+  navi(): EspRecord | undefined {
+    return this.topGroup('NAVI')?.children.find(
+      (n): n is EspRecord => n.kind === 'record' && n.type === 'NAVI',
+    );
+  }
+
+  /**
+   * Write the NAVI record's fields, uncompressed: into the plugin's NAVI, or a new override of
+   * the master's (`formId`), in a NAVI top group placed just before CELL.
+   */
+  setNavi(formId: number, subrecords: readonly Subrecord[]): EspRecord {
+    const data = writeSubrecords(subrecords);
+    const record = this.navi();
+    if (record) {
+      record.data = data;
+      record.flags &= ~RecordFlags.compressed;
+      return record;
+    }
+    let top = this.topGroup('NAVI');
+    if (!top) {
+      top = newGroup(typeToLabel('NAVI'), GroupType.top);
+      const cell = this.nodes.findIndex(
+        (n) =>
+          n.kind === 'group' &&
+          n.groupType === GroupType.top &&
+          (n.label === typeToLabel('CELL') || TOP_GROUPS_AFTER_CELL.has(n.label)),
+      );
+      this.nodes.splice(cell === -1 ? this.nodes.length : cell, 0, top);
+    }
+    const added = newRecord('NAVI', formId, data);
+    top.children.push(added);
+    this.syncRecordCount();
+    return added;
+  }
+
+  /**
+   * Set an own door reference's link to a NavMesh triangle (XNDP, written by Finalize). A
+   * compressed record is written back uncompressed.
+   */
+  async setDoorNavmesh(record: EspRecord, navm: number, triangle: number): Promise<void> {
+    this.assertOwn(record);
+    const subs = await recordSubrecords(record);
+    const field = {
+      type: 'XNDP',
+      data: new BinaryWriter(8).u32(navm).i16(triangle).u16(0).toUint8Array(),
+    };
+    const at = subs.findIndex((x) => x.type === 'XNDP');
+    if (at !== -1) subs[at] = field;
+    else {
+      // the field order of xEdit's definition: XNDP comes before these
+      const after = subs.findIndex((x) => FIELDS_AFTER_XNDP.has(x.type));
+      subs.splice(after === -1 ? subs.length : after, 0, field);
+    }
+    record.data = writeSubrecords(subs);
+    record.flags &= ~RecordFlags.compressed;
   }
 
   /** Move/rescale an existing REFR (must belong to this plugin's own records, D22). */

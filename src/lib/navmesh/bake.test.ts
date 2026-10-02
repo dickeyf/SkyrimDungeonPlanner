@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Vec3 } from '../catalogue/types';
-import { bake, splitEdges, type BakeTile } from './bake';
+import { bake, dropSmallIslands, splitEdges, type BakeTile } from './bake';
 import { buildNavMesh, triangleAdjacency } from './build';
 
 /** A counter-clockwise rectangle ring at height z (z1 at the +Y side for a ramp). */
@@ -186,5 +186,26 @@ describe('bake triangle quality', () => {
       }
     });
     expect(r.triangles).toHaveLength(r.vertices.length - 2); // one polygon, no hole
+  });
+});
+
+describe('dropSmallIslands', () => {
+  const floor = () =>
+    bake(
+      [tile('A', [rect(0, 256, 0, 256)]), tile('B', [rect(0, 32, 0, 32)], [512, 0, 64])],
+      {},
+      { origin: [0, 0], cell: 128 },
+    );
+
+  it('leaves out a small group of triangles apart from the rest', () => {
+    const r = dropSmallIslands(floor(), 128 * 128);
+    expect(new Set(r.tileOf)).toEqual(new Set(['A']));
+    expect(r.vertices.every((p) => p[0] <= 256)).toBe(true);
+    expect(() => buildNavMesh(1, r.vertices, r.triangles)).not.toThrow();
+  });
+
+  it('keeps an island touching a NavMesh already there', () => {
+    const r = dropSmallIslands(floor(), 128 * 128, (p) => p[0] >= 512);
+    expect(new Set(r.tileOf)).toEqual(new Set(['A', 'B']));
   });
 });

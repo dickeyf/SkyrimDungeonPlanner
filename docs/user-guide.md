@@ -126,7 +126,7 @@ the tiles (the piece list is hidden):
   triangles in the view, to make it active. **Wipe** empties a record.
 - Select **triangles**, **edges** or **vertices**: click, Shift+click to add or remove,
   Shift+drag a rectangle. **Del** deletes the selected triangles, or those using a selected edge
-  or vertex. Ctrl+Z / Ctrl+Y undo and redo; **Write NavMesh changes** (Ctrl+S) saves them, with
+  or vertex. Ctrl+Z / Ctrl+Y undo and redo; **Write NavMesh** (Ctrl+S) saves them, with
   a backup.
 - With **vertices**, the selection may span the cell's NavMesh records. **Merge vertices** (M)
   merges the selected vertices into one, at their mean: use it to weld a red border, two vertices
@@ -144,11 +144,23 @@ the tiles (the piece list is hidden):
 - **Locked**: once you finish a cell's NavMesh by hand, lock it: Replace and Clear are then
   disabled for that cell.
 
-Each tool first shows a **preview** (the cell's NavMesh as it would be, and a summary); nothing
-is written until **Write NavMesh**, which makes a backup first. Red marks are new borders next to
-a NavMesh that could not be welded to it (along another NavMesh record of the cell, for
-instance): link them in the Creation Kit. Then open the plugin in the Creation Kit and
-**Finalize** the NavMesh (door links, cover) before testing in game.
+Each tool first shows a **preview** (the cell's NavMesh as it would be, and a summary).
+**Apply** keeps it as an edit, undoable like the others; nothing is written until **Write
+NavMesh**, which makes a backup first. Red marks are new borders next to a NavMesh that could
+not be welded to it (along another NavMesh record of the cell, for instance): merge their
+vertices or add triangles. Floor patches apart from the rest and smaller than a grid cell (the
+top of a plinth) are left out of a bake.
+
+**Finalize** (once the NavMesh is written) links the cell's load doors to the NavMesh and
+updates the plugin's `NAVI` record, as the Creation Kit's Finalize does: an NPC can then follow
+you through a door. Cover is not computed, and a door of a master plugin (an exterior door, for
+instance) is left to the Creation Kit's Finalize. Do not keep the plugin open in the Creation
+Kit while the tool writes it: reload it there afterwards.
+
+Cell EditorIDs are not case sensitive and must be unique across the masters too: Skyrim.esm
+already has cells such as `NavmeshTest`; the Creation Kit renames a duplicate
+(`...DUPLICATE003`). **New cell** refuses such a name (the masters are read once, a few
+seconds for Skyrim.esm). Prefix your EditorIDs with your mod's own prefix.
 
 ## Saving and the Creation Kit
 

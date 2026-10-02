@@ -125,12 +125,34 @@ NavMeshes of Skyrim.esm):
   triangles, at most 12 (exact on all 1,526 meshes; cell contents match on two thirds of them,
   the rest differ on border cases, harmless for a search grid).
 
-Edge links, door links and cover are left empty: the CK's Finalize adds door links and cover and
-writes the `NAVI` record, and keeps a generated NAVM otherwise unchanged (R1, V2 step 3).
+Edge links, door links and cover are left empty: Finalize (the CK's, or the tool's, below) adds
+door links and writes the `NAVI` record, and keeps a generated NAVM otherwise unchanged (R1, V2
+step 3).
 `Plugin.addNavm` adds the record to the cell's temporary children, like a reference, with a new
 FormID; `Plugin.setNavm` replaces an own NAVM's `NVNM` field, keeping the others (a compressed
 record is written back uncompressed); `Plugin.cellNavms` lists a cell's NAVMs. The level store
 exposes them as `readNavMeshes` and the `navmesh` edit.
+
+## Finalize (`navmesh/finalize.ts`, `format/esp/navi.ts`, V2 step 16)
+
+What the CK's Finalize writes, measured on Skyrim.esm and on a plugin it finalized:
+
+- **Door links**: a load door (a reference with XTEL) is linked to the triangle containing its
+  arrival marker, seen from above; the marker is the position stored in the XTEL of the door
+  leading to it. The triangle gets flag `0x400`, the NAVM a door link (triangle, CRC
+  `0xE48B73F3` "PathingDoor", door), the door an `XNDP` (NAVM, triangle, 2 unused bytes).
+  `finalizeCell` falls back on the nearest triangle centre within 128 units, and rebuilds the
+  door links from scratch.
+- **NAVI** (one record, the master's `0x00012FB4`, overridden by a plugin): `NVER`, one `NVMI`
+  per NavMesh, `NVPP` (precomputed paths, copied unchanged from the master) and `NVSI`. An NVMI
+  holds the NavMesh, flags (`0x20` island, `0x40` not edited), its vertices' mean, a preferred
+  share, the NavMeshes it links to, preferred links, doors (CRC, door), island data (bounds,
+  triangles, vertices) and the pathing cell (CRC `0xA5E9A03C`, then the cell or the worldspace
+  grid). A NavMesh the cell's largest one cannot reach through edge links is an island.
+- `EspLevelStore.finalize` writes the cell's NAVMs, the XNDP of its own doors and the NAVI
+  override: entries of other cells kept, the cell's replaced; a plugin without NAVI starts from
+  the master's (`MasterNavi`, read by the editor from the first master that has one).
+  `Plugin.setNavi` places a new NAVI top group just before CELL (xEdit's group order).
 
 ## Editing a NavMesh (`navmesh/pick.ts`, V2)
 

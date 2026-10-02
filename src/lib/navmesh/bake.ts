@@ -624,3 +624,56 @@ function delaunayFlips(
     if (flipped === 0) return;
   }
 }
+
+/**
+ * Leaves out the small islands of a bake: the groups of triangles sharing no vertex with the
+ * rest whose area (in plan) is below `minArea`, unless `keep` holds for one of their vertices
+ * (a group touching a NavMesh already there fills a gap and is welded to it). Such islands are
+ * floor no actor can reach, the top of a plinth or a recess in a wall.
+ */
+export function dropSmallIslands(
+  result: BakeResult,
+  minArea: number,
+  keep: (p: Vec3) => boolean = () => false,
+): BakeResult {
+  const parent = result.vertices.map((_, i) => i);
+  const find = (v: number): number => {
+    while (parent[v] !== v) v = parent[v] = parent[parent[v]!]!;
+    return v;
+  };
+  for (const [a, b, c] of result.triangles) {
+    parent[find(b)] = find(a);
+    parent[find(c)] = find(a);
+  }
+  const area = new Map<number, number>();
+  for (const t of result.triangles) {
+    const [a, b, c] = t.map((v) => result.vertices[v]!) as [Vec3, Vec3, Vec3];
+    const s = Math.abs((b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0])) / 2;
+    area.set(find(t[0]), (area.get(find(t[0])) ?? 0) + s);
+  }
+  const kept = new Set<number>();
+  for (const [root, a] of area) if (a >= minArea) kept.add(root);
+  result.vertices.forEach((p, i) => {
+    if (keep(p)) kept.add(find(i));
+  });
+  const stays = result.triangles.map((t) => kept.has(find(t[0])));
+  if (stays.every(Boolean)) return result;
+  const index = new Map<number, number>();
+  const vertices: Vec3[] = [];
+  const triangles: TriangleIndices[] = [];
+  const tileOf: string[] = [];
+  result.triangles.forEach((t, i) => {
+    if (!stays[i]) return;
+    triangles.push(
+      t.map((v) => {
+        if (!index.has(v)) {
+          index.set(v, vertices.length);
+          vertices.push(result.vertices[v]!);
+        }
+        return index.get(v)!;
+      }) as unknown as TriangleIndices,
+    );
+    tileOf.push(result.tileOf[i]!);
+  });
+  return { vertices, triangles, tileOf };
+}

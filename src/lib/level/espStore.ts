@@ -3,7 +3,19 @@ import { formIdIndex, fromFormKey, toFormKey } from '../format/esp/formId';
 import { Plugin, type CellEntry } from '../format/esp/plugin';
 import type { FormKey } from '../catalogue/types';
 import type { LevelEdit } from './edits';
-import type { LevelCell, LevelNavMesh, LevelRef, LevelStore } from './store';
+import type {
+  FinalizeReport,
+  LevelCell,
+  LevelNavMesh,
+  LevelRef,
+  LevelStore,
+  MasterNavi,
+} from './store';
+import type { Vec3 } from '../catalogue/types';
+import { decodeNvmi, encodeNvmi } from '../format/esp/navi';
+import { findSubrecord, recordSubrecords, type Subrecord } from '../format/esp/subrecords';
+import { BinaryWriter } from '../binary/BinaryWriter';
+import { finalizeCell } from '../navmesh/finalize';
 
 export class EspLevelStore implements LevelStore {
   private cells: Map<FormKey, CellEntry> | null = null;
@@ -126,6 +138,94 @@ export class EspLevelStore implements LevelStore {
       }
     }
     return added;
+  }
+
+  async finalize(
+    cell: FormKey,
+    masterNavi: () => Promise<MasterNavi | undefined>,
+  ): Promise<FinalizeReport> {
+    const entry = (await this.cellMap()).get(cell);
+    if (!entry) throw new Error(`cell ${cell} is not an interior cell of ${this.name}`);
+    const own = this.plugin.ownIndex;
+    const navms = await this.plugin.cellNavms(entry);
+    if (!navms.length) throw new Error('the cell has no NavMesh');
+    const foreign = navms.find((n) => formIdIndex(n.record.formId) !== own);
+    if (foreign)
+      throw new Error(
+        `NavMesh ${this.formKey(foreign.record.formId)} belongs to a master: finalize in the Creation Kit`,
+      );
+
+    // load doors: every reference with a teleport; the arrival marker of a door is in the
+    // XTEL of the door leading to it (any cell of the plugin, overrides included)
+    const teleports = new Map<number, { to: number; pos: Vec3 }>();
+    const records = new Map<number, (typeof navms)[number]['record']>();
+    for (const record of this.plugin.recordsOfType('REFR')) {
+      const xtel = findSubrecord(await recordSubrecords(record), 'XTEL');
+      if (!xtel || xtel.data.byteLength < 16) continue;
+      const v = new DataView(xtel.data.buffer, xtel.data.byteOffset, xtel.data.byteLength);
+      teleports.set(record.formId, {
+        to: v.getUint32(0, true),
+        pos: [v.getFloat32(4, true), v.getFloat32(8, true), v.getFloat32(12, true)],
+      });
+      records.set(record.formId, record);
+    }
+    const doors = (await this.plugin.cellRefs(entry))
+      .filter((r) => teleports.has(r.record.formId))
+      .map((r) => {
+        const back = teleports.get(teleports.get(r.record.formId)!.to);
+        return { ref: r.record.formId, pos: r.info.pos, ...(back ? { arrival: back.pos } : {}) };
+      });
+
+    const result = finalizeCell(
+      entry.record.formId,
+      navms.map((n) => ({ formId: n.record.formId, nav: n.nav })),
+      doors,
+    );
+    for (let i = 0; i < navms.length; i++)
+      await this.plugin.setNavm(navms[i]!.record, result.navms[i]!);
+    const masterDoors: FormKey[] = [];
+    for (const link of result.links) {
+      const record = records.get(link.ref)!;
+      if (formIdIndex(record.formId) !== own) masterDoors.push(this.formKey(record.formId));
+      else await this.plugin.setDoorNavmesh(record, link.navm, link.triangle);
+    }
+
+    // the NAVI override: the cell's entries replaced, the others kept as they are
+    const existing = this.plugin.navi();
+    let fields: Subrecord[];
+    let naviId: number;
+    if (existing) {
+      fields = await recordSubrecords(existing);
+      naviId = existing.formId;
+    } else {
+      const master = await masterNavi();
+      if (!master) throw new Error('no NAVI record found in the masters');
+      naviId = fromFormKey(master.key, this.plugin.masters, this.plugin.name);
+      fields = [
+        { type: 'NVER', data: new BinaryWriter(4).u32(master.version).toUint8Array() },
+        ...(master.nvpp ? [{ type: 'NVPP', data: master.nvpp }] : []),
+      ];
+    }
+    const cellId = entry.record.formId;
+    const kept = fields.filter((f) => {
+      if (f.type !== 'NVMI') return false;
+      const info = decodeNvmi(f.data);
+      // the cell's own entries are rewritten, those of NAVMs gone from it dropped
+      return !(info.parent.kind === 'cell' && info.parent.cell === cellId);
+    });
+    this.plugin.setNavi(naviId, [
+      ...fields.filter((f) => f.type === 'EDID' || f.type === 'NVER'),
+      ...kept,
+      ...result.infos.map((info) => ({ type: 'NVMI', data: encodeNvmi(info) })),
+      ...fields.filter((f) => !['EDID', 'NVER', 'NVMI'].includes(f.type)),
+    ]);
+    return {
+      navmeshes: navms.length,
+      doors: result.links.length,
+      missed: result.missed.map((id) => this.formKey(id)),
+      masterDoors,
+      islands: result.infos.filter((i) => i.island).length,
+    };
   }
 
   async addCell(editorId: string): Promise<FormKey> {
