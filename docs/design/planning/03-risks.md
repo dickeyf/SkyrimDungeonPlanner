@@ -230,5 +230,16 @@ room pieces around `ImpLRoomMid02`, with no seam in game, are not.
 
 ## Project risk
 
+### R17 – Textures in the browser
+Skyrim's diffuse textures are DDS (BC1, BC3, BC5, BC7) in the Textures BSAs. WebGL has BC1–BC3
+on desktop; BC7 needs an extension not always present, else a software decoder. A textured
+cell may hold hundreds of textures: load time and GPU memory must stay within a budget. Proof of
+concept: V3 step 3.
+
+### R18 – Two viewports
+A second WebGL view of the same scene (the inset camera) must not slow the top-down view down:
+one renderer and scene, two cameras and viewports, the inset drawn at its own rate; textures and
+clipping per view. V3 steps 1, 2.
+
 ### R8 – Ambition
 The full plan is very ambitious. Mitigation: narrow V1 (one kit, one Z, no NavMesh), structures designed broad, proofs of concept first. **So far**: V1 was built and released as 0.1.0 in four days (21–24 Sep 2026), every blocker for V1 proven first.
