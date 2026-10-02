@@ -234,7 +234,8 @@ room pieces around `ImpLRoomMid02`, with no seam in game, are not.
 Skyrim's diffuse textures are DDS (BC1, BC3, BC5, BC7) in the Textures BSAs. WebGL has BC1–BC3
 on desktop; BC7 needs an extension not always present, else a software decoder. A textured
 cell may hold hundreds of textures: load time and GPU memory must stay within a budget. Proof of
-concept: V3 step 3.
+concept: V3 step 3. **Result (2 Oct 2026)**: settled: the Imperial kit needs 37 BC1 / BC3
+textures, 31.5 MB, 0.6 s, sent compressed; BC1 to BC3 decoded in software only without S3TC.
 
 ### R18 – Two viewports
 A second WebGL view of the same scene (the inset camera) must not slow the top-down view down:

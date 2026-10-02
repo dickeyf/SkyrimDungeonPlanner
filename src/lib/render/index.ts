@@ -6,6 +6,7 @@
 export * from './CellScene';
 export * from './leakViews';
 export * from './meshCache';
+export * from './textureCache';
 export * from './sceneObjects';
 export * from './transform';
 export type { NavLayer } from './CellScene';

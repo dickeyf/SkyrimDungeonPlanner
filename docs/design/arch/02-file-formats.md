@@ -89,6 +89,17 @@ handle in the browser, a buffer in tests), so a 1 GB archive is never loaded who
 files are LZ4 **frames** (`compress/lz4.ts`): magic `0x184D2204`, frame descriptor, blocks with a
 `u32` size (bit 31 = stored uncompressed), end mark; checksums are not verified.
 
+## Textures (DDS): `format/dds`
+
+`parseDds` reads the 124-byte header and, when the fourCC is `DX10`, the DX10 header's DXGI
+format; it knows BC1 (DXT1), BC2 (DXT3), BC3 (DXT5), BC4, BC5 (ATI2), BC7 and 32-bit RGBA / BGRA,
+and slices the mip levels (largest first, `levelSize` per level: 4x4 blocks of 8 or 16 bytes).
+`decodeBc` decodes BC1 to BC3 into RGBA for a GPU without S3TC. `render/textureCache.ts` reads a
+NIF's texture path (`textures/...`, case-insensitive) from the Data view, through an archive index
+of the texture archives (`ArchiveIndex.build(..., 'textures')`), and makes one three.js texture
+per path: compressed data uploaded as is (S3TC, BPTC) when the GPU has the extension, decoded
+otherwise; sRGB, repeat wrapping, mipmaps.
+
 ## Meshes (NIF, Gamebryo 20.2.0.7, user version 12, BS version 100): `format/nif`
 
 A targeted reader (`NifFile.ts`): the header lists block types and **per-block sizes**, so any

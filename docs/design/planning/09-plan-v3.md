@@ -65,6 +65,13 @@ follows the player up the stairs and back down in game._
   measured.
 - **Done when**: an Imperial tile is drawn with its textures, and a 200-tile cell loads them in
   an acceptable time (target: a few seconds), within a memory budget written down.
+- **Result (2 Oct 2026)**: done (`poc/textures.html`, `format/dds`, `render/textureCache.ts`).
+  The user's GPU has S3TC, BC7 (BPTC) and BC5 (RGTC). The 435 models under
+  `meshes/dungeons/imperial/` use only 37 distinct diffuse textures, BC1 and BC3: all read,
+  parsed and uploaded in 0.6 s, 31.5 MB of GPU memory, compressed data sent as is. A cell reuses
+  them, so its size hardly matters. Budget written down: under 64 MB and 2 s per kit. Three paths
+  referenced by clutter models of the folder exist in no archive (dead references in the game
+  files); those parts keep their plain colour. The textured tiles look right to the user.
 
 ### Step 4 – Textured view in the editor
 - **Why**: the option itself (D66), in both viewports.

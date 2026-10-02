@@ -8,8 +8,11 @@ import { FileRangeSource } from '../format/bsa/RangeSource';
 import { archiveLoadOrder, type ArchiveEntry } from './archives';
 import type { Overlay } from './overlay';
 
-/** Archives that never hold meshes or plugins; skipped to save table reads. */
-const SKIP = /textures|sounds|voices|interface|animations|shaders/i;
+/** Archives that never hold meshes (or, for a texture index, textures); skipped to save reads. */
+const SKIP = {
+  meshes: /textures|sounds|voices|interface|animations|shaders/i,
+  textures: /meshes|sounds|voices|interface|animations|shaders/i,
+};
 
 export interface ArchiveHit {
   archive: ArchiveEntry;
@@ -25,8 +28,14 @@ export class ArchiveIndex {
     readonly archives: ArchiveEntry[],
   ) {}
 
-  static async build(overlay: Overlay, plugins: readonly string[]): Promise<ArchiveIndex> {
-    const archives = (await archiveLoadOrder(overlay, plugins)).filter((a) => !SKIP.test(a.name));
+  static async build(
+    overlay: Overlay,
+    plugins: readonly string[],
+    kind: keyof typeof SKIP = 'meshes',
+  ): Promise<ArchiveIndex> {
+    const archives = (await archiveLoadOrder(overlay, plugins)).filter(
+      (a) => !SKIP[kind].test(a.name),
+    );
     return new ArchiveIndex(overlay, archives);
   }
 
