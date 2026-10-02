@@ -15,13 +15,14 @@ your game folder is read in place and nothing is uploaded.
 5. [Placing and moving pieces](#placing-and-moving-pieces)
 6. [Marks: open faces, seams, mismatches, leaks, shared cells](#marks)
 7. [NavMesh](#navmesh)
-8. [Textures](#textures)
-9. [Camera view](#camera-view)
-10. [Saving and the Creation Kit](#saving-and-the-creation-kit)
-11. [New plugins and cells](#new-plugins-and-cells)
-12. [Settings](#settings)
-13. [Limits](#limits)
-14. [Troubleshooting](#troubleshooting)
+8. [Levels](#levels)
+9. [Textures](#textures)
+10. [Camera view](#camera-view)
+11. [Saving and the Creation Kit](#saving-and-the-creation-kit)
+12. [New plugins and cells](#new-plugins-and-cells)
+13. [Settings](#settings)
+14. [Limits](#limits)
+15. [Troubleshooting](#troubleshooting)
 
 ## Requirements
 
@@ -163,6 +164,14 @@ Cell EditorIDs are not case sensitive and must be unique across the masters too:
 already has cells such as `NavmeshTest`; the Creation Kit renames a duplicate
 (`...DUPLICATE003`). **New cell** refuses such a name (the masters are read once, a few
 seconds for Skyrim.esm). Prefix your EditorIDs with your mod's own prefix.
+
+## Levels
+
+When a cell spans several levels (stairs, ramps), a **Level** selector appears in the top bar:
+pick a level (or **Page Up** / **Page Down**) to see it alone, the levels below dimmed (or hidden
+with **hide below**) and the ones above hidden; **all** shows everything. Stairs and ramps show on
+every level they join. Only the shown level's pieces can be clicked. The camera view always shows
+every level.
 
 ## Textures
 

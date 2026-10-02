@@ -48,7 +48,12 @@ export interface SceneObject {
   color: string;
   /** Tiles are pickable; other objects are shown as-is. */
   pickable: boolean;
+  /** The grid levels (Z slices) it spans, lowest and highest (V3). */
+  levels?: [number, number];
 }
+
+/** How the levels below the active one are drawn (V3, D3). */
+export type BelowDisplay = 'dimmed' | 'hidden';
 
 /** Pointer event in the scene: the point on the grid plane and the pickable object under it. */
 /** A NavMesh layer drawn over the tiles. */
@@ -162,6 +167,9 @@ export class CellScene {
   private textureIndex: ArchiveIndex | null = null;
   private meshCache: MeshCache | null = null;
   private readonly texMaterials = new Map<string, MeshLambertMaterial>();
+  /** The active level (V3 step 5): above it hidden, below it dimmed or hidden; null: all. */
+  private level: number | null = null;
+  private below: BelowDisplay = 'dimmed';
 
   constructor(
     private readonly canvas: HTMLCanvasElement,
@@ -357,7 +365,8 @@ export class CellScene {
     const ray = new Raycaster(new Vector3(x, y, above), new Vector3(0, 0, -1));
     const hit = ray
       .intersectObjects(this.objects.children, false)
-      .find((h) => h.object.visible && (h.object as Object3D).userData.pickable);
+      // every level counts, hidden or not: the camera walks wherever there is floor
+      .find((h) => (h.object as Object3D).userData.pickable);
     return hit?.point.z;
   }
 
@@ -467,6 +476,7 @@ export class CellScene {
           color: o.color,
           modelPath: o.modelPath,
           plain: mesh.geometry,
+          levels: o.levels,
         };
         this.styleMesh(mesh);
         if (this.textures) void this.applyTexture(mesh);
@@ -526,6 +536,7 @@ export class CellScene {
         modelPath: o.modelPath,
         plain,
         tex,
+        levels: o.levels,
       };
       this.styleMesh(mesh);
       if (this.textures && changed) void this.applyTexture(mesh);
@@ -591,21 +602,50 @@ export class CellScene {
     this.requestRender();
   }
 
-  /** Material and visibility of a mesh from its colour, pickability and the display mode. */
-  private styleMesh(mesh: Mesh): void {
-    const { color, pickable } = mesh.userData as { color: string; pickable: boolean };
+  /**
+   * Show one level (V3 step 5): what lies above it is hidden in the top-down view, what lies
+   * below dimmed or hidden; a piece spanning several levels shows on each. Null shows all.
+   */
+  setLevel(level: number | null, below: BelowDisplay): void {
+    this.level = level;
+    this.below = below;
+    for (const child of this.objects.children) this.styleMesh(child as Mesh);
+    this.requestRender();
+  }
+
+  /**
+   * Material and visibility of a mesh from its colour, pickability, the display mode and,
+   * unless `allLevels` (the inset), the active level.
+   */
+  private styleMesh(mesh: Mesh, allLevels = false): void {
+    const { color, pickable, levels } = mesh.userData as {
+      color: string;
+      pickable: boolean;
+      levels?: [number, number];
+    };
+    let place: 'on' | 'above' | 'below' = 'on';
+    if (!allLevels && this.level !== null && levels) {
+      if (levels[0] > this.level) place = 'above';
+      else if (levels[1] < this.level) place = 'below';
+    }
+    mesh.userData.place = place;
+    if (place === 'above' || (place === 'below' && this.below === 'hidden')) {
+      mesh.visible = false;
+      return;
+    }
     if (this.selected.has(mesh)) {
       mesh.material = this.material(SELECTED_COLOR);
       mesh.visible = true;
       return;
     }
     const faded = !pickable && this.opaqueDisplay === 'faded';
+    const opacity = faded ? 0.12 : place === 'below' ? 0.3 : 1;
     const tex = this.textures
       ? (mesh.userData.tex as { texture: string; alpha: boolean }[] | undefined)
       : undefined;
     mesh.material = tex
-      ? tex.map((r) => this.texMaterial(r.texture, r.alpha, faded ? 0.12 : 1))
-      : this.material(color, faded ? 0.12 : 1);
+      ? tex.map((r) => this.texMaterial(r.texture, r.alpha, opacity))
+      : this.material(color, opacity);
     mesh.visible = pickable || this.opaqueDisplay !== 'hidden';
   }
 
@@ -777,6 +817,9 @@ export class CellScene {
       (o): o is NonNullable<typeof o> => !!o && o.visible,
     );
     for (const o of hidden) o.visible = false;
+    // the inset shows every level as it is
+    const levelled = this.level !== null;
+    if (levelled) for (const c of this.objects.children) this.styleMesh(c as Mesh, true);
     this.renderer.setScissorTest(true);
     this.renderer.setScissor(x, y, w, h);
     this.renderer.setViewport(x, y, w, h);
@@ -785,6 +828,7 @@ export class CellScene {
     const size = this.renderer.getSize(new Vector2());
     this.renderer.setViewport(0, 0, size.x, size.y);
     for (const o of hidden) o.visible = true;
+    if (levelled) for (const c of this.objects.children) this.styleMesh(c as Mesh);
   }
 
   /** Grid-plane point and pickable object under the pointer. */
@@ -799,7 +843,13 @@ export class CellScene {
     // top-down orthographic view: the ray is vertical, so x and y are those of its origin
     const world: Vec3 = [ray.ray.origin.x, ray.ray.origin.y, this.planeZ];
     const hits = ray.intersectObjects(this.objects.children, false);
-    const hit = hits.find((h) => (h.object as Object3D).userData.pickable && h.object.visible);
+    // only the active level's pieces are picked, not the dimmed ones below
+    const hit = hits.find(
+      (h) =>
+        (h.object as Object3D).userData.pickable &&
+        h.object.visible &&
+        h.object.userData.place !== 'below',
+    );
     return { world, key: hit ? (hit.object.userData.key as string) : null, shift: e.shiftKey };
   }
 

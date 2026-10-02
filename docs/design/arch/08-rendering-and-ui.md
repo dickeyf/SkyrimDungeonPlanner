@@ -19,6 +19,10 @@ and feeds it props.
   texture range, alpha-tested shapes included) and an array of materials shared per texture and
   opacity (`TextureCache`, see the file formats); the plain flat geometry is kept in the mesh's
   `userData` and comes back when the view is turned off. A selected tile stays plain white.
+- **Levels** (V3, D3, `setLevel`): each object carries the grid levels it spans; with an active
+  level, objects above it are hidden, those below dimmed or hidden, and only the active level's
+  pieces are picked. Visibility is per object, not a clipping plane, so stairs show whole on both
+  levels; the inset pass restyles every object without the level, then back.
 - **Objects**: tiles are pickable; other references (clutter, lights, markers, pieces outside
   the kit) can be shown, faded or hidden.
 - **Updates** (`syncObjects`): the objects are diffed by key. All geometries are loaded first,

@@ -2,7 +2,7 @@
 import type { Catalogue, FormKey, PieceCategory } from '../catalogue/types';
 import { modelArchivePath } from '../format/esp/stat';
 import type { LoadedCell } from '../level/loadCell';
-import { tileWorldPlacement, type EditTile, type Layout } from '../grid/edit';
+import { footprintCells, tileWorldPlacement, type EditTile, type Layout } from '../grid/edit';
 import type { GridAnchor } from '../grid/types';
 import type { GridSpec, SceneObject } from './CellScene';
 
@@ -49,6 +49,7 @@ export function sceneObjects(
       scale: o.ref.scale,
       color: CATEGORY_COLORS.opaque,
       pickable: false,
+      levels: levelOf(o.ref.pos[2], loaded.grid.anchor),
     });
   }
   return out;
@@ -57,6 +58,12 @@ export function sceneObjects(
 /** Grid covering the occupied cells plus a margin, at the anchor's Z. */
 /** Half-size, in cells, of the grid drawn around the origin of an empty cell. */
 const EMPTY_GRID = 16;
+
+/** The grid level (Z slice) a point lies on, for an object that is not a tile. */
+function levelOf(z: number, anchor: GridAnchor): [number, number] {
+  const k = Math.floor((z - anchor.origin[2]) / anchor.module.z);
+  return [k, k];
+}
 
 export function sceneGrid(loaded: LoadedCell, margin = 4): GridSpec | null {
   const cells = loaded.grid.tiles.flatMap((t) => t.occupied);
@@ -89,7 +96,9 @@ export function tileObject(
   anchor: GridAnchor,
 ): SceneObject {
   const p = tileWorldPlacement(tile, piece, anchor);
+  const ks = footprintCells(piece, tile.cell, tile.rotation).map((c) => c[2]);
   return {
+    levels: [Math.min(...ks), Math.max(...ks)],
     key: tile.key,
     modelPath: modelArchivePath(piece.model),
     pos: p.pos,

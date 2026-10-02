@@ -87,6 +87,7 @@
     tileObject,
     type Highlight,
     type NavLayer,
+    type BelowDisplay,
     type PointerInfo,
     type SceneHandlers,
   } from '$lib/render';
@@ -211,6 +212,45 @@
   const summary = $derived(ed.loaded ? summarizeCell(ed.loaded, pieces) : null);
   const pending = $derived(original && layout ? changes(original, layout) : null);
   const selectedTile = $derived(ed.selected ? layout?.tiles.get(ed.selected) : undefined);
+
+  // ---- levels (V3 step 5, D3): one level shown at a time, or all ----------------------------
+  /** The levels (Z slices) the layout's tiles span, lowest first. */
+  const levels = $derived(
+    [
+      ...new Set(
+        [...(layout?.tiles.keys() ?? [])].flatMap((key) => tileCells(key).map((c) => c[2])),
+      ),
+    ].sort((a, b) => a - b),
+  );
+  /** The active level; null shows every level, as before V3. */
+  let activeLevel = $state<number | null>(null);
+  let belowDisplay = $state<BelowDisplay>('dimmed');
+  // a new cell starts with every level shown
+  $effect(() => {
+    void ed.loaded?.cell;
+    activeLevel = null;
+  });
+
+  /** Page Up / Page Down: the next level up or down (from "all", the lowest or the highest). */
+  function stepLevel(dir: 1 | -1): void {
+    if (!levels.length) return;
+    if (activeLevel === null) {
+      activeLevel = dir > 0 ? levels[0]! : levels[levels.length - 1]!;
+      return;
+    }
+    const i = levels.indexOf(activeLevel);
+    const next = levels[i + dir];
+    if (next !== undefined) activeLevel = next;
+  }
+
+  /** The levels a tile spans, as text. */
+  function levelText(key: string): string {
+    const ks = tileCells(key).map((c) => c[2]);
+    if (!ks.length) return '';
+    const lo = Math.min(...ks);
+    const hi = Math.max(...ks);
+    return lo === hi ? `level ${lo}` : `levels ${lo} to ${hi}`;
+  }
 
   // ---- assistant -----------------------------------------------------------------------------
 
@@ -1570,6 +1610,11 @@
     if (target && ['INPUT', 'SELECT', 'TEXTAREA'].includes(target.tagName)) return;
     if (!history) return;
     const key = e.key.toLowerCase();
+    if (e.key === 'PageUp' || e.key === 'PageDown') {
+      stepLevel(e.key === 'PageUp' ? 1 : -1);
+      e.preventDefault();
+      return;
+    }
     if (navEdit) {
       if ((e.ctrlKey || e.metaKey) && key === 'z' && !e.shiftKey) navUndoStep();
       else if ((e.ctrlKey || e.metaKey) && (key === 'y' || (key === 'z' && e.shiftKey)))
@@ -1640,6 +1685,29 @@
         {/each}
       </select>
       <button disabled={ed.busy} onclick={newCell}>New cell...</button>
+      {#if levels.length > 1 || activeLevel !== null}
+        <label
+          class="group"
+          title="The level shown (Page Up / Page Down): above it hidden, below it dimmed"
+        >
+          Level
+          <select
+            value={activeLevel === null ? 'all' : String(activeLevel)}
+            onchange={(e) => {
+              const v = e.currentTarget.value;
+              activeLevel = v === 'all' ? null : Number(v);
+            }}
+          >
+            <option value="all">all</option>
+            {#each [...levels].reverse() as k (k)}<option value={String(k)}>{k}</option>{/each}
+          </select>
+          <input
+            type="checkbox"
+            checked={belowDisplay === 'hidden'}
+            onchange={(e) => (belowDisplay = e.currentTarget.checked ? 'hidden' : 'dimmed')}
+          /> hide below
+        </label>
+      {/if}
       {#if history}
         <span class="group">
           <button
@@ -1845,7 +1913,8 @@
             {:else if selectedTile}
               <b>{pieces.get(selectedTile.piece)?.editorId}</b>
               {selectedTile.origin ? '' : '(new)'}<br />
-              cell {selectedTile.cell.join(', ')}, rotation {selectedTile.rotation * 90}°<br />
+              cell {selectedTile.cell.join(', ')}, {levelText(selectedTile.key)}, rotation {selectedTile.rotation *
+                90}°<br />
               {#if selectedTile.own}
                 <button onclick={() => rotateSelected(1)}>Rotate (R)</button>
                 <button onclick={deleteSelected}>Delete (Del)</button>
@@ -2150,6 +2219,8 @@
           textures={() => ed.textureIndex()}
           selection={navEdit ? [] : ed.selection}
           navmesh={navLayers}
+          level={activeLevel}
+          below={belowDisplay}
           fitKey={ed.loaded.cell}
         />
       </div>

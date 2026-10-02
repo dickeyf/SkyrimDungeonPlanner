@@ -15,6 +15,7 @@
     type SceneHandlers,
     type NavLayer,
     type SceneObject,
+    type BelowDisplay,
   } from '$lib/render';
   import type { ArchiveIndex } from '$lib/vfs';
   import { PREF_KEYS, getPref, setPref } from '$lib/fs';
@@ -28,6 +29,8 @@
     meshes,
     textures,
     selection = [],
+    level = null,
+    below = 'dimmed',
     navmesh = null,
     fitKey,
   }: {
@@ -41,6 +44,9 @@
     textures?: () => Promise<ArchiveIndex>;
     /** Keys of the selected tiles. */
     selection?: readonly string[];
+    /** The active level (V3): above it hidden, below it dimmed or hidden; null shows all. */
+    level?: number | null;
+    below?: BelowDisplay;
     /** NavMesh layers drawn over the tiles (a preview, the NavMesh being edited). */
     navmesh?: readonly NavLayer[] | null;
     /** The view is re-framed whenever this value changes (a new cell was loaded). */
@@ -177,6 +183,10 @@
 
   $effect(() => {
     scene?.setHighlights(highlights);
+  });
+
+  $effect(() => {
+    scene?.setLevel(level, below);
   });
 
   $effect(() => {

@@ -104,6 +104,13 @@ does not merge two stacked floors (R7).
   puts it at eye level there.
 - **Done when**: on a vanilla two-level cell (Skyrim.esm), each level is seen alone, with the one
   below dimmed, and the stairs show in both.
+- **Result (2 Oct 2026)**: done, tested by the user on a cell of the test plugin (the editor opens
+  `.esp` files only). A "Level" selector (shown when the layout spans several levels) and Page Up
+  / Page Down; a scene object carries the levels it spans (`SceneObject.levels`: a tile's
+  footprint cells, another object's height) and `CellScene.setLevel` hides what is above,
+  dims (30 %) or hides what is below, and keeps the dimmed pieces from being picked. Per-object
+  visibility instead of a clipping plane: a piece spanning two levels shows whole on both. The
+  inset shows every level.
 
 ### Step 6 – Build on a level
 - **Why**: placing, moving and the assistant must work on the active level only.
