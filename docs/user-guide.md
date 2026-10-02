@@ -205,8 +205,9 @@ navmesh, doors' teleport links and everything else remain the CK's job.
   does not show heights, so take care where levels change.
 - The tool edits tiles only (the kit's structural pieces); everything else in a cell passes
   through untouched.
-- No props, lighting or door links; the NavMesh is baked and written, but still finalized
-  (door links, cover) in the Creation Kit.
+- No props or lighting. The NavMesh is baked, edited and finalized in the tool, but without
+  cover, and the side of a door that belongs to a master (an exterior door) is finalized in the
+  Creation Kit.
 - Texture continuity is checked near the floor (the opening's level) only.
 - ESL-flagged plugins are not supported.
 

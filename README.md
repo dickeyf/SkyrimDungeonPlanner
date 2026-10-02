@@ -4,10 +4,12 @@
 entirely in the browser (Chrome or Edge, no backend). Your game folder is read in place through
 the File System Access API; nothing is uploaded.
 
-V1 covers the Imperial kit on a single Z level: open or create a plugin and its interior cells,
+It covers the Imperial kit on a single Z level: open or create a plugin and its interior cells,
 place tiles on the kit's grid, and let the assistant offer only the pieces that fit every
 neighbour. Junctions are checked on the pieces' own mesh profiles (seams, mismatches, shared
-cells), and the result is written back into the plugin, with a backup, for the Creation Kit.
+cells), deeper for visible leaks, and optionally for texture continuity. The NavMesh is baked from
+the pieces' collision, edited by triangle, edge or vertex, and finalized (door links) in the tool.
+The result is written back into the plugin, with a backup, for the Creation Kit.
 
 ![The editor: a cell on the Imperial kit's grid, an open face and its compatible pieces](docs/img.png)
 
@@ -17,18 +19,17 @@ cells), and the result is written back into the plugin, with a backup, for the C
 - [Design documentation](docs/design/README.md)
   - [Architecture](docs/design/arch/README.md): structure, file formats, algorithms and
     concepts.
-  - [Planning](docs/design/planning/README.md): decisions, risks, roadmap, V1 step plan.
+  - [Planning](docs/design/planning/README.md): decisions, risks, roadmap, V1 and V2 step plans.
 
-## Limits of V1
+## Limits
 
 - **Imperial kit only**: other kits (Nordic, Dwemer, caves) are not supported yet.
 - **One level at a time**: ramps and stairs work, but the top-down view does not show heights.
 - **Tiles only**: the tool places the kit's structural pieces; clutter, lights, markers and
   anything else in a cell are shown and left untouched, never edited.
-- **No NavMesh, props, lighting or door links**: finish those in the Creation Kit (new cells get
-  a neutral default lighting).
-- **Seams are checked on the openings' outlines**: a gap elsewhere around a junction, or a
-  texture that does not continue, is not detected.
+- **No props or lighting**: finish those in the Creation Kit (new cells get a neutral default
+  lighting). The NavMesh has no cover yet, and a door of a master plugin is finalized in the CK.
+- **Texture continuity** is checked near the floor only.
 - **Chrome or Edge only** (File System Access API), **ESL-flagged plugins are refused**, and a
   plugin must not be saved from the Creation Kit while it has unsaved edits in the tool.
 

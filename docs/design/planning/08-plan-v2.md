@@ -307,3 +307,7 @@ after step 12; the V2 milestone (step 13) closes the version.
   texture marks. Frictions noted, fixed, then documentation (user guide, architecture) updated.
 - **Done when**: the criterion is met; the release version is proposed and confirmed (D63),
   tagged, and published.
+- **Result (1 Oct 2026)**: criterion met. The test dungeon gets its NavMesh in one bake (Fill,
+  Apply, Write NavMesh), finalized in the app (door links, NAVI) and opened by the CK without
+  errors; a hostile NPC follows the player through the dungeon and through its door; the leak and
+  texture marks of the working cell are flagged. No friction left open by the user's test.

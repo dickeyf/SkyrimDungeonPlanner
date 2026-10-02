@@ -50,8 +50,11 @@ CK. Released as 0.1.0.**
 - [x] "Edit NavMesh" mode: select, delete, wipe (30 Sep 2026)
 - [x] NavMesh edits: merge vertices, create triangles, join two NAVMs (1 Oct 2026)
 - [x] Finalize in the app: door links and NAVI entries, no cover (1 Oct 2026)
-- [ ] NavMesh editing and Finalize in the app (D65, V2 phase D)
-- [ ] Stitching to existing batches; locked flag
+- [x] Stitching to existing batches; locked flag (30 Sep 2026)
+- [ ] Cover (Finalize's third part), later
+
+**Milestone reached (1 Oct 2026): the test dungeon baked in one click, finalized in the app, an
+NPC follows the player through it in game. V2.**
 
 ## Phase 4 – Z
 - [ ] At least show a tile's level (see `05-ideas.md`), before the full slices
