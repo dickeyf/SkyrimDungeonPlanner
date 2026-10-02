@@ -7,6 +7,7 @@ import {
   AmbientLight,
   BoxGeometry,
   BufferGeometry,
+  CircleGeometry,
   Color,
   DirectionalLight,
   DoubleSide,
@@ -18,11 +19,15 @@ import {
   MeshBasicMaterial,
   MeshLambertMaterial,
   OrthographicCamera,
+  PerspectiveCamera,
   Points,
   PointsMaterial,
   Raycaster,
   Scene,
+  Shape,
+  ShapeGeometry,
   Vector2,
+  Vector3,
   WebGLRenderer,
   type Object3D,
 } from 'three';
@@ -74,6 +79,8 @@ export interface SceneHandlers {
   move?(info: PointerInfo): void;
   /** End of a drag started by `down`. */
   up?(info: PointerInfo): void;
+  /** The inset camera was moved, turned or raised from the top-down view. */
+  eye?(eye: Eye): void;
 }
 
 /** How objects that are not tiles (clutter, markers, custom pieces) are drawn. */
@@ -85,6 +92,27 @@ export interface GridSpec {
   /** Cell range to draw, [i0, i1) x [j0, j1). */
   range: [number, number, number, number];
 }
+
+/**
+ * The inset viewport's camera (V3, D67): where it stands and where it looks, as a heading
+ * around Z (radians, clockwise from north, +Y).
+ */
+export interface Eye {
+  pos: Vec3;
+  heading: number;
+}
+
+/** Eye level above the floor, in game units (a standing character's eyes). */
+export const EYE_HEIGHT = 120;
+
+/** The inset camera's vertical field of view, in degrees. */
+const EYE_FOV = 75;
+/** Size of the camera's shapes in the top-down view, in pixels. */
+const EYE_DISC = 9;
+const EYE_WEDGE = 46;
+const EYE_HANDLE = 6;
+/** Height step of the wheel over the camera, in game units. */
+const EYE_STEP = 16;
 
 /** A flat rectangle drawn over everything, e.g. an open face of the assistant. */
 export interface Highlight {
@@ -119,6 +147,14 @@ export class CellScene {
   /** World bounds of the drawn grid, to frame an empty cell. */
   private gridBounds: { minX: number; minY: number; maxX: number; maxY: number } | null = null;
   private readonly highlights = new Group();
+  /** The inset viewport (V3 step 1): a perspective camera, drawn in `insetBox`. */
+  private readonly eyeCamera = new PerspectiveCamera(75, 1, 4, 60000);
+  private eye: Eye | null = null;
+  /** The element the inset is drawn under (its box, relative to the canvas). */
+  private insetBox: HTMLElement | null = null;
+  /** The camera drawn in the top-down view (V3 step 2): disc, field-of-view wedge, handle. */
+  private readonly eyeShape = new Group();
+  private eyeDrag: 'move' | 'turn' | null = null;
 
   constructor(
     private readonly canvas: HTMLCanvasElement,
@@ -137,6 +173,9 @@ export class CellScene {
     this.camera.up.set(0, 1, 0);
     this.camera.position.set(0, 0, 50000);
     this.camera.lookAt(0, 0, 0);
+    this.eyeCamera.up.set(0, 0, 1);
+    this.buildEyeShape();
+    this.scene.add(this.eyeShape);
     this.controls = new MapControls(this.camera, canvas);
     this.controls.enableRotate = false;
     this.controls.screenSpacePanning = true;
@@ -147,6 +186,7 @@ export class CellScene {
     canvas.addEventListener('pointerdown', this.onPointerDown, { capture: true });
     canvas.addEventListener('pointermove', this.onPointerMove);
     canvas.addEventListener('pointerup', this.onPointerUp);
+    canvas.addEventListener('wheel', this.onWheel, { capture: true, passive: false });
     this.observer = new ResizeObserver(() => this.resize());
     this.observer.observe(canvas);
     this.resize();
@@ -284,6 +324,92 @@ export class CellScene {
     this.requestRender();
   }
 
+  /**
+   * Show the inset viewport under `box` (an element over the canvas), looking from `eye`; null
+   * hides it.
+   */
+  setInset(box: HTMLElement | null, eye: Eye | null): void {
+    this.insetBox = box;
+    this.eye = eye;
+    this.eyeShape.visible = !!eye && !!box;
+    if (eye) {
+      this.eyeShape.position.set(eye.pos[0], eye.pos[1], this.planeZ);
+      this.eyeShape.rotation.set(0, 0, -eye.heading);
+      const [x, y, z] = eye.pos;
+      this.eyeCamera.position.set(x, y, z);
+      this.eyeCamera.lookAt(new Vector3(x + Math.sin(eye.heading), y + Math.cos(eye.heading), z));
+    }
+    this.requestRender();
+  }
+
+  /**
+   * The floor height under a point: the highest tile surface below `above`, seen straight
+   * down; undefined when there is none.
+   */
+  floorAt(x: number, y: number, above: number): number | undefined {
+    const ray = new Raycaster(new Vector3(x, y, above), new Vector3(0, 0, -1));
+    const hit = ray
+      .intersectObjects(this.objects.children, false)
+      .find((h) => h.object.visible && (h.object as Object3D).userData.pickable);
+    return hit?.point.z;
+  }
+
+  /** The camera's shapes, one unit = one pixel (scaled with the zoom when drawn). */
+  private buildEyeShape(): void {
+    const mat = (color: string, opacity = 1) =>
+      new MeshBasicMaterial({ color, transparent: true, opacity, depthTest: false });
+    const half = ((EYE_FOV / 2) * Math.PI) / 180;
+    const wedge = new Shape();
+    wedge.moveTo(0, 0);
+    wedge.lineTo(-Math.sin(half) * EYE_WEDGE, Math.cos(half) * EYE_WEDGE);
+    wedge.lineTo(Math.sin(half) * EYE_WEDGE, Math.cos(half) * EYE_WEDGE);
+    wedge.closePath();
+    const parts: [Mesh, number][] = [
+      [new Mesh(new ShapeGeometry(wedge), mat('#ffd166', 0.35)), 0],
+      [new Mesh(new CircleGeometry(EYE_DISC, 24), mat('#ffd166')), 1],
+      [new Mesh(new CircleGeometry(EYE_DISC * 0.45, 16), mat('#16151b')), 2],
+      [new Mesh(new CircleGeometry(EYE_HANDLE, 16), mat('#ffd166')), 3],
+    ];
+    parts[3]![0].position.set(0, EYE_WEDGE, 0);
+    for (const [mesh, order] of parts) {
+      mesh.renderOrder = 40 + order;
+      this.eyeShape.add(mesh);
+    }
+    this.eyeShape.visible = false;
+  }
+
+  /** Which part of the camera's shapes is under a screen point, if any. */
+  private eyePart(e: { clientX: number; clientY: number }): 'move' | 'turn' | null {
+    if (!this.eye || !this.eyeShape.visible) return null;
+    const p = this.toScreen(this.eye.pos[0], this.eye.pos[1]);
+    const tip = this.toScreen(
+      this.eye.pos[0] + (Math.sin(this.eye.heading) * EYE_WEDGE) / this.camera.zoom,
+      this.eye.pos[1] + (Math.cos(this.eye.heading) * EYE_WEDGE) / this.camera.zoom,
+    );
+    if (Math.hypot(e.clientX - tip.x, e.clientY - tip.y) <= EYE_HANDLE + 4) return 'turn';
+    if (Math.hypot(e.clientX - p.x, e.clientY - p.y) <= EYE_DISC + 4) return 'move';
+    return null;
+  }
+
+  /** Client coordinates of a world point of the grid plane. */
+  private toScreen(x: number, y: number): { x: number; y: number } {
+    const v = new Vector3(x, y, this.planeZ).project(this.camera);
+    const r = this.canvas.getBoundingClientRect();
+    return { x: r.left + ((v.x + 1) / 2) * r.width, y: r.top + ((1 - v.y) / 2) * r.height };
+  }
+
+  /** Move, turn or raise the camera and tell the page. */
+  private updateEye(eye: Eye): void {
+    this.setInset(this.insetBox, eye);
+    this.handlers.eye?.(eye);
+  }
+
+  /** The centre of the drawn objects (or of the grid), for a first camera position. */
+  centre(): [number, number] | undefined {
+    const box = this.objectBounds();
+    return box ? [(box.minX + box.maxX) / 2, (box.minY + box.maxY) / 2] : undefined;
+  }
+
   /** Replace the highlight rectangles (drawn on top of the tiles, not pickable). */
   setHighlights(list: readonly Highlight[]): void {
     for (const child of [...this.highlights.children]) {
@@ -401,18 +527,8 @@ export class CellScene {
 
   /** Frame the whole cell. */
   fit(): void {
-    const box = { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity };
-    for (const child of this.objects.children) {
-      const m = (child as Mesh).matrix.elements;
-      box.minX = Math.min(box.minX, m[12]!);
-      box.maxX = Math.max(box.maxX, m[12]!);
-      box.minY = Math.min(box.minY, m[13]!);
-      box.maxY = Math.max(box.maxY, m[13]!);
-    }
-    if (!Number.isFinite(box.minX)) {
-      if (!this.gridBounds) return;
-      Object.assign(box, this.gridBounds); // empty cell: frame its grid
-    }
+    const box = this.objectBounds();
+    if (!box) return;
     const cx = (box.minX + box.maxX) / 2;
     const cy = (box.minY + box.maxY) / 2;
     this.camera.position.set(cx, cy, 50000);
@@ -423,6 +539,20 @@ export class CellScene {
     this.camera.updateProjectionMatrix();
     this.controls.update();
     this.requestRender();
+  }
+
+  /** Bounds of the placed objects' origins, else of the grid (an empty cell). */
+  private objectBounds(): { minX: number; minY: number; maxX: number; maxY: number } | null {
+    const box = { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity };
+    for (const child of this.objects.children) {
+      const m = (child as Mesh).matrix.elements;
+      box.minX = Math.min(box.minX, m[12]!);
+      box.maxX = Math.max(box.maxX, m[12]!);
+      box.minY = Math.min(box.minY, m[13]!);
+      box.maxY = Math.max(box.maxY, m[13]!);
+    }
+    if (Number.isFinite(box.minX)) return box;
+    return this.gridBounds ? { ...this.gridBounds } : null;
   }
 
   setOpaqueDisplay(display: OpaqueDisplay): void {
@@ -463,6 +593,7 @@ export class CellScene {
     this.canvas.removeEventListener('pointerdown', this.onPointerDown, { capture: true });
     this.canvas.removeEventListener('pointermove', this.onPointerMove);
     this.canvas.removeEventListener('pointerup', this.onPointerUp);
+    this.canvas.removeEventListener('wheel', this.onWheel, { capture: true });
     this.controls.dispose();
     this.clearObjects();
     this.setHighlights([]);
@@ -514,8 +645,41 @@ export class CellScene {
     if (this.frame) return;
     this.frame = requestAnimationFrame(() => {
       this.frame = 0;
+      // the camera's shapes keep their size on screen
+      this.eyeShape.scale.setScalar(1 / this.camera.zoom);
+      this.eyeShape.updateMatrixWorld();
       this.renderer.render(this.scene, this.camera);
+      this.renderInset();
     });
+  }
+
+  /**
+   * The inset, drawn into its box over the top-down view (one renderer, two cameras, R18): the
+   * tiles and other objects only, without the grid, marks, NavMesh or ghost.
+   */
+  private renderInset(): void {
+    if (!this.eye || !this.insetBox) return;
+    const c = this.canvas.getBoundingClientRect();
+    const b = this.insetBox.getBoundingClientRect();
+    const w = Math.round(b.width);
+    const h = Math.round(b.height);
+    if (w < 8 || h < 8) return;
+    const x = Math.round(b.left - c.left);
+    const y = Math.round(c.bottom - b.bottom); // WebGL counts from the bottom
+    this.eyeCamera.aspect = w / h;
+    this.eyeCamera.updateProjectionMatrix();
+    const hidden = [this.grid, this.highlights, this.navmesh, this.ghost, this.eyeShape].filter(
+      (o): o is NonNullable<typeof o> => !!o && o.visible,
+    );
+    for (const o of hidden) o.visible = false;
+    this.renderer.setScissorTest(true);
+    this.renderer.setScissor(x, y, w, h);
+    this.renderer.setViewport(x, y, w, h);
+    this.renderer.render(this.scene, this.eyeCamera);
+    this.renderer.setScissorTest(false);
+    const size = this.renderer.getSize(new Vector2());
+    this.renderer.setViewport(0, 0, size.x, size.y);
+    for (const o of hidden) o.visible = true;
   }
 
   /** Grid-plane point and pickable object under the pointer. */
@@ -536,6 +700,15 @@ export class CellScene {
 
   private readonly onPointerDown = (e: PointerEvent): void => {
     if (e.button !== 0) return;
+    // the inset camera's shapes come before anything else
+    const part = this.eyePart(e);
+    if (part) {
+      this.eyeDrag = part;
+      this.controls.enabled = false;
+      this.canvas.setPointerCapture(e.pointerId);
+      e.stopImmediatePropagation();
+      return;
+    }
     this.downAt = { x: e.clientX, y: e.clientY };
     if (this.handlers.down?.(this.info(e))) {
       this.dragging = true;
@@ -545,12 +718,33 @@ export class CellScene {
   };
 
   private readonly onPointerMove = (e: PointerEvent): void => {
+    if (this.eyeDrag && this.eye) {
+      const [x, y] = this.info(e).world;
+      const [ex, ey, ez] = this.eye.pos;
+      if (this.eyeDrag === 'turn') {
+        this.updateEye({ ...this.eye, heading: Math.atan2(x - ex, y - ey) });
+      } else {
+        // the camera follows the floor under it: up a ramp, down a step (not through a ceiling)
+        const floor = this.floorAt(x, y, ez + EYE_STEP * 4);
+        this.updateEye({ ...this.eye, pos: [x, y, floor === undefined ? ez : floor + EYE_HEIGHT] });
+      }
+      return;
+    }
+    this.canvas.style.cursor = this.eyePart(e) ? 'grab' : '';
     this.handlers.move?.(this.info(e));
   };
 
   /** A press and release without movement is a click; a claimed drag ends; else it was a pan. */
   private readonly onPointerUp = (e: PointerEvent): void => {
     if (e.button !== 0) return;
+    if (this.eyeDrag) {
+      this.eyeDrag = null;
+      this.controls.enabled = true;
+      if (this.canvas.hasPointerCapture(e.pointerId))
+        this.canvas.releasePointerCapture(e.pointerId);
+      this.downAt = null;
+      return;
+    }
     const info = this.info(e);
     if (this.dragging) {
       this.dragging = false;
@@ -564,5 +758,14 @@ export class CellScene {
       this.handlers.click(info);
     }
     this.downAt = null;
+  };
+
+  /** The wheel over the camera raises or lowers it, instead of zooming. */
+  private readonly onWheel = (e: WheelEvent): void => {
+    if (!this.eye || this.eyePart(e) !== 'move') return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    const [x, y, z] = this.eye.pos;
+    this.updateEye({ ...this.eye, pos: [x, y, z + (e.deltaY < 0 ? EYE_STEP : -EYE_STEP)] });
   };
 }

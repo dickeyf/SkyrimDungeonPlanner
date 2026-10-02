@@ -41,6 +41,7 @@ follows the player up the stairs and back down in game._
   camera stands at eye level above the floor under it by default.
 - **Done when**: the inset shows the working cell from a fixed camera, without slowing the
   top-down view down.
+- **Result (1 Oct 2026)**: done; the user found the top-down view as fluid as before.
 
 ### Step 2 – The camera in the top-down view
 - **Why**: the camera is placed where the designer works, not in a separate tool.
@@ -50,6 +51,7 @@ follows the player up the stairs and back down in game._
   follows live. Dropping the camera puts it at eye level above the floor there.
 - **Done when**: the camera is walked through the working cell from the top-down view (along the
   halls, into the rooms, up a ramp), and the inset follows smoothly.
+- **Result (1 Oct 2026)**: done, tested by the user.
 
 ## Phase B – Textured rendering
 

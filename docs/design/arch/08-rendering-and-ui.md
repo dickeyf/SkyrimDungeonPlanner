@@ -24,6 +24,15 @@ and feeds it props.
   mismatches, shared cells).
 - **Picking**: a raycast from the pointer; the pointer-down handler runs in the capture phase so
   dragging a selected tile can claim the gesture before the controls start panning.
+- **Camera viewport** (V3, D67): a perspective camera (`Eye`: position and heading around Z)
+  drawn in a square inset over the top right of the canvas, by the same renderer and scene in a
+  second scissored pass after the top-down one (one copy of every geometry, R18); the grid,
+  marks, NavMesh, ghost and the camera's own shapes are hidden for that pass. `CellView` places
+  an element over the inset, which keeps the pointer off the top-down view there and gives the
+  pass its box. In the top-down view the camera is a disc, a field-of-view wedge and a handle,
+  sized in pixels: dragging the disc moves it (it follows the floor under it at eye level,
+  `floorAt`, a ray straight down from just above it), the handle turns it, the wheel over the
+  disc raises it. These gestures are claimed in the capture phase, before the controls.
 - **Selection**: `CellScene.select(keys)` highlights every selected tile; the editor keeps the
   list (`editorStore.selection`), Shift+drag draws its rectangle and a dragged group its landing
   cells as highlights.

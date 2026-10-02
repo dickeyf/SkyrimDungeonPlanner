@@ -6,6 +6,7 @@ export const PREF_KEYS = {
   mo2Profile: 'mo2Profile',
   workPlugin: 'workPlugin',
   opaqueDisplay: 'opaqueDisplay',
+  insetOpen: 'insetOpen',
 } as const;
 
 /** Last cell opened in a plugin, remembered per plugin. */

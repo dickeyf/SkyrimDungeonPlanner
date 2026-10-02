@@ -15,11 +15,12 @@ your game folder is read in place and nothing is uploaded.
 5. [Placing and moving pieces](#placing-and-moving-pieces)
 6. [Marks: open faces, seams, mismatches, leaks, shared cells](#marks)
 7. [NavMesh](#navmesh)
-8. [Saving and the Creation Kit](#saving-and-the-creation-kit)
-9. [New plugins and cells](#new-plugins-and-cells)
-10. [Settings](#settings)
-11. [Limits](#limits)
-12. [Troubleshooting](#troubleshooting)
+8. [Camera view](#camera-view)
+9. [Saving and the Creation Kit](#saving-and-the-creation-kit)
+10. [New plugins and cells](#new-plugins-and-cells)
+11. [Settings](#settings)
+12. [Limits](#limits)
+13. [Troubleshooting](#troubleshooting)
 
 ## Requirements
 
@@ -161,6 +162,14 @@ Cell EditorIDs are not case sensitive and must be unique across the masters too:
 already has cells such as `NavmeshTest`; the Creation Kit renames a duplicate
 (`...DUPLICATE003`). **New cell** refuses such a name (the masters are read once, a few
 seconds for Skyrim.esm). Prefix your EditorIDs with your mod's own prefix.
+
+## Camera view
+
+The square in the top right corner of the view shows the cell from a camera standing in it, at
+eye level. In the top-down view the camera is drawn in yellow: drag its disc to move it (it
+follows the floor, up ramps and down steps), drag the round handle at the tip of its wedge to
+turn it, and use the wheel over the disc (or the ▲ ▼ buttons) to raise or lower it. The **–**
+button folds the view away; **Camera** brings it back.
 
 ## Saving and the Creation Kit
 
