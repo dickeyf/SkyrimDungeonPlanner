@@ -81,6 +81,10 @@ follows the player up the stairs and back down in game._
   textured as well.
 - **Done when**: the working cell is seen textured from above and in the inset, the marks stay
   readable, and turning the option off brings back the fast view at once.
+- **Result (2 Oct 2026)**: done. A "Textures" toggle over the view (off by default, remembered):
+  each piece gets its textured geometry (smooth normals, UVs, one group and material per texture
+  range, alpha-tested parts included), materials shared per texture; the inset follows. The user
+  found it fast and smooth, and moving around "as easy as in the game".
 
 ## Phase C – Z levels
 

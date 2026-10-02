@@ -16,6 +16,7 @@
     type NavLayer,
     type SceneObject,
   } from '$lib/render';
+  import type { ArchiveIndex } from '$lib/vfs';
   import { PREF_KEYS, getPref, setPref } from '$lib/fs';
 
   let {
@@ -25,6 +26,7 @@
     highlights = [],
     handlers,
     meshes,
+    textures,
     selection = [],
     navmesh = null,
     fitKey,
@@ -35,6 +37,8 @@
     highlights?: Highlight[];
     handlers: SceneHandlers;
     meshes: () => Promise<MeshCache>;
+    /** The texture archives, for the textured view. */
+    textures?: () => Promise<ArchiveIndex>;
     /** Keys of the selected tiles. */
     selection?: readonly string[];
     /** NavMesh layers drawn over the tiles (a preview, the NavMesh being edited). */
@@ -50,6 +54,8 @@
     (getPref(PREF_KEYS.opaqueDisplay) as OpaqueDisplay | undefined) ?? 'faded',
   );
   let fitted = '';
+  /** The textured view (V3, D66): off by default, remembered. */
+  let textured = $state(getPref(PREF_KEYS.textured) === '1');
   /** The inset viewport (V3): its box, whether it is open, and its camera. */
   let insetBox = $state<HTMLDivElement>();
   let insetOpen = $state(getPref(PREF_KEYS.insetOpen) !== '0');
@@ -190,6 +196,20 @@
   });
 
   $effect(() => {
+    const s = scene;
+    const on = textured;
+    setPref(PREF_KEYS.textured, on ? '1' : undefined);
+    if (!s) return;
+    if (!on || !textures) {
+      void s.setTextures(null);
+      return;
+    }
+    void textures()
+      .then((index) => s.setTextures(index))
+      .catch((e: Error) => (status = `textures: ${e.message}`));
+  });
+
+  $effect(() => {
     scene?.setOpaqueDisplay(opaque);
     setPref(PREF_KEYS.opaqueDisplay, opaque);
   });
@@ -230,6 +250,7 @@
   <div class="overlay">
     <span>{status}</span>
     <button onclick={() => scene?.fit()}>Fit</button>
+    {#if textures}<label><input type="checkbox" bind:checked={textured} /> Textures</label>{/if}
     <label>
       Other objects
       <select bind:value={opaque}>

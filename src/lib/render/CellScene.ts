@@ -33,7 +33,9 @@ import {
 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 import type { Vec3 } from '../catalogue/types';
+import type { ArchiveIndex } from '../vfs/archiveIndex';
 import type { MeshCache } from './meshCache';
+import { TextureCache } from './textureCache';
 import { gridLines, placementMatrix } from './transform';
 
 export interface SceneObject {
@@ -155,6 +157,11 @@ export class CellScene {
   /** The camera drawn in the top-down view (V3 step 2): disc, field-of-view wedge, handle. */
   private readonly eyeShape = new Group();
   private eyeDrag: 'move' | 'turn' | null = null;
+  /** The textured view (V3 step 4, D66): on when a texture cache is set. */
+  private textures: TextureCache | null = null;
+  private textureIndex: ArchiveIndex | null = null;
+  private meshCache: MeshCache | null = null;
+  private readonly texMaterials = new Map<string, MeshLambertMaterial>();
 
   constructor(
     private readonly canvas: HTMLCanvasElement,
@@ -444,6 +451,7 @@ export class CellScene {
     onProgress?: (done: number, total: number) => void,
   ): Promise<{ drawn: number; markers: number }> {
     this.clearObjects();
+    this.meshCache = cache;
     let done = 0;
     let markers = 0;
     await Promise.all(
@@ -453,8 +461,15 @@ export class CellScene {
         if (!geometry) markers++;
         mesh.matrixAutoUpdate = false;
         mesh.matrix.copy(placementMatrix(o.pos, o.rot, geometry ? o.scale : 1));
-        mesh.userData = { key: o.key, pickable: o.pickable, color: o.color };
+        mesh.userData = {
+          key: o.key,
+          pickable: o.pickable,
+          color: o.color,
+          modelPath: o.modelPath,
+          plain: mesh.geometry,
+        };
         this.styleMesh(mesh);
+        if (this.textures) void this.applyTexture(mesh);
         this.objects.add(mesh);
         this.byKey.set(o.key, mesh);
         onProgress?.(++done, list.length);
@@ -476,6 +491,7 @@ export class CellScene {
       list.map((o) => (o.modelPath ? cache.get(o.modelPath) : Promise.resolve(null))),
     );
     if (generation !== this.syncGeneration) return;
+    this.meshCache = cache;
     const wanted = new Set(list.map((o) => o.key));
     for (const [key, mesh] of this.byKey) {
       if (!wanted.has(key)) {
@@ -486,19 +502,33 @@ export class CellScene {
     }
     list.forEach((o, i) => {
       const geometry = geometries[i] ?? null;
+      const plain = geometry ?? MARKER;
       let mesh = this.byKey.get(o.key);
+      let changed = false;
       if (!mesh) {
-        mesh = new Mesh(geometry ?? MARKER);
+        mesh = new Mesh(plain);
         mesh.matrixAutoUpdate = false;
         this.objects.add(mesh);
         this.byKey.set(o.key, mesh);
-      } else if (mesh.geometry !== (geometry ?? MARKER)) {
-        mesh.geometry = geometry ?? MARKER;
+        changed = true;
+      } else if (mesh.userData.plain !== plain) {
+        // another model: back to its plain geometry until its textured one is ready
+        mesh.geometry = plain;
+        changed = true;
       }
       mesh.matrix.copy(placementMatrix(o.pos, o.rot, geometry ? o.scale : 1));
       mesh.matrixWorldNeedsUpdate = true;
-      mesh.userData = { key: o.key, pickable: o.pickable, color: o.color };
+      const tex: unknown = changed ? undefined : mesh.userData.tex;
+      mesh.userData = {
+        key: o.key,
+        pickable: o.pickable,
+        color: o.color,
+        modelPath: o.modelPath,
+        plain,
+        tex,
+      };
       this.styleMesh(mesh);
+      if (this.textures && changed) void this.applyTexture(mesh);
     });
     this.requestRender();
   }
@@ -570,7 +600,12 @@ export class CellScene {
       return;
     }
     const faded = !pickable && this.opaqueDisplay === 'faded';
-    mesh.material = this.material(color, faded ? 0.12 : 1);
+    const tex = this.textures
+      ? (mesh.userData.tex as { texture: string; alpha: boolean }[] | undefined)
+      : undefined;
+    mesh.material = tex
+      ? tex.map((r) => this.texMaterial(r.texture, r.alpha, faded ? 0.12 : 1))
+      : this.material(color, faded ? 0.12 : 1);
     mesh.visible = pickable || this.opaqueDisplay !== 'hidden';
   }
 
@@ -600,7 +635,76 @@ export class CellScene {
     this.setNavMesh(null);
     this.setGrid(null);
     for (const m of this.materials.values()) m.dispose();
+    for (const m of this.texMaterials.values()) m.dispose();
+    this.textures?.dispose();
     this.renderer.dispose();
+  }
+
+  /**
+   * Turn the textured view on (the texture archives to read from) or off (null). The pieces
+   * switch to their textured geometry as it loads; the plain view comes back at once.
+   */
+  async setTextures(index: ArchiveIndex | null): Promise<void> {
+    if (index === this.textureIndex) return;
+    this.textureIndex = index;
+    if (!index) {
+      this.textures = null;
+      for (const child of this.objects.children) {
+        const mesh = child as Mesh;
+        mesh.geometry = (mesh.userData.plain as BufferGeometry | undefined) ?? mesh.geometry;
+        this.styleMesh(mesh);
+      }
+      this.requestRender();
+      return;
+    }
+    if (!this.textures || this.texMaterials.size === 0) {
+      this.textures?.dispose();
+      this.textures = new TextureCache(index, this.renderer);
+      for (const m of this.texMaterials.values()) m.dispose();
+      this.texMaterials.clear();
+    }
+    await Promise.all(this.objects.children.map((c) => this.applyTexture(c as Mesh)));
+  }
+
+  /** Give a mesh its textured geometry and materials, when the textured view is on. */
+  private async applyTexture(mesh: Mesh): Promise<void> {
+    const path = mesh.userData.modelPath as string | undefined;
+    if (!this.textures || !this.meshCache || !path) return;
+    const textured = await this.meshCache.textured(path);
+    // the view was turned off, or the mesh got another model, while loading
+    if (!this.textures || mesh.userData.modelPath !== path) return;
+    if (textured) {
+      mesh.geometry = textured.geometry;
+      mesh.userData.tex = textured.ranges;
+    }
+    this.styleMesh(mesh);
+    this.requestRender();
+  }
+
+  /** A textured material, shared by every part with the same texture and opacity. */
+  private texMaterial(texture: string, alpha: boolean, opacity: number): MeshLambertMaterial {
+    const key = `${texture}/${alpha ? 'a' : ''}/${opacity}`;
+    let m = this.texMaterials.get(key);
+    if (!m) {
+      const material = new MeshLambertMaterial({
+        color: '#ffffff',
+        alphaTest: alpha ? 0.5 : 0,
+        transparent: opacity < 1,
+        opacity,
+        depthWrite: opacity === 1,
+      });
+      m = material;
+      this.texMaterials.set(key, material);
+      if (texture && this.textures)
+        void this.textures.get(texture).then((t) => {
+          if (t) material.map = t;
+          else material.color.set('#8a8a8a'); // missing: a neutral grey
+          material.needsUpdate = true;
+          this.requestRender();
+        });
+      else material.color.set('#8a8a8a');
+    }
+    return m;
   }
 
   private material(color: string, opacity = 1): MeshLambertMaterial {

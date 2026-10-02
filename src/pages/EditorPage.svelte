@@ -2147,6 +2147,7 @@
           highlights={[...highlights, ...selectionHighlights]}
           {handlers}
           meshes={() => ed.meshes()}
+          textures={() => ed.textureIndex()}
           selection={navEdit ? [] : ed.selection}
           navmesh={navLayers}
           fitKey={ed.loaded.cell}

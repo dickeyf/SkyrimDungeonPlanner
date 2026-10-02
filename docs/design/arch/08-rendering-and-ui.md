@@ -14,6 +14,11 @@ and feeds it props.
 - **Meshes** (`meshCache.ts`): one three.js geometry per model path, read once from the Data
   view (loose file, else the winning archive) and shared by every reference using it; shaded,
   untextured, coloured by category (V3). A missing mesh becomes a small marker.
+- **Textured view** (V3, D66, `setTextures`): with a texture archive index, each mesh takes
+  its model's textured geometry (`MeshCache.textured`: indexed, smooth normals, UVs, one group per
+  texture range, alpha-tested shapes included) and an array of materials shared per texture and
+  opacity (`TextureCache`, see the file formats); the plain flat geometry is kept in the mesh's
+  `userData` and comes back when the view is turned off. A selected tile stays plain white.
 - **Objects**: tiles are pickable; other references (clutter, lights, markers, pieces outside
   the kit) can be shown, faded or hidden.
 - **Updates** (`syncObjects`): the objects are diffed by key. All geometries are loaded first,

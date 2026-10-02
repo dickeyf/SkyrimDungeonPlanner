@@ -64,6 +64,8 @@ class EditorStore {
   private source: { info: OverlayFileInfo; stamp: FileStamp } | null = null;
   private meshCache: MeshCache | null = null;
   private meshCacheView: unknown = null;
+  private textureArchives: ArchiveIndex | null = null;
+  private textureArchivesView: unknown = null;
   /** What was read from each master, by lower-case file name. */
   private masterCache = new Map<string, MasterInfo>();
   message = $state('');
@@ -193,6 +195,20 @@ class EditorStore {
       this.meshCacheView = session.view;
     }
     return this.meshCache;
+  }
+
+  /** The texture archives of the current Data view, for the textured view (V3). */
+  async textureIndex(): Promise<ArchiveIndex> {
+    if (!session.view) throw new Error('no Data view');
+    if (!this.textureArchives || this.textureArchivesView !== session.view) {
+      this.textureArchives = await ArchiveIndex.build(
+        session.view.overlay,
+        session.view.plugins,
+        'textures',
+      );
+      this.textureArchivesView = session.view;
+    }
+    return this.textureArchives;
   }
 
   /** The analysed catalogue with the committed annotations applied. */
