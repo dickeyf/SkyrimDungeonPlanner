@@ -71,6 +71,12 @@ NPC follows the player through it in game. V2.**
 - [ ] Spriggit backend: read the mod's YAML/JSON folder, write the REFRs into it; masters always in binary
 - [ ] Check with Spriggit that the modified folder translates into a `.esp` identical to what the tool would have written
 
+## Nordic kit – V4, see `10-plan-v4.md`
+- [ ] R19 module, pivots and faces; R20 collision and floors
+- [ ] Several kits in one catalogue, annotations per kit (D68, D69)
+- [ ] Assistant, checks, levels and NavMesh on the Nordic kit
+- [ ] Transitions between kits (D54)
+
 ## Toward 1.0.0
 Every interior kit of the base `.esm` files (Nordic, Dwemer, caves...), with the deep junction
 check (R16) and texture continuity, Z levels (phase 4). See D63.

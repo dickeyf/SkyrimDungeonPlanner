@@ -242,5 +242,14 @@ A second WebGL view of the same scene (the inset camera) must not slow the top-d
 one renderer and scene, two cameras and viewports, the inset drawn at its own rate; textures and
 clipping per view. V3 steps 1, 2.
 
+### R19 – The Nordic kit's module and faces
+The Nordic meshes have never been measured: module, pivots, footprint rule and face profiles are
+unknown, and the kit is less regular than the Imperial one (curved walls, rubble, pieces off the
+grid). Proof of concept: V4 step 1.
+
+### R20 – Nordic collision and floors
+The walkable polygons read one Havok shape type and were tuned on Imperial floors; Nordic pieces
+may use other shapes and have uneven floors. V4 step 2.
+
 ### R8 – Ambition
 The full plan is very ambitious. Mitigation: narrow V1 (one kit, one Z, no NavMesh), structures designed broad, proofs of concept first. **So far**: V1 was built and released as 0.1.0 in four days (21–24 Sep 2026), every blocker for V1 proven first.

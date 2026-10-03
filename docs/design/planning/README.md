@@ -16,3 +16,5 @@ The design notes written while planning and building the tool, in reading order:
    check, basic NavMesh, NavMesh editing and Finalize.
 9. [V3 plan](09-plan-v3.md): the V3 steps (release 0.3.0): a camera viewport, textured
    rendering, Z levels.
+10. [V4 plan](10-plan-v4.md): the V4 steps (release 0.4.0): the Nordic kit, several kits in one
+    cell.
