@@ -23,7 +23,8 @@ jobs:
           cache: npm
       - run: npm ci
       - name: npm audit
-        run: npm audit --audit-level=high
+        # high and critical advisories fail the scan, unless reviewed in .audit-ignore.json
+        run: node scripts/audit.mjs
       - name: Trivy (dependencies, secrets, misconfigurations)
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:

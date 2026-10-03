@@ -23,7 +23,7 @@ Policy allowing only the app's own origin (it needs no network access).
 | --- | --- | --- |
 | `ci.yml` | push, pull request, `v*` tags | format check, lint, type check, unit tests, build |
 | `codeql.yml` | push, pull request, weekly | CodeQL static analysis, `security-and-quality` queries |
-| `security.yml` | push, pull request, weekly | `npm audit` (high and above), Trivy scan of dependencies, secrets and misconfigurations (fails on high or critical) |
+| `security.yml` | push, pull request, weekly | `npm audit` (high and above, through `scripts/audit.mjs`: an advisory reviewed in `.audit-ignore.json`, with its reason and a review date, is let through until that date), Trivy scan of dependencies, secrets and misconfigurations (fails on high or critical) |
 | `single-file.yml` | push to main, `v*` tags | builds `SkyrimDungeonPlanner.html` as an artifact; on a tag, attaches it to the release |
 | `docker.yml` | push, pull request, `v*` tags | builds the image, smoke-tests it on 8080, scans it with Trivy, pushes it to `ghcr.io/dickeyf/skyrimdungeonplanner` (not for pull requests) |
 

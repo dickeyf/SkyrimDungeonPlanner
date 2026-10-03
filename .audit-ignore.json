@@ -1,0 +1,7 @@
+[
+  {
+    "advisory": "https://github.com/advisories/GHSA-vfj7-8cjw-p6xm",
+    "reason": "braces, via vite-plugin-singlefile > micromatch: build-time only (the single-file build), never in the shipped app, and only fed the project's own file paths; no fixed version of braces exists yet (3.0.3 is the latest).",
+    "review": "2026-11-02"
+  }
+]
