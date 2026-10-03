@@ -158,6 +158,10 @@ does not merge two stacked floors (R7).
   picks on the active level (triangles of the levels below shown dimmed, not picked); the
   coverage test (D35) per level; Finalize unchanged.
 - **Done when**: the test dungeon is baked level by level and finalized from the editor.
+- **Result (2 Oct 2026)**: done, tested by the user. A NavMesh triangle's level comes from its
+  centre's height; with an active level, "Edit NavMesh" draws that level's triangles, the levels
+  below faint, and picks on that level only (`pickElement` / `elementsInBox` take an `allow`
+  filter); Fill and the tools without a selection work on the active level's tiles.
 
 ## Step 10 – V3 milestone
 - **What**: the success criterion above, on a new two-level test dungeon and on the working

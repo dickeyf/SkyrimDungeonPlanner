@@ -30,14 +30,19 @@ function segmentDistance(p: [number, number], a: Vec3, b: Vec3): number {
 }
 
 /** Every edge of the mesh once, by name. */
-export function edgesOf(nav: Mesh): Map<string, [number, number]> {
+export function edgesOf(
+  nav: Mesh,
+  allow: (triangle: number) => boolean = () => true,
+): Map<string, [number, number]> {
   const out = new Map<string, [number, number]>();
-  for (const t of nav.triangles)
+  for (const [i, t] of nav.triangles.entries()) {
+    if (!allow(i)) continue;
     for (let k = 0; k < 3; k++) {
       const u = t.vertices[k]!;
       const v = t.vertices[(k + 1) % 3]!;
       out.set(edgeName(u, v), u < v ? [u, v] : [v, u]);
     }
+  }
   return out;
 }
 
@@ -51,19 +56,21 @@ export function pickElement(
   x: number,
   y: number,
   tol: number,
+  /** Only these triangles (and their edges and vertices) can be picked (a level, V3). */
+  allow: (triangle: number) => boolean = () => true,
 ): number | string | undefined {
   const p: [number, number] = [x, y];
   const V = nav.vertices;
   if (kind === 'triangle') {
-    const i = nav.triangles.findIndex((t) =>
-      inside(p, V[t.vertices[0]]!, V[t.vertices[1]]!, V[t.vertices[2]]!),
+    const i = nav.triangles.findIndex(
+      (t, k) => allow(k) && inside(p, V[t.vertices[0]]!, V[t.vertices[1]]!, V[t.vertices[2]]!),
     );
     return i >= 0 ? i : undefined;
   }
   if (kind === 'vertex') {
     let best: number | undefined;
     let bestD = tol;
-    const used = new Set(nav.triangles.flatMap((t) => t.vertices));
+    const used = new Set(nav.triangles.flatMap((t, k) => (allow(k) ? t.vertices : [])));
     for (const v of used) {
       const d = Math.hypot(V[v]![0] - x, V[v]![1] - y);
       if (d <= bestD) {
@@ -75,7 +82,7 @@ export function pickElement(
   }
   let best: string | undefined;
   let bestD = tol;
-  for (const [name, [u, v]] of edgesOf(nav)) {
+  for (const [name, [u, v]] of edgesOf(nav, allow)) {
     const d = segmentDistance(p, V[u]!, V[v]!);
     if (d <= bestD) {
       bestD = d;
@@ -93,6 +100,7 @@ export function elementsInBox(
   y0: number,
   x1: number,
   y1: number,
+  allow: (triangle: number) => boolean = () => true,
 ): (number | string)[] {
   const V = nav.vertices;
   const inBox = (x: number, y: number) =>
@@ -102,17 +110,18 @@ export function elementsInBox(
     y <= Math.max(y0, y1);
   if (kind === 'triangle') {
     return nav.triangles.flatMap((t, i) => {
+      if (!allow(i)) return [];
       const cx = t.vertices.reduce((s, v) => s + V[v]![0], 0) / 3;
       const cy = t.vertices.reduce((s, v) => s + V[v]![1], 0) / 3;
       return inBox(cx, cy) ? [i] : [];
     });
   }
   if (kind === 'vertex') {
-    return [...new Set(nav.triangles.flatMap((t) => t.vertices))].filter((v) =>
+    return [...new Set(nav.triangles.flatMap((t, i) => (allow(i) ? t.vertices : [])))].filter((v) =>
       inBox(V[v]![0], V[v]![1]),
     );
   }
-  return [...edgesOf(nav)].flatMap(([name, [u, v]]) =>
+  return [...edgesOf(nav, allow)].flatMap(([name, [u, v]]) =>
     inBox((V[u]![0] + V[v]![0]) / 2, (V[u]![1] + V[v]![1]) / 2) ? [name] : [],
   );
 }

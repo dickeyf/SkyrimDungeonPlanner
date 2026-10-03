@@ -493,12 +493,26 @@
   const navGrid = $derived(anchor ? { origin: anchor.origin, module: anchor.module } : null);
 
   /** "Fill": bake the tiles no NavMesh of the cell covers yet (with a walkable area). */
+  /**
+   * The grid level of a NavMesh triangle (V3 step 9), from its centre's height: a staircase's
+   * triangles count with the floor they start from until three quarters of the way up.
+   */
+  function triangleLevel(nav: NavMeshData, t: number): number {
+    if (!anchor) return 0;
+    const z = nav.triangles[t]!.vertices.reduce((s, v) => s + nav.vertices[v]![2], 0) / 3;
+    return Math.floor((z - anchor.origin[2]) / anchor.module.z + 0.25);
+  }
+  /** The triangles of a NavMesh that can be picked: those of the active level, or all. */
+  const allowFor = (nav: NavMeshData) => (t: number) =>
+    activeLevel === null || triangleLevel(nav, t) === activeLevel;
+
   function fillNavMesh(): void {
     if (!layout || !ed.loaded || !navGrid) return;
     const footprints = [...layout.tiles.keys()].map((key) => ({ key, cells: tileCells(key) }));
     const covered = new Set(navNow.flatMap((n) => [...coveredTiles(n.nav, footprints, navGrid)]));
     const keys = footprints
       .map((f) => f.key)
+      .filter((key) => onLevel(tileCells(key)))
       .filter((key) => {
         const piece = pieces.get(layout!.tiles.get(key)!.piece);
         return !covered.has(key) && !!piece?.walkable?.length;
@@ -526,7 +540,9 @@
         for (const key of tilesInBox(c, c)) keys.push(key);
       }
     }
-    return keys.length ? [...new Set(keys)] : [...layout.tiles.keys()];
+    return keys.length
+      ? [...new Set(keys)]
+      : [...layout.tiles.keys()].filter((key) => onLevel(tileCells(key)));
   }
 
   function planNavMesh(mode: NavMode, only?: string[]): void {
@@ -768,8 +784,14 @@
       const tol = anchor ? anchor.module.xy / 10 : 12;
       let best: { id: string; d: number } | undefined;
       for (const n of navNow) {
-        const v = pickElement(n.nav, 'vertex', info.world[0], info.world[1], tol) as
-          number | undefined;
+        const v = pickElement(
+          n.nav,
+          'vertex',
+          info.world[0],
+          info.world[1],
+          tol,
+          allowFor(n.nav),
+        ) as number | undefined;
         if (v === undefined) continue;
         const p = n.nav.vertices[v]!;
         const d = Math.hypot(p[0] - info.world[0], p[1] - info.world[1]);
@@ -791,7 +813,8 @@
     }
     // a click on another NAVM's triangle makes it the active one
     const hit = (n: (typeof navNow)[number]) =>
-      pickElement(n.nav, 'triangle', info.world[0], info.world[1], 0) !== undefined;
+      pickElement(n.nav, 'triangle', info.world[0], info.world[1], 0, allowFor(n.nav)) !==
+      undefined;
     if (!activeNav || !hit(activeNav)) {
       const other = navNow.find(hit);
       if (other && other.key !== navActive) {
@@ -803,7 +826,7 @@
     const nav = navNow.find((n) => n.key === navActive)?.nav;
     if (!nav) return;
     const tol = anchor ? anchor.module.xy / 10 : 12;
-    const picked = pickElement(nav, navKind, info.world[0], info.world[1], tol);
+    const picked = pickElement(nav, navKind, info.world[0], info.world[1], tol, allowFor(nav));
     if (picked === undefined) {
       if (!info.shift) {
         navSel = [];
@@ -821,12 +844,12 @@
     const inside =
       navKind === 'vertex'
         ? navNow.flatMap((n) =>
-            elementsInBox(n.nav, 'vertex', from[0], from[1], to[0], to[1]).map(
+            elementsInBox(n.nav, 'vertex', from[0], from[1], to[0], to[1], allowFor(n.nav)).map(
               (v) => `${n.key}#${v}`,
             ),
           )
         : nav
-          ? elementsInBox(nav, navKind, from[0], from[1], to[0], to[1])
+          ? elementsInBox(nav, navKind, from[0], from[1], to[0], to[1], allowFor(nav))
           : [];
     navSel = [...new Set([...navSel, ...inside])];
     // a rectangle over tiles without NavMesh marks them for Bake
@@ -1044,15 +1067,31 @@
           line: '#b8dcff',
         },
       ];
-    const layers: NavLayer[] = navNow.map((n, i) => {
+    const layers: NavLayer[] = navNow.flatMap((n, i) => {
       const active = n.key === navActive;
-      return {
-        vertices: n.nav.vertices,
-        triangles: n.nav.triangles.map((t) => t.vertices),
-        fill: active ? '#ffb347' : NAV_COLORS[i % NAV_COLORS.length]!,
-        line: active ? '#ffe2b8' : '#b8dcff',
-        opacity: active ? 0.4 : 0.2,
-      };
+      const tris = n.nav.triangles.map((t, k) => ({ t, level: triangleLevel(n.nav, k) }));
+      const here = tris.filter((x) => activeLevel === null || x.level === activeLevel);
+      const below = activeLevel === null ? [] : tris.filter((x) => x.level < activeLevel!);
+      const out: NavLayer[] = [
+        {
+          vertices: n.nav.vertices,
+          triangles: here.map((x) => x.t.vertices),
+          fill: active ? '#ffb347' : NAV_COLORS[i % NAV_COLORS.length]!,
+          line: active ? '#ffe2b8' : '#b8dcff',
+          opacity: active ? 0.4 : 0.2,
+        },
+      ];
+      // the levels below, faint and without edges; not picked
+      if (below.length)
+        out.unshift({
+          vertices: n.nav.vertices,
+          triangles: below.map((x) => x.t.vertices),
+          fill: '#8a8a8a',
+          line: '#8a8a8a',
+          opacity: 0.08,
+          edges: false,
+        });
+      return out;
     });
     const nav = activeNav?.nav;
     if (nav && navSel.length && navKind !== 'vertex') {

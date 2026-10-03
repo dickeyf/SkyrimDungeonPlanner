@@ -33,6 +33,13 @@ describe('pickElement', () => {
     expect(pickElement(NAV, 'vertex', 97, 4, 8)).toBe(1);
     expect(pickElement(NAV, 'vertex', 50, 50, 8)).toBeUndefined();
   });
+
+  it('picks only the allowed triangles (the active level)', () => {
+    const upper = (t: number) => t >= 2;
+    expect(pickElement(NAV, 'triangle', 80, 10, 8, upper)).toBeUndefined();
+    expect(pickElement(NAV, 'vertex', 3, 3, 8, upper)).toBeUndefined();
+    expect(elementsInBox(NAV, 'triangle', 0, 0, 200, 100, upper)).toEqual([2, 3]);
+  });
 });
 
 describe('elementsInBox', () => {

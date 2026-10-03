@@ -136,6 +136,9 @@ the tiles (the piece list is hidden):
   at a time. **Create triangle** (T) adds a triangle on three selected vertices. When the
   vertices belong to two records, the smaller record is first joined into the larger one: the
   cell keeps a single NavMesh there.
+- With a **Level** chosen, the NavMesh of that level is drawn (the levels below faint) and picked,
+  and Fill, Bake, Replace and Clear work on that level's tiles; stacked floors are baked apart
+  and welded at the stairs.
 - A Shift+drag rectangle on floor without NavMesh draws a white **region** for Bake.
 
 - **Fill** bakes every tile no NavMesh covers yet.
