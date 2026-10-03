@@ -146,6 +146,11 @@ does not merge two stacked floors (R7).
   meets a floor (shared vertices, as at tile borders). Written as one NAVM (D36) and checked in
   the CK.
 - **Done when**: a two-level test bake is valid in the CK and an NPC walks up and down the stairs.
+- **Result (2 Oct 2026)**: done, directly in the editor's tools rather than a separate page (the
+  same code). `navmesh/levels.ts` (`bakeLevels`): one bake per level, a staircase or ramp with
+  the floor it starts from; the existing NavMesh is left out per level (its triangles within half
+  a level of that level's heights). The levels are welded in turn by `mergeNavMesh`, one NAVM.
+  Tested by the user: valid in the CK, an NPC follows up and down the stairs. R7 settled.
 
 ### Step 9 – NavMesh on several levels in the editor
 - **Why**: brings step 8 into the tools.

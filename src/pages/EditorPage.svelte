@@ -13,7 +13,8 @@
   import { editorStore as ed } from '$lib/editor/editorStore.svelte';
   import { leakChecker, type LeakVerdict } from '$lib/editor/leakChecker.svelte';
   import { textureChecker } from '$lib/editor/textureChecker.svelte';
-  import { bake, dropSmallIslands } from '$lib/navmesh/bake';
+  import { dropSmallIslands } from '$lib/navmesh/bake';
+  import { bakeLevels } from '$lib/navmesh/levels';
   import { buildNavMesh } from '$lib/navmesh/build';
   import {
     coveredTiles,
@@ -574,7 +575,9 @@
         const piece = tile && pieces.get(tile.piece);
         if (!tile || covered.has(key) || !piece?.walkable?.length) return [];
         const at = tileWorldPlacement(tile, piece, anchor!);
-        return [{ key, rings: piece.walkable, pos: at.pos, heading: at.rot[2] }];
+        // a staircase or ramp is baked with the floor it starts from (its lowest level)
+        const level = Math.min(...tileCells(key).map((c) => c[2]));
+        return [{ key, rings: piece.walkable, pos: at.pos, heading: at.rot[2], level }];
       });
       tileCount = tiles.length;
       const exclude = navmeshes.flatMap((n) =>
@@ -582,30 +585,37 @@
           (t) => t.vertices.map((v) => n.nav.vertices[v]!) as unknown as [Vec3, Vec3, Vec3],
         ),
       );
-      const raw = bake(
+      // one bake per level (V3, R7): stacked floors are never merged in plan
+      const byLevel = bakeLevels(
         tiles,
         {},
         { origin: [anchor.origin[0], anchor.origin[1]], cell: anchor.module.xy },
         exclude,
+        anchor.module.z / 2,
       );
       // floor patches apart from the rest and smaller than a grid cell (a plinth's top) are
-      // left out, unless they touch a NavMesh already there
+      // left out, unless they touch a NavMesh already there or another level's bake
+      const near = (pts: readonly Vec3[]) => (p: Vec3) =>
+        pts.some((q) => Math.hypot(q[0] - p[0], q[1] - p[1]) <= 1 && Math.abs(q[2] - p[2]) <= 64);
       const existing = navmeshes.flatMap((n) => n.nav.vertices);
-      const result = dropSmallIslands(raw, anchor.module.xy * anchor.module.xy, (p) =>
-        existing.some(
-          (q) => Math.hypot(q[0] - p[0], q[1] - p[1]) <= 1 && Math.abs(q[2] - p[2]) <= 64,
-        ),
-      );
-      islands = raw.triangles.length - result.triangles.length;
-      if (result.triangles.length) {
+      const results = byLevel
+        .map(({ result: raw }, i) => {
+          const others = byLevel.filter((_, j) => j !== i).flatMap((x) => x.result.vertices);
+          const kept = dropSmallIslands(
+            raw,
+            anchor!.module.xy * anchor!.module.xy,
+            (p) => near(existing)(p) || near(others)(p),
+          );
+          islands += raw.triangles.length - kept.triangles.length;
+          return kept;
+        })
+        .filter((r) => r.triangles.length);
+      if (results.length) {
         // the bake joins the own NAVM sharing the most vertices with it, else the largest own
         // one, else a new one; the others stay as they are
+        const allVertices = results.flatMap((r) => r.vertices);
         const touching = (n: (typeof navmeshes)[number]) =>
-          result.vertices.filter((p) =>
-            n.nav.vertices.some(
-              (q) => Math.hypot(q[0] - p[0], q[1] - p[1]) <= 1 && Math.abs(q[2] - p[2]) <= 64,
-            ),
-          ).length;
+          allVertices.filter(near(n.nav.vertices)).length;
         const scored = navmeshes.filter((n) => n.own).map((n) => ({ n, touch: touching(n) }));
         scored.sort(
           (x, y) => y.touch - x.touch || y.n.nav.triangles.length - x.n.nav.triangles.length,
@@ -613,28 +623,32 @@
         target = scored[0]?.n ?? null;
         const others = navmeshes.filter((n) => n !== target).flatMap((n) => n.nav.vertices);
         try {
-          const merged = mergeNavMesh(target?.nav ?? null, result, cellFormId, {
-            weld: 0.5,
-            step: 64,
-            others,
-          });
+          // each level welded in turn onto the NavMesh, at the top of its staircases
+          let nav = target?.nav ?? null;
+          baked = 0;
+          unlinked = [];
+          for (const result of results) {
+            const merged = mergeNavMesh(nav, result, cellFormId, { weld: 0.5, step: 64, others });
+            nav = merged.nav;
+            baked += merged.added;
+            unlinked.push(...merged.unlinked);
+          }
+          const final = nav!;
           // the same validity rules as a fresh NavMesh: no edge shared by three triangles
           buildNavMesh(
             cellFormId,
-            merged.nav.vertices,
-            merged.nav.triangles.map((t) => t.vertices),
+            final.vertices,
+            final.triangles.map((t) => t.vertices),
           );
-          baked = merged.added;
-          unlinked = merged.unlinked;
           if (target) {
-            writes[target.key] = { navm: target.key, nav: merged.nav };
-            navmeshes = navmeshes.map((n) => (n === target ? { ...n, nav: merged.nav } : n));
+            writes[target.key] = { navm: target.key, nav: final };
+            navmeshes = navmeshes.map((n) => (n === target ? { ...n, nav: final } : n));
           } else {
             // a new NAVM, written as such; its key lives only in the page
             let n = 1;
             while (`new-${n}` in navWork) n++;
-            writes[`new-${n}`] = { navm: `new-${n}`, nav: merged.nav };
-            navmeshes = [...navmeshes, { key: `new-${n}`, own: true, nav: merged.nav }];
+            writes[`new-${n}`] = { navm: `new-${n}`, nav: final };
+            navmeshes = [...navmeshes, { key: `new-${n}`, own: true, nav: final }];
           }
         } catch (e) {
           blocked ??= `the result is not a valid NAVM: ${(e as Error).message}`;

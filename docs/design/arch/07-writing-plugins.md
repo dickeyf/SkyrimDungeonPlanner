@@ -110,6 +110,14 @@ stay inside the cell. One triangulation per tile (long fans along the walls) and
 whole selection (slivers across rooms) were tried first. The editor previews the result
 (`CellScene.setNavMesh`); writing it is the next step.
 
+## Several levels (`navmesh/levels.ts`, V3, R7)
+
+The bake works in plan, so stacked floors are baked apart: `bakeLevels` groups the tiles by
+their lowest level (a staircase goes with the floor it starts from), bakes each group with the
+existing triangles of its heights left out (within half a grid level), and the editor welds the
+results onto the NavMesh one after the other with `mergeNavMesh`; the top of a staircase welds
+to the floor above like any border.
+
 ## NavMesh records (`navmesh/build.ts`, `Plugin.addNavm`, V2)
 
 `buildNavMesh(cell, vertices, triangles)` turns a triangle mesh into the `NVNM` data of an

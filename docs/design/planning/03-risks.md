@@ -194,7 +194,7 @@ Opening narrower than the neighbor's edge; neighbor's obstacle within a margin o
 ## Later
 
 ### R7 – Stacked volumes
-The 2D union does not tolerate two stacked floors: handle per layer, connect at the stairs. The UX of Z slices and of pieces straddling two slices remains to be designed.
+The 2D union does not tolerate two stacked floors: handle per layer, connect at the stairs. The UX of Z slices and of pieces straddling two slices remains to be designed. **Result (2 Oct 2026)**: settled in V3 (steps 5, 8): one bake per level, welded at the stairs; tested in game.
 
 ### R12 – Obstacles in the NavMesh
 Footprints of props/clutter/furniture; movable objects (Havok) to ignore; volume of data to produce.
