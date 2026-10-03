@@ -4,7 +4,8 @@
  * back into the plugin (step 15).
  */
 import { applyAnnotations } from '$lib/catalogue/annotations';
-import { IMPERIAL_KIT } from '$lib/catalogue/kits';
+import { KITS } from '$lib/catalogue/kits';
+import { mergeCatalogues } from '$lib/catalogue/merge';
 import type { Catalogue } from '$lib/catalogue/types';
 import { PREF_KEYS, ensureAccess, getPref, lastCellPref, readAll, setPref } from '$lib/fs';
 import type { LevelEdit } from '$lib/level';
@@ -212,28 +213,29 @@ class EditorStore {
     return this.textureArchives;
   }
 
-  /** The analysed catalogue with the committed annotations applied. */
+  /**
+   * Every kit's analysed catalogue with its committed annotations applied, merged into one
+   * (V4 step 4, D68): a cell may use the pieces of any kit sharing the module.
+   */
   async finalCatalogue(): Promise<Catalogue> {
-    // the editor works on the Imperial kit until several kits are supported (V4 step 4)
-    const analysis =
-      catalogueStore.analysisOf(IMPERIAL_KIT) ??
-      (await catalogueStore.analyse(false, IMPERIAL_KIT));
-    if (!analysis) throw new Error(catalogueStore.error || 'catalogue analysis unavailable');
-    this.catalogue = applyAnnotations(
-      analysis.catalogue,
-      annotationStore.currentOf(IMPERIAL_KIT.kit),
-    ).catalogue;
-    return this.catalogue;
+    for (const kit of KITS) {
+      if (catalogueStore.analysisOf(kit)) continue;
+      if (!(await catalogueStore.analyse(false, kit)))
+        throw new Error(catalogueStore.error || `${kit.kit} catalogue analysis unavailable`);
+    }
+    this.refreshCatalogue();
+    return this.catalogue!;
   }
 
   /** Re-apply the current annotations after an edit made from the editor. */
   refreshCatalogue(): void {
-    const analysis = catalogueStore.analysisOf(IMPERIAL_KIT);
-    if (analysis)
-      this.catalogue = applyAnnotations(
-        analysis.catalogue,
-        annotationStore.currentOf(IMPERIAL_KIT.kit),
-      ).catalogue;
+    const parts = KITS.flatMap((kit) => {
+      const analysis = catalogueStore.analysisOf(kit);
+      return analysis
+        ? [applyAnnotations(analysis.catalogue, annotationStore.currentOf(kit.kit)).catalogue]
+        : [];
+    });
+    if (parts.length) this.catalogue = mergeCatalogues(parts);
   }
 
   /** The cell to open first in the working plugin: the last one opened, else the first. */

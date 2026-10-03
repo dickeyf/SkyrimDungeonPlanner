@@ -104,6 +104,14 @@ opening's outline: floor line, jambs, lintel, arch.
 apart); junctions are therefore judged again, strictly, on the actual profiles (see
 [Assistant and junctions](06-assistant-and-junctions.md)).
 
+## Several kits (`kits.ts`, `merge.ts`, V4, D68, D69)
+
+`KITS` lists the kit definitions (Imperial, Nordic); a kit may lower the opening threshold
+(`minOpenVerts`) for sparse meshes. The catalogue store keeps the stats and analysis per kit,
+the annotation store one set per kit (`data/annotations/<kit>.json`). The editor merges the
+annotated catalogues into one (`mergeCatalogues`); connection type ids carry their kit, so faces
+of two kits never mate; the kits must share their module, a cell having one grid.
+
 ## Annotations (`annotations.ts`, D12, D46, D56, V9)
 
 Human decisions only, never game data: everything geometric is recomputed from the user's

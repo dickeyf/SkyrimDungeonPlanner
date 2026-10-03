@@ -93,7 +93,7 @@
     type SceneHandlers,
   } from '$lib/render';
   import { setOverlap } from '$lib/catalogue/annotationEdits';
-  import { IMPERIAL_KIT } from '$lib/catalogue/kits';
+  import { KITS } from '$lib/catalogue/kits';
   import { annotationStore } from '$lib/session/annotationStore.svelte';
   import { catalogueStore } from '$lib/session/catalogueStore.svelte';
   import { session } from '$lib/session/session.svelte';
@@ -120,6 +120,8 @@
   let message = $state('');
   let filter = $state('');
   let category = $state<PieceCategory | 'all'>('all');
+  /** The palette's kit (V4): every kit, or one. */
+  let kitFilter = $state<string>('all');
   let showFaces = $state(true);
   let activeFace = $state<string | null>(null);
 
@@ -204,7 +206,10 @@
   const layout = $derived(history?.present ?? null);
   const models = $derived(
     new Map(
-      (catalogueStore.statsOf(IMPERIAL_KIT)?.stats ?? []).map((st) => [st.formKey, st.model]),
+      KITS.flatMap((k) => catalogueStore.statsOf(k)?.stats ?? []).map((st) => [
+        st.formKey,
+        st.model,
+      ]),
     ),
   );
   const objects = $derived(
@@ -1278,7 +1283,7 @@
   /** Face profiles from the mesh analysis, by `EditorID:dir` (rotation 0). */
   const profiles = $derived(
     new Map(
-      (catalogueStore.analysisOf(IMPERIAL_KIT)?.faces ?? []).map((f) => [
+      KITS.flatMap((k) => catalogueStore.analysisOf(k)?.faces ?? []).map((f) => [
         `${f.piece}:${f.opening.dir}`,
         f.profile,
       ]),
@@ -1312,7 +1317,8 @@
     const eb = tb && pieces.get(tb.piece)?.editorId;
     if (!ta || !tb || !ea || !eb) return;
     const rel = relativePlacement(ta, tb);
-    annotationStore.updateOf(IMPERIAL_KIT.kit, (ann) =>
+    // the overlap is recorded with the first piece's kit
+    annotationStore.updateOf(pieces.get(ta!.piece)?.kit ?? KITS[0]!.kit, (ann) =>
       setOverlap(ann, { pieces: [ea, eb], rotation: rel.rotation, offset: [...rel.offset] }, true),
     );
     ed.refreshCatalogue();
@@ -1347,6 +1353,7 @@
         (p) =>
           p.review.validated &&
           (category === 'all' || p.category === category) &&
+          (kitFilter === 'all' || p.kit === kitFilter) &&
           (!needle || p.editorId.toLowerCase().includes(needle)),
       )
       .sort((a, b) => a.editorId.localeCompare(b.editorId));
@@ -2100,6 +2107,10 @@
               <h3 class="list-title">Pieces</h3>
               <div class="filters">
                 <input placeholder="search pieces" bind:value={filter} />
+                {#if catalogue.kits.length > 1}<select bind:value={kitFilter} title="Kit">
+                    <option value="all">all kits</option>
+                    {#each catalogue.kits as k (k.kit)}<option value={k.kit}>{k.kit}</option>{/each}
+                  </select>{/if}
                 <select bind:value={category}>
                   <option value="all">all</option>
                   <option value="hall">hall</option>

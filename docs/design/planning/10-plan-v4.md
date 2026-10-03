@@ -108,8 +108,12 @@ are unknown. They are measured before anything is built on them.
 - **What**: the catalogue built from every kit; a piece carries its kit; the grid of a cell is
   derived per kit (a cell's tiles grouped by kit, each on its own grid); the palette filters by
   kit; the module of every grid computation taken from the tile's kit (D53, already the rule).
-- **Done when**: a vanilla Nordic cell of Skyrim.esm (opened from a copy in a test plugin) loads
-  with its tiles on the Nordic grid, and the Imperial cells behave exactly as before.
+- **Done when**: a small Nordic layout is built, saved and reopened on its grid (the editor opens
+  `.esp` files only), and the Imperial cells behave exactly as before.
+- **Result (3 Oct 2026)**: done, tested by the user. The editor merges every kit's annotated
+  catalogue (`catalogue/merge.ts`); connection types are prefixed by their kit, so faces of two
+  kits never mate. The two kits share their module (128 x 128): one grid per cell, rather than one
+  per kit; `mergeCatalogues` refuses kits whose modules differ. The palette filters by kit.
 
 ## Phase C – Building with the Nordic kit
 
