@@ -24,4 +24,23 @@ export const IMPERIAL_KIT: KitDefinition = {
   },
 };
 
+/**
+ * The Nordic kit (V4, R19): module measured at step 1; not in KITS yet (the editor still works
+ * on one kit, V4 step 4).
+ */
+export const NORDIC_KIT: KitDefinition = {
+  kit: 'Nordic',
+  module: { xy: 128, z: 128 },
+  note: 'Measured by V4 step 1 (R19): 166 of 201 pieces on the 128 grid; stairs rise 128 or 256.',
+  modelPrefix: 'dungeons/nordic/',
+  subkits: {
+    smhalls: 'hall',
+    bghalls: 'hall',
+    catacombs: 'hall',
+    secretpass: 'hall',
+    smrooms: 'room',
+    bgrooms: 'room',
+  },
+};
+
 export const KITS: readonly KitDefinition[] = [IMPERIAL_KIT];

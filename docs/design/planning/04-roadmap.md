@@ -75,7 +75,7 @@ NPC follows the player through it in game. V2.**
 - [ ] R19 module, pivots and faces; R20 collision and floors
 - [ ] Several kits in one catalogue, annotations per kit (D68, D69)
 - [ ] Assistant, checks, levels and NavMesh on the Nordic kit
-- [ ] Transitions between kits (D54)
+- [x] ~~Transitions between kits (D54)~~: none in the game, the kits meet through load doors
 
 ## Toward 1.0.0
 Every interior kit of the base `.esm` files (Nordic, Dwemer, caves...), with the deep junction

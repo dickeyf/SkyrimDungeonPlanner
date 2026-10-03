@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nordic kit</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <style>
+      :root {
+        color-scheme: dark;
+        font:
+          14px/1.45 system-ui,
+          sans-serif;
+        background: #1e1d24;
+        color: #e8e6ef;
+      }
+      body {
+        margin: 0;
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: 100vh;
+      }
+      aside {
+        padding: 1rem;
+        overflow: auto;
+        border-right: 1px solid #3d3b47;
+      }
+      h1 {
+        font-size: 1.1rem;
+        margin: 0 0 0.5rem;
+      }
+      button,
+      input,
+      select {
+        font: inherit;
+        margin: 0.2rem 0.3rem 0.2rem 0;
+        padding: 0.3rem 0.5rem;
+      }
+      input {
+        width: 100%;
+        box-sizing: border-box;
+      }
+      label {
+        display: block;
+        margin-top: 0.5rem;
+      }
+      #view {
+        position: relative;
+      }
+      canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+      .ok {
+        color: #8fd18f;
+      }
+      .warn {
+        color: #d9c27a;
+      }
+      .err {
+        color: #e07a7a;
+      }
+      pre {
+        background: #2b2a33;
+        padding: 0.5rem;
+        border-radius: 4px;
+        font-size: 12px;
+        white-space: pre-wrap;
+        max-height: 40vh;
+        overflow: auto;
+      }
+      dl {
+        font-size: 13px;
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 0.1rem 0.6rem;
+      }
+      dt {
+        color: #a09db0;
+      }
+      dd {
+        margin: 0;
+        font-variant-numeric: tabular-nums;
+      }
+
+      table {
+        border-collapse: collapse;
+        font-size: 12px;
+        margin: 0.5rem 0;
+      }
+      td,
+      th {
+        border: 1px solid #3d3b47;
+        padding: 0.15rem 0.4rem;
+        text-align: left;
+      }
+    </style>
+  </head>
+  <body>
+    <aside>
+      <h1>Nordic kit (V4 step 1, R19)</h1>
+      <p id="status">Restoring saved folders...</p>
+      <label
+        >MO2 profile
+        <select id="profile"></select
+      ></label>
+      <button id="run" disabled>Measure the Nordic kit</button>
+      <button id="analyse" disabled>Analyse the meshes</button>
+      <span id="progress"></span>
+      <p>
+        Reads the STAT records of Skyrim.esm whose model is under <code>dungeons/nordic/</code>:
+        sub-folders, sizes (object bounds), how well candidate modules fit them, and the pieces that
+        could join the Imperial kit.
+      </p>
+      <div id="result">-</div>
+      <pre id="log"></pre>
+    </aside>
+    <script type="module" src="./nordic.ts"></script>
+  </body>
+</html>

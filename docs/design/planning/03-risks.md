@@ -245,7 +245,9 @@ clipping per view. V3 steps 1, 2.
 ### R19 – The Nordic kit's module and faces
 The Nordic meshes have never been measured: module, pivots, footprint rule and face profiles are
 unknown, and the kit is less regular than the Imperial one (curved walls, rubble, pieces off the
-grid). Proof of concept: V4 step 1.
+grid). Proof of concept: V4 step 1. **Result (3 Oct 2026)**: module 128 x 128 in XY and 128 in Z
+confirmed on the meshes (166 of 201 pieces on the grid); open questions moved to V4 step 3
+(pieces without detected openings, tall walls spanning many levels).
 
 ### R20 – Nordic collision and floors
 The walkable polygons read one Havok shape type and were tuned on Imperial floors; Nordic pieces

@@ -3,8 +3,8 @@
 V4 builds on V3 (0.3.0, D63). It adds the **Nordic kit** (the barrows and crypts of Skyrim.esm,
 `meshes/dungeons/nordic/`), the second of the base interior kits 1.0.0 requires, chosen on 3 Oct
 2026. Everything V1 to V3 do for the Imperial kit (catalogue, assistant, junction checks, leaks,
-textures, levels, NavMesh, Finalize) must work for it, and a cell may hold both kits, joined by
-the vanilla transition pieces.
+textures, levels, NavMesh, Finalize) must work for it. The game has no transition piece between
+the two kits (step 1): they meet in separate cells, joined by load doors.
 
 Until now the code assumes one kit in many places: one kit definition (`IMPERIAL_KIT`), one
 annotation file (`data/annotations/imperial.json`), a catalogue built for one kit, collision and
@@ -15,17 +15,15 @@ Each step says **why** it comes at that point, what it produces and when it is d
 a step is done only when `npm test` and `npm run check` pass, and the risky parts are proven
 before they are built on.
 
-Success criterion of V4: _a Nordic dungeon on two levels (halls, a large room, stairs), joined
-to an Imperial part by a transition piece, is built with the assistant in one cell, its leaks
-and texture breaks flagged, its NavMesh baked and finalized in the app; an NPC follows the
-player from the Imperial part through the Nordic one and back, in game._
+Success criterion of V4: _a Nordic dungeon on two levels (halls, a large room, stairs) is built
+with the assistant, its leaks and texture breaks flagged, its NavMesh baked and finalized in the
+app; joined by a load door to an Imperial cell, an NPC follows the player from the Imperial cell
+into the Nordic one and back, in game._
 
 ## Decisions to confirm during V4
 
 - D68 (new): **several kits in one catalogue**: every kit's pieces are analysed and offered; a
   piece knows its kit, a tile its kit's module; the palette filters by kit (step 4).
-- D54 (decided in V1): kits meeting at a transition piece show both grids overlaid, each in its
-  own colour, during placement (step 7).
 - D69 (new): **annotations per kit**, one committed file per kit (`data/annotations/<kit>.json`),
   validated on the Validation page kit by kit (step 3).
 
@@ -41,9 +39,32 @@ are unknown. They are measured before anything is built on them.
 - **What**: the catalogue analysis run on `meshes/dungeons/nordic/` (a proof of concept page or
   the analysis with the kit's prefix): bounds, pivots, openings and face profiles of every piece;
   the XY and Z module derived from them; the sub-folders sorted into halls, rooms, doors and
-  props; the pieces that fit no grid listed.
+  props; the pieces that fit no grid listed; transition pieces with the Imperial kit looked for.
 - **Done when**: a module is written down with the share of pieces it fits, and the structural
   sub-folders are named.
+- **First measure (3 Oct 2026, `poc/nordic.html`, object bounds)**: 779 STATs under
+  `dungeons/nordic/` in 17 sub-folders. Sizes: 256 most common (small and big rooms, pits,
+  bridges), then 512 (big halls, catacombs), 1024, 768 and 384 (secret passages): 128 fits 82 %
+  of the xy sizes (within 48 units, cornice overhangs as for Imperial), 256 only 60 %, so the
+  XY module is likely 128, as Imperial. Z is measured on the meshes. No transition piece: none of
+  the 4,083 STATs under `dungeons/` mixes the two kits (the user expected so); the kits meet
+  through load doors, and the transition step was dropped. Structural sub-folders, as proposed:
+  halls `smhalls`, `bghalls`, `catacombs`, `secretpass`; rooms `smrooms`, `bgrooms`; doors
+  `doors`; `pits`, `shafts`, `platforms`, `bridges`, `chambers`, `temple` judged after the
+  analysis; `exterior`, `rubble`, `clutter` are props.
+- **Result (3 Oct 2026, mesh analysis with `NORDIC_KIT`)**: module **128 x 128 confirmed**: 166 of
+  the 201 structural pieces sit on the 128 grid, every opening on an integer level. Z: small
+  stairs rise 128 (one level), big stairs and ramps 256 (two); the big rooms' NIF origin lies 384
+  above their floor (openings at level -3), consistently. Opening widths: small halls 224, big
+  halls 448, catacombs 308 and 174, small rooms 238, big rooms 208, doorways 158 (ExSm) and 286
+  (ExBg). Three things for the next steps:
+  1. 35 pieces have no opening detected: the room middles (floor and ceiling only, open on all
+     sides), the raised floors and every secret passage. The opening detection must learn them
+     (step 3), or they stay out of the catalogue.
+  2. Some big room walls join their floor (level -3) to a doorway high up (levels 0 or 3): by the
+     rule "a piece occupies every level between its openings" (D59) they fill 4 to 7 levels, which
+     would block the cells above. The rule needs a limit for walls (step 3).
+  3. 27 profile groups for 387 faces: the connection types to validate (step 3).
 
 ### Step 2 – R20: Nordic collision and walkable floor
 - **Why**: the walkable polygons (V2 step 4) read one Havok shape type
@@ -93,17 +114,8 @@ are unknown. They are measured before anything is built on them.
   and in game.
 - **Done when**: an NPC follows the player up and down a Nordic staircase in game.
 
-### Step 7 – Transitions between kits
-- **Why**: real dungeons go from Imperial to Nordic (and back) through transition pieces; the
-  two grids are not aligned (D54).
-- **What**: the transition pieces found in step 1 marked as such (a face whose mate belongs to
-  the other kit); while placing next to one, both grids are shown overlaid, each in its colour;
-  the assistant offers the other kit's pieces at a transition face; the bake welds across.
-- **Done when**: an Imperial part and a Nordic part are joined in one cell, with the assistant,
-  and the NavMesh crosses the transition.
-
-## Step 8 – V4 milestone
-- **What**: the success criterion above, on a new mixed test dungeon. Frictions noted, fixed,
+## Step 7 – V4 milestone
+- **What**: the success criterion above, on a new Nordic test dungeon and an Imperial cell joined to it by a load door. Frictions noted, fixed,
   then documentation (user guide, architecture) updated.
 - **Done when**: the criterion is met; the release version is proposed and confirmed (D63),
   tagged, and published.
