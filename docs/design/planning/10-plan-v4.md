@@ -76,6 +76,12 @@ are unknown. They are measured before anything is built on them.
   where Nordic floors need it, Imperial results unchanged.
 - **Done when**: every Nordic tile has a reviewed walkable polygon, or is marked as having none,
   and the Imperial walkable results are byte for byte the same.
+- **Result (3 Oct 2026, `poc/nordic.html`)**: R20 is a non-issue. The 201 Nordic structural
+  pieces use the same Havok chain as the Imperial ones (`bhkRigidBody` or `bhkRigidBodyT`,
+  `bhkMoppBvTreeShape`, `bhkCompressedMeshShape`): every collision mesh is read, and all 166
+  catalogue pieces get a walkable floor with the Imperial rules unchanged (the Imperial results
+  are untouched: no code changed). The review of the Nordic floors moves to step 3, where the
+  Validation page works kit by kit.
 
 ## Phase B – Several kits
 
@@ -83,7 +89,7 @@ are unknown. They are measured before anything is built on them.
 - **Why**: the Nordic catalogue needs its own validated annotations (connection types, accepted
   overlaps, walkable reviews) without touching the Imperial ones (D69).
 - **What**: `NORDIC_KIT` (prefix, sub-folders, module from step 1); one annotation file per kit;
-  the Validation page works kit by kit; the Nordic faces' connection types proposed by the
+  the Validation page works kit by kit, the Nordic walkable floors reviewed there (step 2); the Nordic faces' connection types proposed by the
   analysis and validated by the user.
 - **Done when**: the Nordic catalogue is validated and committed in `data/annotations/nordic.json`,
   and the Imperial one is unchanged.

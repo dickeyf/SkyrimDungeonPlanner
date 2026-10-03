@@ -6,7 +6,8 @@
  */
 import { analyseKit } from '$lib/catalogue/analyze';
 import { loadKitStats } from '$lib/catalogue/build';
-import { NORDIC_KIT, type KitDefinition } from '$lib/catalogue/kits';
+import { IMPERIAL_KIT, NORDIC_KIT, type KitDefinition } from '$lib/catalogue/kits';
+import { NifFile, collisionMesh } from '$lib/format/nif';
 import { ArchiveIndex } from '$lib/vfs';
 import type { KitStat } from '$lib/catalogue/extract';
 import { bindProfileSelect, describeView, openDataView, type DataView } from './shared/dataView';
@@ -29,6 +30,7 @@ async function useView(v: DataView): Promise<void> {
   $('status').className = 'ok';
   $<HTMLButtonElement>('run').disabled = false;
   $<HTMLButtonElement>('analyse').disabled = false;
+  $<HTMLButtonElement>('collision').disabled = false;
   bindProfileSelect($<HTMLSelectElement>('profile'), v, (next) => void useView(next));
 }
 
@@ -224,6 +226,57 @@ $('analyse').addEventListener('click', async () => {
           errors.map((p) => [p.stat.editorId, p.error!]),
         )}`
       : '');
+});
+
+$('collision').addEventListener('click', async () => {
+  if (!view) return;
+  $('result').textContent = 'Working...';
+  const index = await ArchiveIndex.build(view.overlay, view.plugins);
+  const report: string[] = [];
+  for (const kit of [NORDIC_KIT, IMPERIAL_KIT]) {
+    const stats = (await loadKitStats(view.overlay, kit)).stats.filter(
+      (s) => s.category !== 'other',
+    );
+    // 1. the Havok block types of each piece, and whether the collision mesh is read
+    const chains = new Map<string, string[]>();
+    const unread: string[] = [];
+    for (const [i, stat] of stats.entries()) {
+      $('progress').textContent = `${kit.kit} ${i} / ${stats.length}`;
+      const read = await index.read(stat.modelPath);
+      if (!read) continue;
+      const nif = NifFile.parse(read.bytes);
+      const chain =
+        [...new Set(nif.blocks.filter((b) => b.type.startsWith('bhk')).map((b) => b.type))]
+          .sort()
+          .join(' + ') || '(no collision)';
+      chains.set(chain, [...(chains.get(chain) ?? []), stat.editorId]);
+      const mesh = collisionMesh(nif);
+      if (!mesh || mesh.indices.length === 0) unread.push(stat.editorId);
+    }
+    // 2. walkable floors, as the catalogue computes them
+    const r = await analyseKit(stats, kit, index);
+    const pieces = r.catalogue.pieces;
+    const none = pieces.filter((p) => !p.walkable?.length);
+    report.push(
+      `<h3>${kit.kit}: ${stats.length} structural pieces</h3>` +
+        table(
+          ['collision blocks', 'pieces', 'examples'],
+          [...chains].map(([c, list]) => [c, list.length, list.slice(0, 5).join(', ')]),
+        ) +
+        `<p>Collision mesh not read: ${unread.length}${unread.length ? ` (${unread.slice(0, 30).join(', ')})` : ''}</p>` +
+        `<p>Catalogue pieces: ${pieces.length}, with a walkable floor ${pieces.length - none.length}, ` +
+        `without ${none.length}${
+          none.length
+            ? ` (${none
+                .slice(0, 40)
+                .map((p) => p.editorId)
+                .join(', ')})`
+            : ''
+        }</p>`,
+    );
+  }
+  $('progress').textContent = '';
+  $('result').innerHTML = report.join('');
 });
 
 openDataView()
