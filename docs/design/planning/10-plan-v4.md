@@ -93,6 +93,15 @@ are unknown. They are measured before anything is built on them.
   analysis and validated by the user.
 - **Done when**: the Nordic catalogue is validated and committed in `data/annotations/nordic.json`,
   and the Imperial one is unchanged.
+- **Result (3 Oct 2026)**: done. `NORDIC_KIT` in `KITS`; the catalogue store keeps the stats and
+  analysis per kit and the annotation store one set per kit, loaded from every
+  `data/annotations/*.json`; the Catalogue and Validation pages have a kit picker; the editor
+  stays on the Imperial kit until step 4. The Nordic meshes carry 12 to 18 vertices on an open
+  side where the Imperial ones carry about 60: the opening threshold became a kit setting
+  (`minOpenVerts`, 10 for Nordic, the Imperial default of 20 unchanged), which brought in the room
+  middles and secret passages. The tall big-room walls spanning 4 to 7 levels are right (the
+  rooms are 1,216 units high): D59 unchanged. Validated by the user: 1 merge, 9 composite faces,
+  187 pieces reviewed.
 
 ### Step 4 – One catalogue, several kits
 - **Why**: a cell may hold both kits; the editor must know each tile's kit and module (D68).

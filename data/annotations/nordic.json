@@ -48,5 +48,754 @@
       "accepts": "NorRmSmCorOutL01:+X"
     }
   ],
-  "pieces": {}
+  "pieces": {
+    "NorCatHallBg1way01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorCatHallBg1way02": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorCatHallBg1wayEndCap01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorCatHallBg1wayEndCapExSm01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorCatHallBg1wayEndCapExSm01Ice": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorCatHallBg1wayEndCapExSm01LightIce": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorCatHallBg1wayEndCapExSm01Snow": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorCatHallBg1wayEndCapExSm01SnowLight": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorCatHallBg1wayEndCapExSm02": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorCatHallBg1wayRamp256": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorCatHallBg1wayRamp256Ice": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorCatHallBg1wayRamp256LightIce": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorCatHallBg1wayRamp256LtSnow": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorCatHallBg1wayRamp256Snow": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorCatHallBg1wayStairs256": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorCatHallBg2way01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorCatHallBg3way01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorCatHallBg3way02": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorCatHallBg4way01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorCatHallSm1way01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorCatHallSm1way02": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorCatHallSm1way03": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorCatHallSm1wayEndCap01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorCatHallSm1wayEndCapExSm01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorCatHallSm1wayEndCapExSm01LightIce": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorCatHallSm1wayExtension01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorCatHallSm2way01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorCatHallSm2way01LightIce": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorCatHallSm3way01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorCatHallSm3way02": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorCatHallSm4way01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorCatHallSm4way02": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorExSmFree01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorExSmFree01Ice": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorExSmFree01Snow": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallBg1way01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallBg1way01ice": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallBg1way02": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallBg1way02ice": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallBg1way03": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallBg1wayEndCap01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallBg1wayEndCap01ice": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallBg1wayEndExBg01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallBg1wayEndExBg01Ice": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallBg1wayEndExSm01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallBg1wayEndExSm01ice": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallBg1wayExSm01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallBg1wayExSmDbl01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallBg1wayRamp256": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallBg1wayRamp256Ice": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallBg1wayStairs256": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallBg1wayToCaveG01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallBg1wayToMine01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallBg1wayToRmSmFront01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallBg1wayToRmSmSide01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallBg2way01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallBg2way01ice": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallBg3way01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallBg3way01ice": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallBg3way02": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallBg4way01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallBg4way02": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallExSmExtension01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallExSmExtension01Ice": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallExSmExtension01Snow": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallExSmPortcullis01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallExSmPortcullis01ice": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallExSmRotatingDoor01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallSm1way01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallSm1way01ice": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallSm1wayDam01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallSm1wayEndCap01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallSm1wayEndCap01Snow": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallSm1wayEndExSm01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallSm1wayEndExSm01ice": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallSm1wayExSm01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallSm1wayExSm01ice": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallSm1wayExSmDbl01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallSm1wayStairs128": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallSm1wayStairs128ExSm01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallSm1wayStairs128ExSm02": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallSm1wayStairs128ExSm02LtSnow": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallSm1wayStairs128ice": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallSm1wayStairsice": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallSm2way01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallSm2way01ice": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallSm2way02": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallSm3way01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallSm3wayExSm01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorHallSm4way01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmBgCorInL01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmBgCorInL01Ice": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmBgCorInR01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmBgCorInR01Ice": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmBgCorOutL01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmBgCorOutL01_HeavySN": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmBgCorOutL01ice": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmBgCorOutR01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmBgCorOutR01_HeavySN": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmBgCorOutR01ice": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmBgMid01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmBgMid01ice": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmBgMid02": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmBgWallFront01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmBgWallFront01_HeavySN": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmBgWallFront01ice": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmBgWallFrontDam01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmBgWallFrontExBg01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmBgWallFrontExBgHigh01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmBgWallFrontExSm01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmBgWallFrontExSmCenter01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmBgWallFrontForgeBase01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmBgWallSide01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmBgWallSide01_HeavySN": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmBgWallSide01ice": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmBgWallSideDam01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmBgWallSideExBg01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmBgWallSideExBgHigh01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmBgWallSideExSm01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmBgWallSideExSm01ice": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmBgWallSideExSmCenter01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmBgWallSideForgeBase01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmSmAlcove01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmSmAlcove01ice": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmSmCorIn01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmSmCorIn01ice": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmSmCorInExSmDbl01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmSmCorInExSmL01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmSmCorInExSmR01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmSmCorOutL01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmSmCorOutL01ice": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmSmCorOutR01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmSmCorOutR01ice": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmSmMid01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmSmMid01ice": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmSmMid02": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmSmMid02ice": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmSmWallFront01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmSmWallFront02": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmSmWallFront02ice": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmSmWallFront03": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmSmWallFront04": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmSmWallFront05": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmSmWallFrontDam01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmSmWallFrontDam01Snow": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmSmWallFrontDam02": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmSmWallFrontDam02ice": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmSmWallFrontDam03": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmSmWallFrontDam03ice": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmSmWallFrontExBg01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmSmWallFrontExSm01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmSmWallFrontExSm01ice": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmSmWallFrontFireplace01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmSmWallFrontWin01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmSmWallFrontWin01ice": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmSmWallSide01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmSmWallSide02": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmSmWallSide02ice": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmSmWallSide03": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmSmWallSide04": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmSmWallSide05": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmSmWallSideDam01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmSmWallSideDam01snow": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmSmWallSideDam02": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmSmWallSideDam02ice": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmSmWallSideDam03": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmSmWallSideDam03ice": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmSmWallSideExBg01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmSmWallSideExSm01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmSmWallSideExSm01ice": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmSmWallSideExSm01Snow": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmSmWallSideFireplace01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorRmSmWallSideWin01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorSec1way01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorSec1way02": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorSec1way02ice": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorSec1wayRamp384": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorSec1wayShiftL01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorSec1wayShiftR01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorSec2way01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorSec2way02": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorSec2way02ice": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorSecRmSmWallFrontExSm01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorSecRmSmWallFrontExSm01ice": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorSecRmSmWallFrontExSm02": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorSecRmSmWallSideExSm01": {
+      "validated": true,
+      "walkable": "reviewed"
+    },
+    "NorSecRmSmWallSideExSm02": {
+      "validated": true,
+      "walkable": "reviewed"
+    }
+  }
 }

@@ -81,7 +81,7 @@ Statuses: **Decided** (settled), **Proposed** (suggested, to be confirmed), **Op
 | D66 | **Textures are a display option** (V3): off by default; the untextured shaded view stays the fast one | Decided (2 Oct 2026, V3 step 4) |
 | D67 | **Two viewports** (V3): the top-down view, where everything is edited, and a square inset in the top right corner (a third of the screen) showing a perspective camera; the camera is drawn in the top-down view as simple shapes, moved in x, y and z and turned around z only | Proposed (1 Oct 2026) |
 | D68 | **Several kits in one catalogue** (V4): every kit's pieces are analysed and offered; a piece knows its kit and a tile its kit's module; the palette filters by kit | Proposed (3 Oct 2026) |
-| D69 | **Annotations per kit** (V4): one committed file per kit (`data/annotations/<kit>.json`), validated kit by kit | Proposed (3 Oct 2026) |
+| D69 | **Annotations per kit** (V4): one committed file per kit (`data/annotations/<kit>.json`), validated kit by kit | Decided (3 Oct 2026, V4 step 3) |
 
 ## Settled for V1 (release 0.1.0)
 The questions opened for V1 and how each was settled (24 Sep 2026, V1 released as 0.1.0, D63).
