@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "kit": "Nordic",
+  "merges": [
+    {
+      "faces": [
+        "NorHallBg1wayToRmSmSide01:+X",
+        "NorRmSmWallSideExBg01:+X"
+      ],
+      "decision": "same-type"
+    }
+  ],
+  "composites": [
+    {
+      "face": "NorHallBg1wayToRmSmFront01:-Y",
+      "accepts": "NorRmSmWallFrontDam03:-Y"
+    },
+    {
+      "face": "NorHallBg1wayToRmSmFront01:-Y",
+      "accepts": "NorSecRmSmWallFrontExSm01:-Y"
+    },
+    {
+      "face": "NorHallBg1wayToRmSmSide01:+X",
+      "accepts": "NorRmSmCorOutL01:+X"
+    },
+    {
+      "face": "NorRmBgWallFrontDam01:-Y",
+      "accepts": "NorRmBgCorOutL01:-Y"
+    },
+    {
+      "face": "NorRmBgWallFrontExBg01:-Y",
+      "accepts": "NorRmBgCorOutL01:-Y"
+    },
+    {
+      "face": "NorRmBgWallFrontExBg01:-Y",
+      "accepts": "NorRmBgWallFrontDam01:-Y"
+    },
+    {
+      "face": "NorRmBgWallSideExBg01:+X",
+      "accepts": "NorRmBgCorOutL01:+X"
+    },
+    {
+      "face": "NorRmSmWallFrontDam03:-Y",
+      "accepts": "NorSecRmSmWallFrontExSm01:-Y"
+    },
+    {
+      "face": "NorRmSmWallSideExBg01:+X",
+      "accepts": "NorRmSmCorOutL01:+X"
+    }
+  ],
+  "pieces": {}
+}

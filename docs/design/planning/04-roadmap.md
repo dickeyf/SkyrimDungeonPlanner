@@ -80,6 +80,11 @@ NPC follows the player through it in game. V2.**
 ## Toward 1.0.0
 Every interior kit of the base `.esm` files (Nordic, Dwemer, caves...), with the deep junction
 check (R16) and texture continuity, Z levels (phase 4). See D63.
+- [ ] The sub-folders left out of each kit's tiles, judged one by one (on the grid or not,
+  openings that join the kit's halls): Nordic `temple`, `pits`, `shafts`, `platforms`,
+  `bridges`, `chambers` (set aside at V4 step 1); Imperial, the structural pieces outside
+  `smallhall`, `largehall`, `smallroom` and `largeroom`, and the pieces left out by name
+  (pillars, braces, beams...). Not in V4.
 
 ## Later
 See `05-ideas.md`: cross-section view, thumbnails, room markers/portals, multiple selection.

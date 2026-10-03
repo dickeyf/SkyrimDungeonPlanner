@@ -2,7 +2,7 @@
   import SessionNotice from '../components/SessionNotice.svelte';
   import type { AnalysisResult } from '$lib/catalogue/analyze';
   import { summarize, type KitStat } from '$lib/catalogue/extract';
-  import { IMPERIAL_KIT } from '$lib/catalogue/kits';
+  import KitPicker from '../components/KitPicker.svelte';
   import type { PieceCategory } from '$lib/catalogue/types';
   import { catalogueStore as store } from '$lib/session/catalogueStore.svelte';
   import { session } from '$lib/session/session.svelte';
@@ -91,11 +91,12 @@
 </script>
 
 <section>
-  <h2>Catalogue: {IMPERIAL_KIT.kit} kit</h2>
+  <h2>Catalogue: {store.kit.kit} kit</h2>
+  <p><KitPicker /></p>
   <p class="hint">
     Step 8: the kit's base objects (STAT records) read straight from <code>Skyrim.esm</code>
-    through the Data view, classified by mesh sub-folder and name. Module {IMPERIAL_KIT.module.xy} x {IMPERIAL_KIT
-      .module.z}. Step 9 measures each piece's footprint and faces; step 10 lets you correct the
+    through the Data view, classified by mesh sub-folder and name. Module {store.kit.module.xy} x {store
+      .kit.module.z}. Step 9 measures each piece's footprint and faces; step 10 lets you correct the
     classification.
   </p>
 
@@ -114,7 +115,7 @@
 
   {#if result && summary}
     <p class="ok">
-      {result.master}: {result.totalStats} STAT records, {summary.total} in the {IMPERIAL_KIT.kit}
+      {result.master}: {result.totalStats} STAT records, {summary.total} in the {store.kit.kit}
       kit ({result.fromCache ? 'from cache' : 'extracted'} in {result.elapsedMs.toFixed(0)} ms).
     </p>
     <div class="counters">

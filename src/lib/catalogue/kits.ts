@@ -7,6 +7,11 @@ import type { Kit, PieceCategory } from './types';
 export interface KitDefinition extends Kit {
   /** Model path prefix (relative to `meshes/`, lower-case, forward slashes). */
   modelPrefix: string;
+  /**
+   * Vertices an opening's plane needs (default `MIN_OPEN_VERTS`, 20): lower for a kit whose
+   * meshes are sparse at their edges.
+   */
+  minOpenVerts?: number;
   /** Sub-folder -> category of its tiles; sub-folders not listed are props/other. */
   subkits: Record<string, Exclude<PieceCategory, 'door' | 'other'>>;
 }
@@ -33,6 +38,8 @@ export const NORDIC_KIT: KitDefinition = {
   module: { xy: 128, z: 128 },
   note: 'Measured by V4 step 1 (R19): 166 of 201 pieces on the 128 grid; stairs rise 128 or 256.',
   modelPrefix: 'dungeons/nordic/',
+  // the room middles and secret passages carry 12 to 18 vertices on their open sides (step 3)
+  minOpenVerts: 10,
   subkits: {
     smhalls: 'hall',
     bghalls: 'hall',
@@ -43,4 +50,4 @@ export const NORDIC_KIT: KitDefinition = {
   },
 };
 
-export const KITS: readonly KitDefinition[] = [IMPERIAL_KIT];
+export const KITS: readonly KitDefinition[] = [IMPERIAL_KIT, NORDIC_KIT];

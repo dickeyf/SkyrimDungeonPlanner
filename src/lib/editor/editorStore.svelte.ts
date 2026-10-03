@@ -4,6 +4,7 @@
  * back into the plugin (step 15).
  */
 import { applyAnnotations } from '$lib/catalogue/annotations';
+import { IMPERIAL_KIT } from '$lib/catalogue/kits';
 import type { Catalogue } from '$lib/catalogue/types';
 import { PREF_KEYS, ensureAccess, getPref, lastCellPref, readAll, setPref } from '$lib/fs';
 import type { LevelEdit } from '$lib/level';
@@ -213,17 +214,26 @@ class EditorStore {
 
   /** The analysed catalogue with the committed annotations applied. */
   async finalCatalogue(): Promise<Catalogue> {
-    const analysis = catalogueStore.analysis ?? (await catalogueStore.analyse(false));
+    // the editor works on the Imperial kit until several kits are supported (V4 step 4)
+    const analysis =
+      catalogueStore.analysisOf(IMPERIAL_KIT) ??
+      (await catalogueStore.analyse(false, IMPERIAL_KIT));
     if (!analysis) throw new Error(catalogueStore.error || 'catalogue analysis unavailable');
-    this.catalogue = applyAnnotations(analysis.catalogue, annotationStore.current).catalogue;
+    this.catalogue = applyAnnotations(
+      analysis.catalogue,
+      annotationStore.currentOf(IMPERIAL_KIT.kit),
+    ).catalogue;
     return this.catalogue;
   }
 
   /** Re-apply the current annotations after an edit made from the editor. */
   refreshCatalogue(): void {
-    const analysis = catalogueStore.analysis;
+    const analysis = catalogueStore.analysisOf(IMPERIAL_KIT);
     if (analysis)
-      this.catalogue = applyAnnotations(analysis.catalogue, annotationStore.current).catalogue;
+      this.catalogue = applyAnnotations(
+        analysis.catalogue,
+        annotationStore.currentOf(IMPERIAL_KIT.kit),
+      ).catalogue;
   }
 
   /** The cell to open first in the working plugin: the last one opened, else the first. */

@@ -34,7 +34,11 @@ export interface Opening {
   width: number;
 }
 
-export function findOpenings(g: WeldedGeometry): Opening[] {
+/**
+ * @param minVerts vertices an opening's plane needs (on open edges too): the kit's meshes set
+ *   it, the Nordic ones being much sparser at their edges than the Imperial ones (V4).
+ */
+export function findOpenings(g: WeldedGeometry, minVerts = MIN_OPEN_VERTS): Opening[] {
   const out: Opening[] = [];
   for (const axis of [0, 1] as const) {
     const other = (1 - axis) as 0 | 1;
@@ -52,7 +56,7 @@ export function findOpenings(g: WeldedGeometry): Opening[] {
         }
       }
       const candidates = [...counts]
-        .filter(([, n]) => n >= MIN_OPEN_VERTS)
+        .filter(([, n]) => n >= minVerts)
         .sort((a, b) => Math.abs(a[0] - edge) - Math.abs(b[0] - edge));
       for (const [plane] of candidates) {
         const onPlane: number[] = [];
@@ -68,7 +72,7 @@ export function findOpenings(g: WeldedGeometry): Opening[] {
           if (g.rim[i]) rimVerts++;
         }
         if (zMax - zMin < MIN_OPEN_HEIGHT) continue;
-        if (rimVerts < MIN_OPEN_VERTS || rimVerts / onPlane.length < MIN_RIM_SHARE) continue;
+        if (rimVerts < minVerts || rimVerts / onPlane.length < MIN_RIM_SHARE) continue;
         let spanMin = Infinity;
         let spanMax = -Infinity;
         for (const i of onPlane) {

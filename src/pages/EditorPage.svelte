@@ -93,6 +93,7 @@
     type SceneHandlers,
   } from '$lib/render';
   import { setOverlap } from '$lib/catalogue/annotationEdits';
+  import { IMPERIAL_KIT } from '$lib/catalogue/kits';
   import { annotationStore } from '$lib/session/annotationStore.svelte';
   import { catalogueStore } from '$lib/session/catalogueStore.svelte';
   import { session } from '$lib/session/session.svelte';
@@ -202,7 +203,9 @@
   const anchor = $derived(ed.loaded?.grid.anchor);
   const layout = $derived(history?.present ?? null);
   const models = $derived(
-    new Map((catalogueStore.stats?.stats ?? []).map((st) => [st.formKey, st.model])),
+    new Map(
+      (catalogueStore.statsOf(IMPERIAL_KIT)?.stats ?? []).map((st) => [st.formKey, st.model]),
+    ),
   );
   const objects = $derived(
     layout && ed.loaded && historyFor === ed.loaded
@@ -1275,7 +1278,10 @@
   /** Face profiles from the mesh analysis, by `EditorID:dir` (rotation 0). */
   const profiles = $derived(
     new Map(
-      (catalogueStore.analysis?.faces ?? []).map((f) => [`${f.piece}:${f.opening.dir}`, f.profile]),
+      (catalogueStore.analysisOf(IMPERIAL_KIT)?.faces ?? []).map((f) => [
+        `${f.piece}:${f.opening.dir}`,
+        f.profile,
+      ]),
     ),
   );
   const profileOf = (pieceKey: FormKey | undefined, dir: string) =>
@@ -1306,7 +1312,7 @@
     const eb = tb && pieces.get(tb.piece)?.editorId;
     if (!ta || !tb || !ea || !eb) return;
     const rel = relativePlacement(ta, tb);
-    annotationStore.update((ann) =>
+    annotationStore.updateOf(IMPERIAL_KIT.kit, (ann) =>
       setOverlap(ann, { pieces: [ea, eb], rotation: rel.rotation, offset: [...rel.offset] }, true),
     );
     ed.refreshCatalogue();

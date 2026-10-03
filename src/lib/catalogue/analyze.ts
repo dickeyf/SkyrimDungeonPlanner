@@ -77,7 +77,7 @@ export async function analyseKit(
       const collision = collisionMesh(nif);
       if (collision) collisions.set(stat.editorId, collision);
       const g = weldMesh(mesh);
-      const openings = findOpenings(g);
+      const openings = findOpenings(g, kit.minOpenVerts);
       const footprint = computeFootprint(g, openings, module, zModule);
       const piece: AnalysedPiece = {
         stat,

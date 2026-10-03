@@ -28,6 +28,7 @@
     saveHandle,
     writeProjectAnnotations,
   } from '$lib/fs';
+  import KitPicker from '../components/KitPicker.svelte';
   import { annotationStore as ann } from '$lib/session/annotationStore.svelte';
   import { catalogueStore as store } from '$lib/session/catalogueStore.svelte';
   import { session } from '$lib/session/session.svelte';
@@ -201,7 +202,7 @@
     const blob = new Blob([serializeAnnotations(ann.current)], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = 'imperial.json';
+    a.download = `${ann.current.kit.toLowerCase()}.json`;
     a.click();
     URL.revokeObjectURL(a.href);
   }
@@ -233,6 +234,7 @@
 
 <section>
   <h2>Validation: {store.kit.kit} kit</h2>
+  <p><KitPicker /></p>
   <p class="hint">
     Decide what the analysis cannot decide alone: near matches, composite faces, pieces to leave
     out. Connection types are internal: they are never named, and G numbers only label them on this
