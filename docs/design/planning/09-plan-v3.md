@@ -130,7 +130,13 @@ does not merge two stacked floors (R7).
   stacked floors are new cases (a leak through a floor, a junction at a stair top).
 - **What**: run the checks on the two-level test layout; fix the false positives and misses
   found; the leak views follow the active level.
-- **Done when**: the two-level test cell has no false mark, and a removed floor piece is flagged.
+- **Done when**: the two-level test cell has no false mark, and a real defect at a stair junction
+  is flagged (the Imperial floor is part of each tile: a floor cannot be removed alone).
+- **Result (2 Oct 2026)**: done, no code change needed: the checks already work on 3D cells. On a
+  two-level test cell, every mark was judged right by the user; the deep check flagged a 32-unit
+  slit at floor level between `ImpHallStairs01` and `ImpLHallDoor01` (seen from 1 of 6 standing
+  points), confirmed by lowering the inset camera to the threshold. A defect of the vanilla
+  pieces: change the door piece, or hide it with a prop later.
 
 ### Step 8 – R7: NavMesh per level, proof of concept
 - **Why**: the bake works in plan (2D clipping per grid cell): two stacked floors would be merged
