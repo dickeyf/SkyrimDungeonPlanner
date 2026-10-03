@@ -2292,6 +2292,9 @@
           selection={navEdit ? [] : ed.selection}
           navmesh={navLayers}
           level={activeLevel}
+          levelAt={(z) =>
+            anchor ? Math.floor((z - anchor.origin[2]) / anchor.module.z + 0.25) : 0}
+          onlevel={(k) => (activeLevel = k)}
           below={belowDisplay}
           fitKey={ed.loaded.cell}
         />

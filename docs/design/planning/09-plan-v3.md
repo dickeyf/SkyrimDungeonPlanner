@@ -168,3 +168,7 @@ does not merge two stacked floors (R7).
   cell. Frictions noted, fixed, then documentation (user guide, architecture) updated.
 - **Done when**: the criterion is met; the release version is proposed and confirmed (D63),
   tagged, and published.
+- **Result (2 Oct 2026)**: criterion met, the user declared V3 ready. Two additions from the
+  final pass: walking the camera with W / S keeps it at the centre of the top-down view
+  (`CellScene.centreOn`), and the inset shows the level of the floor under the camera, a click
+  showing that level.

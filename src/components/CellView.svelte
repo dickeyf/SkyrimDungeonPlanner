@@ -31,6 +31,8 @@
     selection = [],
     level = null,
     below = 'dimmed',
+    levelAt,
+    onlevel,
     navmesh = null,
     fitKey,
   }: {
@@ -47,6 +49,10 @@
     /** The active level (V3): above it hidden, below it dimmed or hidden; null shows all. */
     level?: number | null;
     below?: BelowDisplay;
+    /** The grid level of a height, to show the level of the floor under the camera. */
+    levelAt?: (z: number) => number;
+    /** Show that level (a click on the camera's floor level). */
+    onlevel?: (level: number) => void;
     /** NavMesh layers drawn over the tiles (a preview, the NavMesh being edited). */
     navmesh?: readonly NavLayer[] | null;
     /** The view is re-framed whenever this value changes (a new cell was loaded). */
@@ -92,6 +98,8 @@
       // a little above the floor under the camera: up a ramp, down a step, not through a ceiling
       const floor = move ? scene.floorAt(x, y, z0 + 64) : undefined;
       eye = { heading, pos: [x, y, floor === undefined ? z0 : floor + EYE_HEIGHT] };
+      // walking keeps the camera at the centre of the top-down view, as in the game
+      if (move) scene.centreOn(x, y);
     }
     walkFrame = held.length ? requestAnimationFrame(walkStep) : 0;
   }
@@ -118,6 +126,13 @@
     cancelAnimationFrame(walkFrame);
     walkFrame = 0;
   }
+
+  /** The level of the floor under the camera, if any. */
+  const floorLevel = $derived.by(() => {
+    if (!eye || !scene || !levelAt) return undefined;
+    const floor = scene.floorAt(eye.pos[0], eye.pos[1], eye.pos[2] + 16);
+    return floor === undefined ? undefined : levelAt(floor);
+  });
 
   /** Raise or lower the camera by `dz` game units. */
   function raise(dz: number): void {
@@ -251,6 +266,11 @@
       >
         <button onclick={() => raise(16)} title="Raise the camera">▲</button>
         <button onclick={() => raise(-16)} title="Lower the camera">▼</button>
+        {#if floorLevel !== undefined}<button
+            class="floor"
+            title="The level of the floor under the camera: click to show it"
+            onclick={() => onlevel?.(floorLevel)}>floor level {floorLevel}</button
+          >{/if}
         z {Math.round(eye.pos[2])}, heading {Math.round(
           ((eye.heading * 180) / Math.PI + 360) % 360,
         )}°

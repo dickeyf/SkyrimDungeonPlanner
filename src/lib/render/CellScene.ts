@@ -420,6 +420,14 @@ export class CellScene {
     this.handlers.eye?.(eye);
   }
 
+  /** Pan the top-down view so that (x, y) is at its centre, keeping the zoom. */
+  centreOn(x: number, y: number): void {
+    this.camera.position.set(x, y, this.camera.position.z);
+    this.controls.target.set(x, y, 0);
+    this.controls.update();
+    this.requestRender();
+  }
+
   /** The centre of the drawn objects (or of the grid), for a first camera position. */
   centre(): [number, number] | undefined {
     const box = this.objectBounds();

@@ -189,8 +189,10 @@ The square in the top right corner of the view shows the cell from a camera stan
 eye level. In the top-down view the camera is drawn in yellow: drag its disc to move it (it
 follows the floor, up ramps and down steps), drag the round handle at the tip of its wedge to
 turn it, and use the wheel over the disc (or the ▲ ▼ buttons) to raise or lower it. The **–**
-button folds the view away; **Camera** brings it back. Click the camera view to walk with the
-keyboard: **W** / **S** forward and back, **A** / **D** turn, **Shift** faster (a yellow frame shows
+button folds the view away; **Camera** brings it back. **floor level N** shows the level of the
+floor under the camera: click it to show that level. Click the camera view to walk with the
+keyboard: **W** / **S** forward and back (the top-down view follows, the camera at its centre),
+**A** / **D** turn, **Shift** faster (a yellow frame shows
 the view has the keys; click elsewhere to give them back). A piece being placed or moved shows
 there as well.
 
@@ -233,8 +235,7 @@ navmesh, doors' teleport links and everything else remain the CK's job.
 
 ## Limits
 
-- The **Imperial kit** only, and **one level (Z)** at a time: ramps and stairs work, but the view
-  does not show heights, so take care where levels change.
+- The **Imperial kit** only.
 - The tool edits tiles only (the kit's structural pieces); everything else in a cell passes
   through untouched.
 - No props or lighting. The NavMesh is baked, edited and finalized in the tool, but without

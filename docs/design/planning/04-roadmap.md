@@ -56,7 +56,7 @@ CK. Released as 0.1.0.**
 **Milestone reached (1 Oct 2026): the test dungeon baked in one click, finalized in the app, an
 NPC follows the player through it in game. V2.**
 
-## Phase 4 – Z – V3, see `09-plan-v3.md`
+## Phase 4 – Z – V3, see `09-plan-v3.md` (done 2 Oct 2026, with textures and a camera view)
 - [ ] At least show a tile's level (see `05-ideas.md`), before the full slices
 - [ ] Z slices, active slice, dimmed ghost below, option to hide everything
 - [ ] Pieces spanning two slices (stairs, sloped corridors)
