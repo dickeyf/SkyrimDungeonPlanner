@@ -221,9 +221,13 @@
     const g = ed.loaded ? sceneGrid(ed.loaded, 12) : null;
     if (!g) return null;
     const m = g.module;
-    // drawn through the selected piece's corner (D70)
+    // drawn through the selected piece's corner (D70), at the snapping step
+    const step = snapStep || m;
+    const k = m / step;
     return {
       ...g,
+      module: step,
+      range: g.range.map((v) => v * k) as typeof g.range,
       origin: [g.origin[0] + gridShift[0] * m, g.origin[1] + gridShift[1] * m, g.origin[2]] as Vec3,
     };
   });
