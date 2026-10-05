@@ -217,10 +217,45 @@
       ? layoutObjects(layout, ed.loaded, catalogue, models)
       : [],
   );
-  const grid = $derived(ed.loaded ? sceneGrid(ed.loaded, 12) : null);
+  const grid = $derived.by(() => {
+    const g = ed.loaded ? sceneGrid(ed.loaded, 12) : null;
+    if (!g) return null;
+    const m = g.module;
+    // drawn through the selected piece's corner (D70)
+    return {
+      ...g,
+      origin: [g.origin[0] + gridShift[0] * m, g.origin[1] + gridShift[1] * m, g.origin[2]] as Vec3,
+    };
+  });
   const summary = $derived(ed.loaded ? summarizeCell(ed.loaded, pieces) : null);
   const pending = $derived(original && layout ? changes(original, layout) : null);
   const selectedTile = $derived(ed.selected ? layout?.tiles.get(ed.selected) : undefined);
+
+  // ---- the contextual grid (V4 step 7, D70) ---------------------------------------------------
+  /** The snapping step in units: the module by default; finer steps for shifted pieces. */
+  let snapStep = $state(0);
+  const STEPS = [128, 64, 32, 16];
+  /** The grid shown and snapped to: shifted like the last selected piece (in cells). */
+  let gridShift = $state.raw<[number, number, number]>([0, 0, 0]);
+  $effect(() => {
+    const t = selectedTile;
+    if (!t) return;
+    const frac = (v: number) => v - Math.floor(v);
+    gridShift = [frac(t.cell[0]), frac(t.cell[1]), frac(t.cell[2])];
+  });
+  // a new CELL starts on its main grid
+  $effect(() => {
+    void ed.loaded?.cell;
+    gridShift = [0, 0, 0];
+  });
+  /** The step in cells (1 = the module). */
+  const stepCells = $derived(anchor && snapStep ? snapStep / anchor.module.xy : 1);
+  const snapGrid = $derived({
+    shift: [gridShift[0], gridShift[1]] as [number, number],
+    step: stepCells,
+  });
+  /** A move in cells, rounded to the step. */
+  const quant = (v: number) => Math.round(v / stepCells) * stepCells + 0;
 
   // ---- levels (V3 step 5, D3): one level shown at a time, or all ----------------------------
   /** The levels (Z slices) the layout's tiles span, lowest first. */
@@ -1381,9 +1416,10 @@
     return true;
   }
 
+  /** The point under the pointer in cells, not rounded (moves are rounded to the step). */
   const cellUnder = (w: Vec3): CellIndex => [
-    Math.floor((w[0] - anchor!.origin[0]) / anchor!.module.xy),
-    Math.floor((w[1] - anchor!.origin[1]) / anchor!.module.xy),
+    (w[0] - anchor!.origin[0]) / anchor!.module.xy,
+    (w[1] - anchor!.origin[1]) / anchor!.module.xy,
     0,
   ];
 
@@ -1421,7 +1457,14 @@
         : null;
     return (
       snapped ?? {
-        cell: cellAt(world, anchor!, pieces.get(p.piece)!, p.rotation, activeLevel ?? 0),
+        cell: cellAt(
+          world,
+          anchor!,
+          pieces.get(p.piece)!,
+          p.rotation,
+          (activeLevel ?? 0) + gridShift[2],
+          snapGrid,
+        ),
         rotation: p.rotation,
       }
     );
@@ -1540,7 +1583,7 @@
         const now = cellUnder(info.world);
         groupDrag = {
           ...groupDrag,
-          delta: [now[0] - groupDrag.grab[0], now[1] - groupDrag.grab[1], 0],
+          delta: [quant(now[0] - groupDrag.grab[0]), quant(now[1] - groupDrag.grab[1]), 0],
         };
       } else if (placing) {
         const { cell, rotation } = placementAt(info.world);
@@ -1550,8 +1593,8 @@
         const piece = pieces.get(tile.piece)!;
         const now = cellUnder(info.world);
         const onGrid: CellIndex = [
-          tile.cell[0] + now[0] - drag.grab[0],
-          tile.cell[1] + now[1] - drag.grab[1],
+          tile.cell[0] + quant(now[0] - drag.grab[0]),
+          tile.cell[1] + quant(now[1] - drag.grab[1]),
           tile.cell[2],
         ];
         // snap as for a new piece, from the dragged tile's centre, with the tile out of the way
@@ -1697,6 +1740,13 @@
     if (target && ['INPUT', 'SELECT', 'TEXTAREA'].includes(target.tagName)) return;
     if (!history) return;
     const key = e.key.toLowerCase();
+    if (key === 'g' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      const now = snapStep || anchor?.module.xy || 128;
+      snapStep = STEPS[(STEPS.indexOf(now) + 1) % STEPS.length]!;
+      message = `Snapping step ${snapStep}.`;
+      e.preventDefault();
+      return;
+    }
     if (e.key === 'PageUp' || e.key === 'PageDown') {
       stepLevel(e.key === 'PageUp' ? 1 : -1);
       e.preventDefault();
@@ -1772,6 +1822,22 @@
         {/each}
       </select>
       <button disabled={ed.busy} onclick={newCell}>New cell...</button>
+      <label
+        class="group"
+        title="Snapping step (G): the module by default; the grid follows the selected piece's shift"
+        >Step
+        <select
+          value={String(snapStep || anchor?.module.xy || 128)}
+          onchange={(e) => (snapStep = Number(e.currentTarget.value))}
+        >
+          {#each STEPS as s (s)}<option value={String(s)}>{s}</option>{/each}
+        </select>
+        {#if gridShift[0] || gridShift[1] || gridShift[2]}<span class="hint"
+            >grid shifted {Math.round(gridShift[0] * 128)}, {Math.round(gridShift[1] * 128)}, {Math.round(
+              gridShift[2] * 128,
+            )}</span
+          >{/if}
+      </label>
       {#if levels.length > 1 || activeLevel !== null}
         <label
           class="group"

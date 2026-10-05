@@ -310,6 +310,11 @@ export function cellAt(
   rotation: Rotation,
   /** The grid level the piece's own level 0 goes on (the active level, V3). */
   level = 0,
+  /**
+   * The grid to snap to (D70): its shift from the module grid and its step, both in cells
+   * (a grid shifted by 16 at 128 is 0.125; a step of 32 is 0.25). Default: the module grid.
+   */
+  snap: { shift: [number, number]; step: number } = { shift: [0, 0], step: 1 },
 ): CellIndex {
   // centre the piece's footprint on the pointer: offset by half the rotated footprint
   const cells = footprintCells(piece, [0, 0, 0], rotation);
@@ -317,7 +322,9 @@ export function cellAt(
   const hi = [Math.max(...cells.map((c) => c[0])) + 1, Math.max(...cells.map((c) => c[1])) + 1];
   const fx = (world[0] - anchor.origin[0]) / anchor.module.xy - (lo[0] + hi[0]!) / 2;
   const fy = (world[1] - anchor.origin[1]) / anchor.module.xy - (lo[1] + hi[1]!) / 2;
-  return [Math.round(fx) + 0, Math.round(fy) + 0, level + 0]; // `+ 0` turns -0 into 0
+  const on = (v: number, shift: number) =>
+    Math.round((v - shift) / snap.step) * snap.step + shift + 0; // `+ 0` turns -0 into 0
+  return [on(fx, snap.shift[0]), on(fy, snap.shift[1]), level + 0];
 }
 
 export interface LayoutChanges {

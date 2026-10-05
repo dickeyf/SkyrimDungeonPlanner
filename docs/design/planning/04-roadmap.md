@@ -87,6 +87,10 @@ check (R16) and texture continuity, Z levels (phase 4). See D63.
   `bridges`, `chambers` (set aside at V4 step 1); Imperial, the structural pieces outside
   `smallhall`, `largehall`, `smallroom` and `largeroom`, and the pieces left out by name
   (pillars, braces, beams...). Not in V4.
+- [ ] Openings toward another piece of the world: pieces such as Nordic `NorExSmFree01` (a
+  doorway frame on its own, one opening) lead into a cave or another kit; the assistant should
+  offer what goes on their other side. Find the other pieces that work this way. Noted on
+  4 Oct 2026, after V4.
 
 ## Later
 See `05-ideas.md`: cross-section view, thumbnails, room markers/portals, multiple selection.

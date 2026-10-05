@@ -165,6 +165,14 @@ describe('editing', () => {
     // on the active level (V3): the piece's own level 0 goes there
     expect(cellAt([128, 128, 0], ANCHOR, HALL, 0, 2)).toEqual([0, 0, 2]);
     expect(cellAt([384, 128, 0], ANCHOR, HALL, 0)).toEqual([2, 0, 0]);
+    // the grid of a piece shifted by 16 (D70): whole cells, plus that shift
+    expect(cellAt([128, 128, 0], ANCHOR, HALL, 0, 0, { shift: [0.125, 0], step: 1 })).toEqual([
+      0.125, 0, 0,
+    ]);
+    // a step of 32: quarter cells
+    expect(cellAt([160, 128, 0], ANCHOR, HALL, 0, 0, { shift: [0, 0], step: 0.25 })).toEqual([
+      0.25, 0, 0,
+    ]);
   });
 
   it('lists added, moved and removed tiles', () => {

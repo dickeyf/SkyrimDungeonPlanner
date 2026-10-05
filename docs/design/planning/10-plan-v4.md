@@ -196,6 +196,17 @@ snapping follow the selected piece.
 - **Done when**: a layout with shifted parts is baked, welded and finalized, and walked by an NPC
   in game.
 
+### Step 9b – What the game builds is right
+- **Why**: the checks still flag pairs of pieces Bethesda puts together everywhere (texture breaks
+  that do not show, junction mismatches such as damaged walls against room middles); the user
+  cannot tell which flags to trust on a kit they do not know. Asked by the user on 4 Oct 2026, for
+  the end of V4.
+- **What**: from the Vanilla check, the pairs of pieces (and their relative placement) the game
+  joins are recorded per kit; the junction verdicts and the texture continuity do not flag a pair
+  the game uses, or flag it as "seen in the game" rather than as an error.
+- **Done when**: the Nordic and Imperial false marks of the Vanilla check are gone, and a wrong
+  pair the game never uses is still flagged.
+
 ## Phase E – Building with the Nordic kit
 
 ### Step 10 – Levels and NavMesh on the Nordic kit
