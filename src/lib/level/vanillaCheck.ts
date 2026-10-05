@@ -127,7 +127,21 @@ export async function checkVanillaCells(
         const theirs = b.against
           .map((k) => pieces.get(layout.tiles.get(k)!.piece)!.editorId)
           .join(' + ');
-        const pair = `${mine}:${b.opening.dir} vs ${theirs || '(nothing)'}`;
+        // a junction between pieces of different shifts (D70) says so, with the shift in units
+        const self = layout.tiles.get(b.tile)!.cell;
+        const frac = (v: number) => v - Math.floor(v);
+        const shifts = b.against.map((k) => {
+          const c = layout.tiles.get(k)!.cell;
+          return [0, 1, 2].map((i) => {
+            const d = frac(c[i]!) - frac(self[i]!);
+            const m = i < 2 ? module : zModule;
+            return Math.round((d > 0.5 ? d - 1 : d < -0.5 ? d + 1 : d) * m);
+          });
+        });
+        const shifted = shifts.find((d) => d.some((v) => v !== 0));
+        const pair =
+          `${mine}:${b.opening.dir} vs ${theirs || '(nothing)'}` +
+          (shifted ? ` [shifted ${shifted.join(', ')}]` : '');
         const e = pairs.get(pair) ?? { seams: 0, mismatches: 0 };
         if (b.fit === 'seam') {
           e.seams++;

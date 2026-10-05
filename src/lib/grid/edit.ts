@@ -45,7 +45,7 @@ export type EditResult = { ok: true; layout: Layout; key: string } | EditFailure
 
 export type Pieces = ReadonlyMap<FormKey, Piece>;
 
-const cellKey = (c: CellIndex) => `${c[0]},${c[1]},${c[2]}`;
+const cellKey = (c: CellIndex) => `${Math.round(c[0])},${Math.round(c[1])},${Math.round(c[2])}`;
 const sameCell = (a: CellIndex, b: CellIndex) => a[0] === b[0] && a[1] === b[1] && a[2] === b[2];
 
 export function layoutFromGrid(

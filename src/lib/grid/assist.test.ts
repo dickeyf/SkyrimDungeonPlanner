@@ -127,6 +127,16 @@ describe('candidatesFor', () => {
     expect(corner.cell).toEqual([2, 0, 0]);
   });
 
+  it('also tries each placement shifted along the face by the fine step (D70)', () => {
+    const l = place(EMPTY, 'Left', [0, 0, 0], 0);
+    const [open] = openFaces(l, PIECES);
+    const c = candidatesFor(open!, l, PIECES, TYPES, { step: 0.125, reach: 2 });
+    const along = open!.dir[1] === 'X' ? 1 : 0;
+    expect(c.map((x) => x.cell[along]).sort((a, b) => a - b)).toEqual([
+      -0.25, -0.125, 0, 0.125, 0.25,
+    ]);
+  });
+
   it('matches a left profile with its right mate only', () => {
     const l = place(EMPTY, 'Left', [0, 0, 0], 0);
     const [open] = openFaces(l, PIECES);

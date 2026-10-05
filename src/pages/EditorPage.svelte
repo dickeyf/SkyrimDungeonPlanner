@@ -427,13 +427,23 @@
     mismatch: 'mismatch',
   };
   const activePiece = $derived(active ? layout?.tiles.get(active.tile)?.piece : undefined);
+  /**
+   * D70: candidates are also tried shifted along the face by the kit's fine step, up to half a
+   * module each way less one step (16, 32, 48 for 16 at 128).
+   */
+  const fineSearch = $derived.by(() => {
+    const kit = catalogue.kits[0];
+    if (!kit?.fineStep || !kit.module.xy) return undefined;
+    const step = kit.fineStep.xy / kit.module.xy;
+    return { step, reach: Math.round(0.5 / step) - 1 };
+  });
   const validPieces = $derived(new Map([...pieces].filter(([, p]) => p.review.validated)));
   // the clicked face proposes, every neighbour of the new tile must accept (step 15b)
   // placements that fit by profile; those with a junction known to leak are set apart
   const fitting = $derived(
     active && layout
       ? checkCandidates(
-          candidatesFor(active, layout, validPieces, types).sort((a, b) =>
+          candidatesFor(active, layout, validPieces, types, fineSearch).sort((a, b) =>
             pieces.get(a.piece)!.editorId.localeCompare(pieces.get(b.piece)!.editorId),
           ),
           layout,
@@ -1458,6 +1468,7 @@
             rotation: p.rotation,
             opens,
             geometry,
+            ...(fineSearch ? { fine: fineSearch } : {}),
           })
         : null;
     return (
@@ -1624,6 +1635,7 @@
           rotation: tile.rotation,
           opens: openFaces(rest, pieces).filter((o) => onLevel([...o.cells, ...o.outside])),
           geometry,
+          ...(fineSearch ? { fine: fineSearch } : {}),
         });
         const target = snapped?.cell ?? onGrid;
         const rotation = snapped?.rotation ?? tile.rotation;

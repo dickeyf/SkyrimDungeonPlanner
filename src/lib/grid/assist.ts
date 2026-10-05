@@ -379,6 +379,12 @@ export function candidatesFor(
   layout: Layout,
   pieces: Pieces,
   types: ReadonlyMap<string, ConnectionType>,
+  /**
+   * D70: also try each placement shifted along the face by multiples of this step (in cells,
+   * e.g. 0.125 for 16 at 128), up to `fine.reach` steps each way; the profile verdicts of
+   * `checkCandidates` keep the shifts whose openings really line up.
+   */
+  fine?: { step: number; reach: number },
 ): Candidate[] {
   const wantDir = oppositeDir(open.dir);
   const along = alongAxis(open.dir);
@@ -400,13 +406,21 @@ export function candidatesFor(
       const xy = [0, 0];
       xy[along] = (tSpan - span) / 2 + 0;
       xy[across] = t[0]![across] - turned[0]![across] + 0;
-      const cell: CellIndex = [xy[0]!, xy[1]!, t[0]![2] - turned[0]![2] + 0];
-      const placed = turned.map((c) => addCells(cell, c));
+      const base: CellIndex = [xy[0]!, xy[1]!, t[0]![2] - turned[0]![2] + 0];
+      const placed = turned.map((c) => addCells(base, c));
       if (!centredWithin(placed, t, along) && !centredWithin(t, placed, along)) continue;
-      const at = { piece: piece.formKey, cell, rotation };
-      if (conflictsFor(layout, pieces, footprintCells(piece, cell, rotation), undefined, at).length)
-        continue;
-      out.push({ piece: piece.formKey, cell, rotation, opening });
+      const shifts = [0];
+      if (fine) for (let k = 1; k <= fine.reach; k++) shifts.push(k * fine.step, -k * fine.step);
+      for (const s of shifts) {
+        const cell: CellIndex =
+          along === 0 ? [base[0] + s + 0, base[1], base[2]] : [base[0], base[1] + s + 0, base[2]];
+        const at = { piece: piece.formKey, cell, rotation };
+        if (
+          conflictsFor(layout, pieces, footprintCells(piece, cell, rotation), undefined, at).length
+        )
+          continue;
+        out.push({ piece: piece.formKey, cell, rotation, opening });
+      }
     }
   }
   return out;
@@ -530,6 +544,7 @@ export function snapPlacement(options: {
   rotation: Rotation;
   opens: readonly OpenFace[];
   geometry?: JointGeometry;
+  fine?: { step: number; reach: number };
 }): { cell: CellIndex; rotation: Rotation } | null {
   const { world, anchor, layout, pieces, types, rotation, geometry } = options;
   const piece = pieces.get(options.piece);
@@ -550,7 +565,7 @@ export function snapPlacement(options: {
   for (const face of options.opens) {
     if (distance(face.outside) > SNAP_RANGE * m) continue;
     const fits = checkCandidates(
-      candidatesFor(face, layout, only, types),
+      candidatesFor(face, layout, only, types, options.fine),
       layout,
       pieces,
       types,

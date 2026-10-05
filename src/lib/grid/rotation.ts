@@ -62,6 +62,11 @@ export function addCells(a: CellIndex, b: CellIndex): CellIndex {
   return [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
 }
 
+/**
+ * The key of the grid cell a cell index falls in (D70): a fractional index (a piece shifted by
+ * the fine step) is rounded to the nearest whole cell, so pieces shifted from each other still
+ * find each other's cells; pieces of the same shift round alike.
+ */
 export function cellKey(cell: CellIndex): string {
-  return `${cell[0]},${cell[1]},${cell[2]}`;
+  return `${Math.round(cell[0])},${Math.round(cell[1])},${Math.round(cell[2])}`;
 }
