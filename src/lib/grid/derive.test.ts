@@ -99,6 +99,25 @@ describe('rotation helpers', () => {
 describe('deriveGrid', () => {
   const opts = { module: MODULE, zModule: MODULE };
 
+  it('places a piece shifted by the fine step at a fractional cell (D70)', () => {
+    const refs = [
+      ref(1, HALL, [128, 128, 0]),
+      ref(2, HALL, [128, 384, 0]),
+      // shifted by 16 in X and 64 in Z
+      ref(3, HALL, [528, 128, 64]),
+    ];
+    expect(deriveGrid(refs, PIECES, opts).opaque.map((o) => o.reason)).toEqual(['off-grid']);
+    const fine = deriveGrid(refs, PIECES, { ...opts, fineStep: { xy: 16, z: 16 } });
+    expect(fine.opaque).toEqual([]);
+    expect(fine.tiles[2]!.cell).toEqual([3.125, 0, 0.5]);
+    // a shift that is not a multiple of the fine step stays off the grid
+    const odd = deriveGrid([...refs, ref(4, HALL, [906, 128, 0])], PIECES, {
+      ...opts,
+      fineStep: { xy: 16, z: 16 },
+    });
+    expect(odd.opaque.map((o) => o.reason)).toEqual(['off-grid']);
+  });
+
   it('recognizes tiles on a grid anchored anywhere and reports the anchor', () => {
     // grid origin at (1000, 2000, -512): hall origins sit at corner + pivot
     const refs = [

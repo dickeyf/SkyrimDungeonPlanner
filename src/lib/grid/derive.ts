@@ -15,6 +15,11 @@ import type { GridAnchor, OpaqueRef, PlacedRef, TilePlacement } from './types';
 export interface DeriveOptions {
   module: number;
   zModule: number;
+  /**
+   * D70: a corner off the module grid by a multiple of this step (XY, Z) is still placed, at a
+   * fractional cell index; without it, such a piece is off the grid.
+   */
+  fineStep?: { xy: number; z: number };
   /** Distance (units) a corner may be from a grid line. */
   positionTolerance?: number;
   /** Radians a rotation may be off a quarter turn, and off zero for tilt. */
@@ -151,8 +156,15 @@ export function deriveGrid(
       c.corner[1] - anchor.origin[1],
       c.corner[2] - anchor.origin[2],
     ];
-    const idx = [d[0] / module, d[1] / module, d[2] / zModule];
-    const cell: CellIndex = [Math.round(idx[0]!), Math.round(idx[1]!), Math.round(idx[2]!)];
+    // snapped to the module, or to the fine step (a fraction of a cell, exact in binary)
+    const fx = options.fineStep ? module / options.fineStep.xy : 1;
+    const fz = options.fineStep ? zModule / options.fineStep.z : 1;
+    const snap = (v: number, m: number, f: number) => Math.round((v / m) * f) / f + 0;
+    const cell: CellIndex = [
+      snap(d[0], module, fx),
+      snap(d[1], module, fx),
+      snap(d[2], zModule, fz),
+    ];
     const err = [
       Math.abs(d[0] - cell[0] * module),
       Math.abs(d[1] - cell[1] * module),

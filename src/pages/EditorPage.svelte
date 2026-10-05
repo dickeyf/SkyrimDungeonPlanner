@@ -227,7 +227,9 @@
   const levels = $derived(
     [
       ...new Set(
-        [...(layout?.tiles.keys() ?? [])].flatMap((key) => tileCells(key).map((c) => c[2])),
+        [...(layout?.tiles.keys() ?? [])].flatMap((key) =>
+          tileCells(key).map((c) => Math.floor(c[2])),
+        ),
       ),
     ].sort((a, b) => a - b),
   );
@@ -254,7 +256,7 @@
 
   /** The levels a tile spans, as text. */
   function levelText(key: string): string {
-    const ks = tileCells(key).map((c) => c[2]);
+    const ks = tileCells(key).map((c) => Math.floor(c[2]));
     if (!ks.length) return '';
     const lo = Math.min(...ks);
     const hi = Math.max(...ks);
@@ -270,7 +272,7 @@
    * snapping and the marks work on that level only; all of them when every level is shown.
    */
   function onLevel(cells: readonly CellIndex[]): boolean {
-    return activeLevel === null || cells.some((c) => c[2] === activeLevel);
+    return activeLevel === null || cells.some((c) => Math.floor(c[2]) === activeLevel);
   }
   const opens = $derived(allOpens.filter((o) => onLevel([...o.cells, ...o.outside])));
   /**
@@ -600,7 +602,7 @@
         if (!tile || covered.has(key) || !piece?.walkable?.length) return [];
         const at = tileWorldPlacement(tile, piece, anchor!);
         // a staircase or ramp is baked with the floor it starts from (its lowest level)
-        const level = Math.min(...tileCells(key).map((c) => c[2]));
+        const level = Math.min(...tileCells(key).map((c) => Math.floor(c[2])));
         return [{ key, rings: piece.walkable, pos: at.pos, heading: at.rot[2], level }];
       });
       tileCount = tiles.length;

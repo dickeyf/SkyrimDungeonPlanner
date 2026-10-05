@@ -96,7 +96,7 @@ export function tileObject(
   anchor: GridAnchor,
 ): SceneObject {
   const p = tileWorldPlacement(tile, piece, anchor);
-  const ks = footprintCells(piece, tile.cell, tile.rotation).map((c) => c[2]);
+  const ks = footprintCells(piece, tile.cell, tile.rotation).map((c) => Math.floor(c[2]));
   return {
     levels: [Math.min(...ks), Math.max(...ks)],
     key: tile.key,

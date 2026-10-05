@@ -39,6 +39,7 @@ export async function loadCell(
   const grid = deriveGrid(placed, piecesByFormKey(catalogue), {
     module: kit.module.xy,
     zModule: kit.module.z,
+    ...(kit.fineStep ? { fineStep: kit.fineStep } : {}),
   });
   const own = new Map(refs.map((r) => [r.key, r.own]));
   return {

@@ -86,6 +86,11 @@ export interface Kit {
   kit: string;
   /** Grid module in Skyrim units. Must be MEASURED (R5); do not assume 256. */
   module: { xy: number | null; z: number | null };
+  /**
+   * The fine step pieces may be shifted by from the module grid (D70), in XY and Z; absent
+   * means none. A shifted tile's cell index is fractional (3.125 = shifted by 16 at 128).
+   */
+  fineStep?: { xy: number; z: number };
   note?: string;
 }
 

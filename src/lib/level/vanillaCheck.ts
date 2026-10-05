@@ -81,7 +81,11 @@ export async function checkVanillaCells(
     let rest = placed;
     let main: ReturnType<typeof deriveGrid> | undefined;
     for (;;) {
-      const grid = deriveGrid(rest, pieces, { module, zModule });
+      const grid = deriveGrid(rest, pieces, {
+        module,
+        zModule,
+        ...(kit.fineStep ? { fineStep: kit.fineStep } : {}),
+      });
       if (grid.tiles.length < MIN_SECTION) {
         for (const o of grid.opaque) outside[o.reason] = (outside[o.reason] ?? 0) + 1;
         outside['off-grid'] = (outside['off-grid'] ?? 0) + grid.tiles.length;

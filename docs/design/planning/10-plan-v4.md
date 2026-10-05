@@ -156,6 +156,19 @@ snapping follow the selected piece.
 - **Done when**: the Vanilla check finds nearly every Nordic and Imperial piece of the walls and
   floors in one grid (the arbitrary offsets and other angles aside), and the editor opens and
   saves the test cells exactly as before.
+- **Result (4 Oct 2026)**: done, in two parts.
+  1. The (±17.5, 0, 0) offset was a pivot error: `NorRmBgWallSide01` (and its snow and ice
+     variants) has a gallery doorway high in the wall, set 17.5 units into it; the analysis took
+     the piece's grid from that doorway. The grid is now set by the openings at the piece's
+     floor level, else by a box edge on the grid. Only those three pieces change; every Imperial
+     piece is unchanged (pivots and faces compared before and after on the game files).
+  2. Fine positions (option B, see D70's reasons): a kit's `fineStep` (16 in XY and Z for both
+     kits); `deriveGrid` places a corner off the module grid by a multiple of the fine step at a
+     fractional cell index (3.125 for 16 at 128); levels take the floor of the index.
+  Measured on the game files: Nordic, 10,911 of the 11,341 pieces that are neither turned by
+  other angles, tilted nor scaled (96 %) now on the CELL's grid (9,276 before), 77 left off it;
+  Imperial, 2,757 of 2,994 (92 %, 1,724 before), 14 left off it. What remains are a few groups
+  shifted by arbitrary amounts ((45.7, 54.7, 8.4)...), placed by hand.
 
 ### Step 7 – The contextual grid
 - **Why**: the designer works on 128 as before; finer steps appear only where a piece needs them.

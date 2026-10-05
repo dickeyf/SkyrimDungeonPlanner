@@ -25,6 +25,17 @@ lowest tile corner so existing tiles get small non-negative indices. With no til
 cell), the anchor is the world origin. Cells claimed by several tiles are listed as overlaps:
 tolerated in a loaded level (D58), refused for new placements.
 
+## Fine positions (D70, V4)
+
+A kit may declare a fine step (`Kit.fineStep`, 16 units in XY and Z for Imperial and Nordic):
+parts of the game's CELLs are shifted from the module grid by multiples of it. `deriveGrid`
+then places a corner that is off the module grid by a multiple of the step at a **fractional
+cell index** (3.125 is a shift of 16 at 128; eighths are exact in binary, so indices compare and
+key exactly). A tile keeps its 128 cells; its occupied cells and its faces carry the same
+fraction, so tiles of the same shift share their indices and every grid computation works as
+before among them. Levels are the floor of the Z index. Why not 16-unit cells: a small hall
+would go from 4 cells to 2,048, and every occupancy and junction computation with it.
+
 ## Layout and editing (`grid/edit.ts`)
 
 A **layout** is an immutable map of tiles (`key`, piece, cell, rotation, `own`, and for

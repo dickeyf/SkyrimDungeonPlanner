@@ -139,7 +139,14 @@ export async function analyseKit(
 
   const catalogue: Catalogue = {
     version: 1,
-    kits: [{ kit: kit.kit, module: kit.module, note: kit.note }],
+    kits: [
+      {
+        kit: kit.kit,
+        module: kit.module,
+        ...(kit.fineStep ? { fineStep: kit.fineStep } : {}),
+        note: kit.note,
+      },
+    ],
     connectionTypes,
     pieces: pieces
       .filter((p) => !p.error && p.openings.length > 0)

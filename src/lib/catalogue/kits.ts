@@ -19,6 +19,8 @@ export interface KitDefinition extends Kit {
 export const IMPERIAL_KIT: KitDefinition = {
   kit: 'Imperial',
   module: { xy: 128, z: 128 },
+  // parts of a CELL shifted by 16, 32 or 64 from the main grid (Vanilla check, D70)
+  fineStep: { xy: 16, z: 16 },
   note: 'Measured by R5 on the vanilla meshes: base tile 256 x 256, stairs rise 256.',
   modelPrefix: 'dungeons/imperial/',
   subkits: {
@@ -36,6 +38,7 @@ export const IMPERIAL_KIT: KitDefinition = {
 export const NORDIC_KIT: KitDefinition = {
   kit: 'Nordic',
   module: { xy: 128, z: 128 },
+  fineStep: { xy: 16, z: 16 },
   note: 'Measured by V4 step 1 (R19): 166 of 201 pieces on the 128 grid; stairs rise 128 or 256.',
   modelPrefix: 'dungeons/nordic/',
   // the room middles and secret passages carry 12 to 18 vertices on their open sides (step 3)
