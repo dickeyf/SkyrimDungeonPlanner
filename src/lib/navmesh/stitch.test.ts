@@ -191,3 +191,24 @@ describe('removeTriangles', () => {
     expect(decodeNvnm(encodeNvnm(r))).toEqual(r);
   });
 });
+
+describe('coveredTiles with shifted pieces (D70)', () => {
+  it('finds a tile shifted by the fine step on its own grid', () => {
+    const nav = buildNavMesh(
+      1,
+      [
+        [20, 4, 0],
+        [40, 4, 0],
+        [30, 60, 0],
+      ],
+      [[0, 1, 2]],
+    );
+    const grid = { origin: [0, 0, 0] as [number, number, number], module: { xy: 128, z: 128 } };
+    // a tile at x from 16 to 144 (shifted by 16) holds the centre (30, 22.7)
+    const shifted = [{ key: 's', cells: [[0.125, 0, 0]] as [number, number, number][] }];
+    expect([...coveredTiles(nav, shifted, grid)]).toEqual(['s']);
+    // shifted by 64 the other way it does not
+    const away = [{ key: 'a', cells: [[0.5, 0, 0]] as [number, number, number][] }];
+    expect([...coveredTiles(nav, away, grid)]).toEqual([]);
+  });
+});

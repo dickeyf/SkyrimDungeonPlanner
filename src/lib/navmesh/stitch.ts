@@ -33,22 +33,60 @@ export function coveredTiles(
   tiles: readonly TileFootprint[],
   grid: GridFrame,
 ): Set<string> {
-  const owner = new Map<string, string>();
-  for (const t of tiles) for (const c of t.cells) owner.set(c.join(','), t.key);
+  const find = cellFinder(tiles, grid);
   const out = new Set<string>();
-  const { origin, module } = grid;
   for (const t of nav.triangles) {
-    const [x, y, z] = [0, 1, 2].map(
-      (k) => t.vertices.reduce((sum, v) => sum + nav.vertices[v]![k]!, 0) / 3,
-    ) as [number, number, number];
-    const i = Math.floor((x - origin[0]) / module.xy);
-    const j = Math.floor((y - origin[1]) / module.xy);
-    // the level whose floor lies at most half a level below the centre
-    const k = Math.floor((z - origin[2]) / module.z + 0.5);
-    const key = owner.get(`${i},${j},${k}`) ?? owner.get(`${i},${j},${k - 1}`);
+    const key = find(centreOf(nav, t.vertices));
     if (key) out.add(key);
   }
   return out;
+}
+
+function centreOf(
+  nav: Pick<NavMeshData, 'vertices'>,
+  vertices: readonly number[],
+): [number, number, number] {
+  return [0, 1, 2].map((k) => vertices.reduce((sum, v) => sum + nav.vertices[v]![k]!, 0) / 3) as [
+    number,
+    number,
+    number,
+  ];
+}
+
+/**
+ * The tile whose cell holds a point, at that cell's level (from half a level below its floor to
+ * its top). Cells may be fractional (pieces shifted by the fine step, D70): each shift is
+ * looked up on its own grid.
+ */
+function cellFinder(
+  tiles: readonly TileFootprint[],
+  grid: GridFrame,
+): (p: [number, number, number]) => string | undefined {
+  const frac = (v: number) => v - Math.floor(v);
+  const byShift = new Map<
+    string,
+    { shift: [number, number, number]; owner: Map<string, string> }
+  >();
+  for (const t of tiles)
+    for (const c of t.cells) {
+      const shift: [number, number, number] = [frac(c[0]), frac(c[1]), frac(c[2])];
+      const k = shift.join(',');
+      let e = byShift.get(k);
+      if (!e) byShift.set(k, (e = { shift, owner: new Map() }));
+      e.owner.set(c.map(Math.floor).join(','), t.key);
+    }
+  const { origin, module } = grid;
+  return ([x, y, z]) => {
+    for (const { shift, owner } of byShift.values()) {
+      const i = Math.floor((x - origin[0]) / module.xy - shift[0]);
+      const j = Math.floor((y - origin[1]) / module.xy - shift[1]);
+      // the level whose floor lies at most half a level below the point
+      const k = Math.floor((z - origin[2]) / module.z - shift[2] + 0.5);
+      const key = owner.get(`${i},${j},${k}`) ?? owner.get(`${i},${j},${k - 1}`);
+      if (key) return key;
+    }
+    return undefined;
+  };
 }
 
 const edgeKey = (u: number, v: number) => (u < v ? `${u}:${v}` : `${v}:${u}`);
@@ -278,18 +316,10 @@ export function trianglesInTiles(
   tiles: readonly TileFootprint[],
   grid: GridFrame,
 ): number[] {
-  const cells = new Set<string>();
-  for (const t of tiles) for (const c of t.cells) cells.add(c.join(','));
-  const { origin, module } = grid;
+  const find = cellFinder(tiles, grid);
   const out: number[] = [];
   nav.triangles.forEach((t, i) => {
-    const [x, y, z] = [0, 1, 2].map(
-      (k) => t.vertices.reduce((sum, v) => sum + nav.vertices[v]![k]!, 0) / 3,
-    ) as [number, number, number];
-    const ci = Math.floor((x - origin[0]) / module.xy);
-    const cj = Math.floor((y - origin[1]) / module.xy);
-    const k = Math.floor((z - origin[2]) / module.z + 0.5);
-    if (cells.has(`${ci},${cj},${k}`) || cells.has(`${ci},${cj},${k - 1}`)) out.push(i);
+    if (find(centreOf(nav, t.vertices))) out.push(i);
   });
   return out;
 }

@@ -187,6 +187,17 @@ snapping follow the selected piece.
   texture continuity working on fine positions.
 - **Done when**: the pieces Bethesda joins with a 16 or 32 shift are offered at their face, and
   placing one switches the grid to its offset.
+- **Result (4 Oct 2026)**: done, tested by the user (`NorRmSmCorIn01`, then
+  `NorRmSmWallFrontExBg01` offered shifted by 32, then `NorHallBg1wayEndExBg01` on its 286
+  doorway). Each candidate is also tried shifted along the face by the fine step, up to half a
+  module less one step (±16, ±32, ±48); the profile verdicts keep the shifts whose openings line
+  up. Why along only: the game's shifts at a junction run along the face; a shift across it
+  changes the depth of the joint, which the verdict does not weigh yet. A cell key rounds a
+  fractional index to the nearest whole cell, so pieces of different shifts find each other's
+  cells (junctions judged instead of faces left open). On the game's CELLs, open faces dropped
+  (Imperial 670 to 488, Nordic 4,409 to 4,345) but junctions between shifted pieces are now
+  judged and some flagged though the game uses them (98 Imperial, 66 Nordic, labelled
+  "[shifted]" in the Vanilla check): left to step 9b, which learns the pairs from the game.
 
 ### Step 9 – Levels and NavMesh on the fine grid
 - **Why**: levels and the bake used 128 cells: shifted pieces must still be baked and shown on
@@ -195,6 +206,10 @@ snapping follow the selected piece.
   along the CELL's main 128 grid; coverage (D35) and Fill from the fine positions.
 - **Done when**: a layout with shifted parts is baked, welded and finalized, and walked by an NPC
   in game.
+- **Progress (4 Oct 2026)**: levels take the floor of a fractional index (step 6); the bake still
+  cuts along the CELL's main 128 grid (a shifted piece is just cut less regularly); the coverage
+  test (D35) and Replace / Clear look each shift up on its own grid (`cellFinder` in
+  `navmesh/stitch.ts`).
 
 ### Step 9b – What the game builds is right
 - **Why**: the checks still flag pairs of pieces Bethesda puts together everywhere (texture breaks
