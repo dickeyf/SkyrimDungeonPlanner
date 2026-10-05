@@ -98,6 +98,8 @@ export interface GridSpec {
   module: number;
   /** Cell range to draw, [i0, i1) x [j0, j1). */
   range: [number, number, number, number];
+  /** Every `major`-th line drawn stronger (the module, when `module` is a finer step). */
+  major?: number;
 }
 
 /**
@@ -138,7 +140,7 @@ export class CellScene {
   private readonly camera = new OrthographicCamera(-1, 1, 1, -1, -100000, 100000);
   private readonly controls: MapControls;
   private readonly objects = new Group();
-  private grid: LineSegments | null = null;
+  private grid: Group | null = null;
   private readonly materials = new Map<string, MeshLambertMaterial>();
   private readonly byKey = new Map<string, Mesh>();
   private readonly selected = new Set<Mesh>();
@@ -210,8 +212,10 @@ export class CellScene {
   setGrid(spec: GridSpec | null): void {
     if (this.grid) {
       this.scene.remove(this.grid);
-      this.grid.geometry.dispose();
-      (this.grid.material as LineBasicMaterial).dispose();
+      for (const c of this.grid.children) {
+        (c as LineSegments).geometry.dispose();
+        ((c as LineSegments).material as LineBasicMaterial).dispose();
+      }
       this.grid = null;
       this.gridBounds = null;
     }
@@ -224,13 +228,33 @@ export class CellScene {
         minY: spec.origin[1] + j0 * spec.module,
         maxY: spec.origin[1] + j1 * spec.module,
       };
-      const geometry = new BufferGeometry();
-      geometry.setAttribute(
-        'position',
-        new Float32BufferAttribute(gridLines(spec.origin, spec.module, i0, i1, j0, j1), 3),
-      );
-      this.grid = new LineSegments(geometry, new LineBasicMaterial({ color: 0x3d3b47 }));
-      this.grid.renderOrder = -1;
+      const lines = (points: number[], color: number) => {
+        const geometry = new BufferGeometry();
+        geometry.setAttribute('position', new Float32BufferAttribute(points, 3));
+        const l = new LineSegments(geometry, new LineBasicMaterial({ color }));
+        l.renderOrder = -1;
+        return l;
+      };
+      this.grid = new Group();
+      const major = spec.major ?? 1;
+      if (major > 1) {
+        // the fine step pale, every `major` line (the module) as usual
+        this.grid.add(lines(gridLines(spec.origin, spec.module, i0, i1, j0, j1), 0x24232b));
+        const m = spec.module * major;
+        this.grid.add(
+          lines(
+            gridLines(
+              spec.origin,
+              m,
+              Math.floor(i0 / major),
+              Math.ceil(i1 / major),
+              Math.floor(j0 / major),
+              Math.ceil(j1 / major),
+            ),
+            0x3d3b47,
+          ),
+        );
+      } else this.grid.add(lines(gridLines(spec.origin, spec.module, i0, i1, j0, j1), 0x3d3b47));
       this.scene.add(this.grid);
     }
     this.requestRender();

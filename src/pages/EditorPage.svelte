@@ -227,6 +227,7 @@
     return {
       ...g,
       module: step,
+      major: k,
       range: g.range.map((v) => v * k) as typeof g.range,
       origin: [g.origin[0] + gridShift[0] * m, g.origin[1] + gridShift[1] * m, g.origin[2]] as Vec3,
     };
