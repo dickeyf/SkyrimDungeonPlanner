@@ -75,8 +75,21 @@ export function computeFootprint(
   const notes: string[] = [];
   const phase: [number, number] = [0, 0];
   const raw: [number[], number[]] = [[], []];
+  // the grid is set by the openings at the piece's floor: a doorway higher up (a gallery on a
+  // big room's wall) may sit inside the wall, off the grid (V4, NorRmBgWallSide01 by 17.5)
+  const floorLevel = openings.length
+    ? Math.min(...openings.map((o) => Math.round(o.zMin / zModule)))
+    : 0;
   for (const axis of [0, 1] as const) {
-    const planes = openings.filter((o) => o.axis === axis).map((o) => o.plane);
+    const onAxis = openings.filter((o) => o.axis === axis);
+    const low = onAxis.filter((o) => Math.round(o.zMin / zModule) === floorLevel);
+    const edgeOnGrid = [g.min[axis], g.max[axis]].some(
+      (e) => Math.abs(e - Math.round(e / module) * module) <= GRID_TOL,
+    );
+    // only higher openings on this axis: the box edge on the grid, if any, wins over them
+    const planes = (low.length || !edgeOnGrid ? onAxis : [])
+      .map((o) => (low.length ? (low.includes(o) ? o.plane : NaN) : o.plane))
+      .filter((p) => !Number.isNaN(p));
     const { phase: ph, ok } = gridPhase(planes, [g.min[axis], g.max[axis]], module);
     if (!ok)
       notes.push(
