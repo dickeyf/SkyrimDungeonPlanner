@@ -24,6 +24,8 @@ into the Nordic one and back, in game._
 
 - D68 (new): **several kits in one catalogue**: every kit's pieces are analysed and offered; a
   piece knows its kit, a tile its kit's module; the palette filters by kit (step 4).
+- D70 (new, 4 Oct 2026): **fine grid, contextual grid**: positions at a fine step, the grid
+  shown and the snapping following the selected piece, instead of one 128 grid per CELL (Phase D).
 - D69 (new): **annotations per kit**, one committed file per kit (`data/annotations/<kit>.json`),
   validated on the Validation page kit by kit (step 3).
 
@@ -117,24 +119,82 @@ are unknown. They are measured before anything is built on them.
 
 ## Phase C – Building with the Nordic kit
 
-### Step 5 – Assistant and junction checks
-- **Why**: the assistant and the verdicts compare face profiles: the Nordic faces (curved
-  arches, uneven sills) may need new tolerances.
-- **What**: build a Nordic layout with the assistant; check the verdicts (seams, mismatches),
-  the deep leak check and the texture continuity on it; tune what the Nordic faces need, with
-  tests built from synthetic profiles.
-- **Done when**: a Nordic layout of halls and rooms is built with the assistant with no false
-  mark, and a wrong junction is flagged.
+### Step 5 – Vanilla check and junction checks
+- **Why**: the user had never built with the Nordic kit and could not tell a false mark from a
+  real one; the game's own CELLs, mostly right, are the reference instead.
+- **What**: a "Vanilla check" page (Settings): for the chosen kit, the master's CELLs built with
+  it are read like the editor reads a plugin; it reports the pieces on a grid and why the others
+  are not, the groups of pieces sharing one grid and their offsets, and the bad junctions by
+  pair of pieces. The frequent bad pairs are reviewed and, when Bethesda uses them, accepted in
+  the annotations.
+- **Done when**: the page runs on both kits, and the Nordic pairs Bethesda uses are no longer
+  flagged.
+- **First run (4 Oct 2026)**: Nordic, 95 CELLs, 13,584 pieces: 79 % on a grid, but only 9,276 on
+  the CELL's main grid; 1,455 in 94 groups offset from it, by multiples of 32 in XY and of 16 in
+  Z for the most part ((64, 64, 0), (0, 32, 0), (64, 0, 64), (0, 0, -16)...), a few by arbitrary
+  amounts ((46, 55, 8)...); a recurring (±17, 0, 0) pair is likely a pivot error of the
+  catalogue; 1,995 pieces turned by other angles than 90°, nearly all in caves. Junctions: 0
+  seams and 420 mismatches, nearly all on a few pairs (damaged small room walls against room
+  middles, corners against secret room walls). Imperial, 50 CELLs: 67 % on a grid, the most
+  frequent offset half a level (0, 0, 64); 33 seams and 76 mismatches spread over many pairs.
+  This led to D70.
 
-### Step 6 – Levels and NavMesh on the Nordic kit
+## Phase D – Fine grid (D70)
+
+The game's CELLs place the pieces on a 128 grid but shift parts of a CELL by 16, 32 or 64 units:
+one 128 grid per CELL cannot read them, and the assistant cannot offer a piece that fits only
+with such a shift. D70: positions are kept at a fine step (16 units), the grid shown and the
+snapping follow the selected piece.
+
+### Step 6 – Positions at the fine step
+- **Why**: the base of D70; everything else uses it.
+- **What**: a kit's fine step (16 in XY and Z for Imperial and Nordic, kit data, D53); a tile's
+  position held in fine steps instead of 128 cells; its occupied space computed at that step
+  (overlaps and shared cells); reading a CELL places every piece whose corner falls on the fine
+  step, the rest stays opaque (shown, not edited); the pivot error behind the (±17, 0, 0) offset
+  found and fixed first. Saving unchanged (world positions).
+- **Done when**: the Vanilla check finds nearly every Nordic and Imperial piece of the walls and
+  floors in one grid (the arbitrary offsets and other angles aside), and the editor opens and
+  saves the test cells exactly as before.
+
+### Step 7 – The contextual grid
+- **Why**: the designer works on 128 as before; finer steps appear only where a piece needs them.
+- **What**: the grid drawn and the snapping step are 128 by default, on the CELL's main grid;
+  selecting a piece shows its own 128 grid, through its corner (a piece shifted by 16 shows a
+  grid shifted by 16, and so do the pieces plugged into it); dragging moves by 128 keeping that
+  offset; a step selector (and a key) switches to 64, 32 or 16; a piece placed from the palette
+  in the void goes on the grid of the last selected piece, else the main grid.
+- **Done when**: a 128 + 16-shifted + 128 chain is built and moved, each piece showing its own
+  grid when selected.
+
+### Step 8 – The assistant at every offset
+- **Why**: at an open face, every piece that fits must be offered, whatever shift it needs.
+- **What**: the candidates of a face computed at the exact position the face imposes, in fine
+  steps; snapping from the palette onto a face the same way; the junction verdicts, leaks and
+  texture continuity working on fine positions.
+- **Done when**: the pieces Bethesda joins with a 16 or 32 shift are offered at their face, and
+  placing one switches the grid to its offset.
+
+### Step 9 – Levels and NavMesh on the fine grid
+- **Why**: levels and the bake used 128 cells: shifted pieces must still be baked and shown on
+  the right level.
+- **What**: levels stay 128 high for display, a piece's level from its fine Z; the bake still cut
+  along the CELL's main 128 grid; coverage (D35) and Fill from the fine positions.
+- **Done when**: a layout with shifted parts is baked, welded and finalized, and walked by an NPC
+  in game.
+
+## Phase E – Building with the Nordic kit
+
+### Step 10 – Levels and NavMesh on the Nordic kit
 - **Why**: Nordic dungeons rely heavily on stairs and level changes; the bake per level (V3)
   and Finalize must hold.
 - **What**: a two-level Nordic layout baked, welded at the stairs, finalized; checked in the CK
   and in game.
 - **Done when**: an NPC follows the player up and down a Nordic staircase in game.
 
-## Step 7 – V4 milestone
-- **What**: the success criterion above, on a new Nordic test dungeon and an Imperial cell joined to it by a load door. Frictions noted, fixed,
-  then documentation (user guide, architecture) updated.
+## Step 11 – V4 milestone
+- **What**: the success criterion above, on a new Nordic test dungeon and an Imperial cell
+  joined to it by a load door. Frictions noted, fixed, then documentation (user guide,
+  architecture) updated.
 - **Done when**: the criterion is met; the release version is proposed and confirmed (D63),
   tagged, and published.

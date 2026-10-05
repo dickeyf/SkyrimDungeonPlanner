@@ -4,6 +4,7 @@
   import DeveloperPage from './DeveloperPage.svelte';
   import SetupPage from './SetupPage.svelte';
   import ValidationPage from './ValidationPage.svelte';
+  import VanillaCheckPage from './VanillaCheckPage.svelte';
 
   let { route }: { route: string } = $props();
 
@@ -11,6 +12,7 @@
     ['/settings', 'Folders and plugin'],
     ['/settings/catalogue', 'Catalogue'],
     ['/settings/validation', 'Validation'],
+    ['/settings/vanilla', 'Vanilla check'],
     ...(import.meta.env.DEV ? [['/settings/developer', 'Developer']] : []),
   ] as [string, string][];
 </script>
@@ -27,6 +29,8 @@
       <CataloguePage />
     {:else if route === '/settings/validation'}
       <ValidationPage />
+    {:else if route === '/settings/vanilla'}
+      <VanillaCheckPage />
     {:else if route === '/settings/developer' && import.meta.env.DEV}
       <DeveloperPage />
     {:else}

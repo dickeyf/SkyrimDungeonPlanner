@@ -74,6 +74,8 @@ NPC follows the player through it in game. V2.**
 ## Nordic kit – V4, see `10-plan-v4.md`
 - [ ] R19 module, pivots and faces; R20 collision and floors
 - [ ] Several kits in one catalogue, annotations per kit (D68, D69)
+- [x] Vanilla check: the game's CELLs measured with the tool's checks (4 Oct 2026)
+- [ ] Fine grid, contextual grid (D70)
 - [ ] Assistant, checks, levels and NavMesh on the Nordic kit
 - [x] ~~Transitions between kits (D54)~~: none in the game, the kits meet through load doors
 
