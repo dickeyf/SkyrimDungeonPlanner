@@ -7,7 +7,19 @@
   import KitPicker from '../components/KitPicker.svelte';
   import { applyAnnotations } from '$lib/catalogue/annotations';
   import type { JointGeometry } from '$lib/grid/assist';
-  import { readAll } from '$lib/fs';
+  import {
+    HANDLE_KEYS,
+    ensureAccess,
+    isProjectFolder,
+    loadHandle,
+    pickDirectory,
+    readAll,
+    saveHandle,
+    writeProjectFile,
+  } from '$lib/fs';
+  import { MIN_VANILLA_COUNT, serializeVanillaPairs } from '$lib/catalogue/vanillaPairs';
+  import { vanillaPairsOf } from '$lib/session/vanillaPairs';
+  import { acceptedOverlaps } from '$lib/grid/overlaps';
   import { EspLevelStore, checkVanillaCells, type VanillaReport } from '$lib/level';
   import { annotationStore } from '$lib/session/annotationStore.svelte';
   import { catalogueStore as store } from '$lib/session/catalogueStore.svelte';
@@ -20,6 +32,35 @@
   let busy = $state(false);
   let progress = $state('');
   let error = $state('');
+  /** Judge with the committed pairs of the game (V4 step 9b), or without them. */
+  let usePairs = $state(true);
+  let saveMessage = $state('');
+
+  /** Write the pairs the game uses (at least MIN_VANILLA_COUNT times) into the repository. */
+  async function savePairs(): Promise<void> {
+    if (!report) return;
+    saveMessage = '';
+    try {
+      let project = await loadHandle<FileSystemDirectoryHandle>(HANDLE_KEYS.projectFolder);
+      if (!project || !(await ensureAccess(project, 'readwrite')))
+        project = await pickDirectory('project-folder', 'readwrite');
+      if (!(await isProjectFolder(project))) {
+        saveMessage = `"${project.name}" is not a checkout of this project (package.json).`;
+        return;
+      }
+      await saveHandle(HANDLE_KEYS.projectFolder, project);
+      const pairs = report.seen.filter((p) => p.count >= MIN_VANILLA_COUNT);
+      const path = await writeProjectFile(
+        project,
+        'data/vanilla',
+        `${reportKit.toLowerCase()}.json`,
+        serializeVanillaPairs({ version: 1, kit: reportKit, master, pairs }),
+      );
+      saveMessage = `${pairs.length} pairs written to ${path}: review and commit it with git (reload the page to use them).`;
+    } catch (e) {
+      saveMessage = `Not saved: ${(e as Error).message}`;
+    }
+  }
 
   async function run(): Promise<void> {
     if (!session.view) return;
@@ -41,6 +82,7 @@
       const geometry: JointGeometry = {
         module: { xy: kit.module.xy!, z: kit.module.z! },
         profileOf: (k, dir) => profiles.get(`${editorIds.get(k)}:${dir}`),
+        ...(usePairs ? { vanilla: acceptedOverlaps(vanillaPairsOf(kit.kit)) } : {}),
       };
       progress = `reading ${master}...`;
       const file = await session.view.overlay.resolveFile(master);
@@ -139,6 +181,10 @@
           style="width: 4rem"
         /> kit pieces</label
       >
+      <label
+        title="Take the pairs of pieces the game puts together (data/vanilla) as right junctions"
+        ><input type="checkbox" bind:checked={usePairs} /> use the game's pairs</label
+      >
       <button disabled={busy} onclick={run}>Run</button>
       {#if busy}<span class="hint">{progress || store.progress || 'working...'}</span>{/if}
       {#if error}<span class="err">{error}</span>{/if}
@@ -164,6 +210,16 @@
         Main sections: {totals.open} open faces, {totals.seams} seams, {totals.mismatches} mismatches
       </li>
     </ul>
+
+    <p>
+      {report.seen.length} pairs of pieces meet at an opening, {report.seen.filter(
+        (p) => p.count >= MIN_VANILLA_COUNT,
+      ).length} of them at least {MIN_VANILLA_COUNT} times.
+      {#if import.meta.env.DEV}<button onclick={savePairs}
+          >Save the game's pairs to the repository</button
+        >{/if}
+      {#if saveMessage}<span class="hint">{saveMessage}</span>{/if}
+    </p>
 
     <h3>Offsets of the other sections (x, y, z from the main grid; pieces)</h3>
     <table>

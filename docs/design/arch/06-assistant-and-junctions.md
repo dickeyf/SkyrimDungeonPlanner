@@ -137,6 +137,16 @@ shells of the pieces meet on the plane too and never match: they are left out.
 once the meshes are read, `MeshCache.merged`). With the option on, the editor marks breaks in
 cyan and ranks the assistant's placements: continuous first, not checked yet, then breaks.
 
+## The game's pairs (`catalogue/vanillaPairs.ts`, V4 step 9b)
+
+The Vanilla check (`level/vanillaCheck.ts`) reads the master's CELLs built with a kit and lists
+every pair of tiles meeting at an opening (`meetingPairs`) with its relative placement
+(`relativePlacement`, as for accepted overlaps) and a count. The pairs used at least twice are
+committed per kit in `data/vanilla/<kit>.json` and passed to the verdicts as
+`JointGeometry.vanilla`: a junction whose tiles in front all stand in such a placement is taken
+as exact, and its texture breaks are not shown. Why: the profile and texture checks flag pairs
+the game uses everywhere, which a designer new to a kit cannot tell from real faults.
+
 ## Marks
 
 | Mark | Meaning | Source |

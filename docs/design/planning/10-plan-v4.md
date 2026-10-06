@@ -221,6 +221,16 @@ snapping follow the selected piece.
   the game uses, or flag it as "seen in the game" rather than as an error.
 - **Done when**: the Nordic and Imperial false marks of the Vanilla check are gone, and a wrong
   pair the game never uses is still flagged.
+- **Result (5 Oct 2026)**: done. The Vanilla check collects every pair of pieces meeting at an
+  opening in the main grid of each CELL, with its relative placement (the same form as an
+  accepted overlap, D61) and how often the game uses it; "Save the game's pairs" writes the pairs
+  used at least twice to `data/vanilla/<kit>.json` (generated, committed, bundled like the
+  annotations; Nordic 2,168 pairs of 3,727, Imperial 853 of 2,220). A junction whose tiles in
+  front all stand as the game places them is taken as right (`JointGeometry.vanilla`), and so is
+  its texture continuity. Why twice: a pair seen once may be one of Bethesda's mistakes (the
+  stair slit of V3 step 7); why a relative placement and not only the pieces: the same two
+  pieces placed otherwise must still be judged (unit test). Measured with the pairs: Nordic
+  mismatches 567 to 220, Imperial 245 to 210; what remains are pairs the game uses once.
 
 ## Phase E – Building with the Nordic kit
 

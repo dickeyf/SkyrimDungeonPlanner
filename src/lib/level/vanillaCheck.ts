@@ -11,7 +11,9 @@ import { deriveGrid } from '../grid/derive';
 import type { PlacedRef } from '../grid/types';
 import { layoutFromGrid } from '../grid/edit';
 import { acceptedOverlaps } from '../grid/overlaps';
-import { badJoints, openFaces, type JointGeometry } from '../grid/assist';
+import { badJoints, meetingPairs, openFaces, type JointGeometry } from '../grid/assist';
+import { relativePlacement } from '../grid/overlaps';
+import type { VanillaPair } from '../catalogue/vanillaPairs';
 
 export interface VanillaSection {
   tiles: number;
@@ -39,6 +41,8 @@ export interface VanillaReport {
   cells: VanillaCell[];
   /** Bad junctions of the main sections, by "piece:face vs facing pieces". */
   pairs: { pair: string; seams: number; mismatches: number }[];
+  /** The pairs of pieces meeting at an opening in the main sections, with their counts. */
+  seen: VanillaPair[];
 }
 
 /** A section holds at least this many pieces; fewer are left as off the grid. */
@@ -65,6 +69,7 @@ export async function checkVanillaCells(
   const types = new Map(catalogue.connectionTypes.map((t) => [t.id, t]));
   const accepted = acceptedOverlaps(catalogue.overlaps ?? []);
   const pairs = new Map<string, { seams: number; mismatches: number }>();
+  const seen = new Map<string, VanillaPair>();
   const cells: VanillaCell[] = [];
   const all = await store.listCells();
   for (const [n, cell] of all.entries()) {
@@ -120,6 +125,13 @@ export async function checkVanillaCells(
     let mismatches = 0;
     if (main) {
       const layout = layoutFromGrid(main, new Map(), accepted);
+      for (const [a, b] of meetingPairs(layout, pieces)) {
+        const rel = relativePlacement(layout.tiles.get(a)!, layout.tiles.get(b)!);
+        const k = `${rel.pieces.join('|')}|${rel.rotation}|${rel.offset.join(',')}`;
+        const e = seen.get(k);
+        if (e) e.count++;
+        else seen.set(k, { ...rel, count: 1 });
+      }
       const bad = badJoints(layout, pieces, types, geometry);
       open = openFaces(layout, pieces).length;
       for (const b of bad) {
@@ -167,6 +179,7 @@ export async function checkVanillaCells(
   options.onProgress?.(all.length, all.length, '');
   return {
     cells,
+    seen: [...seen.values()],
     pairs: [...pairs]
       .map(([pair, e]) => ({ pair, ...e }))
       .sort((a, b) => b.seams + b.mismatches - a.seams - a.mismatches),

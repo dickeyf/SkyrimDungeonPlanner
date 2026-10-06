@@ -19,6 +19,18 @@ export async function isProjectFolder(dir: FsDir): Promise<boolean> {
   }
 }
 
+/** Write `<folder>/<name>` in the project checkout (generated data, e.g. `data/vanilla`). */
+export async function writeProjectFile(
+  project: FsDir,
+  folder: string,
+  name: string,
+  content: string,
+): Promise<string> {
+  const dir = await resolveDir(project, folder, { create: true });
+  await writeFileAtomic(dir, name, content);
+  return `${folder}/${name}`;
+}
+
 /** Write `data/annotations/<kit>.json` in the project checkout. */
 export async function writeProjectAnnotations(
   project: FsDir,

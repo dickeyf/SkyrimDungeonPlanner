@@ -29,7 +29,7 @@ import {
   type JointFit,
   type ProfileFit,
 } from './joints';
-import { overlapAccepted } from './overlaps';
+import { overlapAccepted, type AcceptedOverlaps } from './overlaps';
 import type { GridAnchor, OpaqueRef } from './types';
 import { addCells, cellKey, dirOffset, oppositeDir, rotateDir, type Rotation } from './rotation';
 
@@ -171,6 +171,8 @@ export interface Joint extends OpenFace {
   detail?: { mineOnTheirs: number; theirsOnMine: number };
   /** Gap between the two opening planes (units, negative when they overlap). */
   depth?: number;
+  /** Every tile in front stands as the game places it next to this one (V4 step 9b). */
+  vanilla?: boolean;
 }
 
 /** A junction that is not clean: `seam` or `mismatch`. */
@@ -180,6 +182,11 @@ export type BadJoint = Joint;
 export interface JointGeometry {
   profileOf(piece: FormKey, dir: FaceDir): Profile | undefined;
   module: { xy: number; z: number };
+  /**
+   * Pairs of pieces the game puts together in this relative placement (V4 step 9b): their
+   * junction is taken as right, whatever the profiles say (the game shows they look right).
+   */
+  vanilla?: AcceptedOverlaps;
 }
 
 /**
@@ -253,6 +260,13 @@ function judge(ctx: JointContext, o: OpenFace): Joint | null {
   ];
   const against = inFront.filter((k) => !partner(k));
   if (!against.length) return null;
+  // the game puts these pieces together like this: the junction is right (V4 step 9b)
+  const vanilla = ctx.geometry?.vanilla;
+  if (
+    vanilla?.size &&
+    against.every((k) => overlapAccepted(vanilla, self, ctx.layout.tiles.get(k)!))
+  )
+    return { ...o, against, facing: [], fit: 'exact', gap: 0, vanilla: true };
   const face: Face = { ...o.opening.face, dir: o.dir };
   const along = alongAxis(o.dir);
   const want = new Set(o.outside.map(cellKey));
@@ -306,6 +320,21 @@ function judge(ctx: JointContext, o: OpenFace): Joint | null {
 }
 
 const isBad = (j: Joint | null): j is Joint => !!j && (j.fit === 'seam' || j.fit === 'mismatch');
+
+/**
+ * Every pair of tiles that meet at an opening: a tile and each tile in front of one of its
+ * openings (both orders appear when both have openings there). For learning the pairs the game
+ * builds (V4 step 9b).
+ */
+export function meetingPairs(layout: Layout, pieces: Pieces): [string, string][] {
+  const used = occupancy(layout, pieces);
+  const out = new Map<string, [string, string]>();
+  for (const o of worldOpenings(layout, pieces))
+    for (const c of o.outside)
+      for (const k of used.get(cellKey(c)) ?? [])
+        if (k !== o.tile) out.set(`${o.tile}|${k}`, [o.tile, k]);
+  return [...out.values()];
+}
 
 /**
  * Openings that run into another tile without a clean junction: a wall, an offset opening, a

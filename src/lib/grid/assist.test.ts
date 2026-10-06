@@ -6,12 +6,14 @@ import {
   candidatesFor,
   faceAt,
   faceRect,
+  meetingPairs,
   openFaces,
   openingsOf,
   sharedCells,
   snapPlacement,
 } from './assist';
 import { addTile, type Layout } from './edit';
+import { acceptedOverlaps, relativePlacement } from './overlaps';
 
 /** A w x h piece with the given openings, each spanning its whole side. */
 function piece(formKey: string, w: number, h: number, sides: [FaceDir, string][]): Piece {
@@ -232,6 +234,27 @@ describe('badJoints', () => {
     // an opening against a closed wall
     const w = place(place(EMPTY, 'Left', [0, 0, 0], 0), 'Left', [2, 0, 0], 0);
     expect(badJoints(w, PIECES, TYPES).map((b) => b.tile)).toEqual(['new:1']);
+  });
+});
+
+describe('the pairs the game builds (V4 step 9b)', () => {
+  it('takes a pair the game uses as right, and still flags any other', () => {
+    let l = place(EMPTY, 'Straight', [0, 0, 0], 0);
+    l = place(l, 'Straight', [2, 0, 0], 0);
+    l = place(l, 'Door', [4, 0, 0], 0);
+    expect(meetingPairs(l, PIECES).map((p) => p.join(' '))).toContain('new:2 new:3');
+    const tiles = l.tiles;
+    const seen = relativePlacement(tiles.get('new:2')!, tiles.get('new:3')!);
+    const geometry = {
+      module: { xy: 128, z: 128 },
+      profileOf: () => undefined,
+      vanilla: acceptedOverlaps([seen]),
+    };
+    // the hall against the door is a pair the game uses: no longer flagged, either side
+    expect(badJoints(l, PIECES, TYPES, geometry)).toEqual([]);
+    // the same pieces in another relative placement are still judged
+    const w = place(place(EMPTY, 'Left', [0, 0, 0], 0), 'Left', [2, 0, 0], 0);
+    expect(badJoints(w, PIECES, TYPES, geometry).map((b) => b.tile)).toEqual(['new:1']);
   });
 });
 

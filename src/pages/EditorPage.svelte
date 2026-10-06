@@ -94,6 +94,11 @@
   } from '$lib/render';
   import { setOverlap } from '$lib/catalogue/annotationEdits';
   import { KITS } from '$lib/catalogue/kits';
+  import { allVanillaPairs } from '$lib/session/vanillaPairs';
+  import { acceptedOverlaps as vanillaSet, overlapAccepted } from '$lib/grid/overlaps';
+
+  /** The pairs of pieces the game puts together, every kit (V4 step 9b). */
+  const VANILLA = vanillaSet(allVanillaPairs());
   import { annotationStore } from '$lib/session/annotationStore.svelte';
   import { catalogueStore } from '$lib/session/catalogueStore.svelte';
   import { session } from '$lib/session/session.svelte';
@@ -326,6 +331,7 @@
     return {
       module: anchor.module,
       profileOf: (k, dir) => byKey.get(`${byForm.get(k)?.editorId}:${dir}`),
+      vanilla: VANILLA,
     };
   });
   const bad = $derived.by(() => {
@@ -377,9 +383,20 @@
   });
   const textureBroken = $derived(
     textureChecker.enabled
-      ? junctions.filter((j) => (textureChecker.verdicts.get(j.key)?.length ?? 0) > 0)
+      ? junctions.filter(
+          (j) => (textureChecker.verdicts.get(j.key)?.length ?? 0) > 0 && !gamePair(j.joint),
+        )
       : [],
   );
+  /** Every tile in front of the joint stands as the game places it (V4 step 9b). */
+  function gamePair(joint: BadJoint): boolean {
+    const self = layout?.tiles.get(joint.tile);
+    if (!self || !VANILLA.size || !joint.against.length) return false;
+    return joint.against.every((k) => {
+      const t = layout!.tiles.get(k);
+      return !!t && overlapAccepted(VANILLA, self, t);
+    });
+  }
   /** Texture breaks of a joint of the layout (or of a simulated one), undefined until checked. */
   function jointBreaks(joint: BadJoint, l: Layout) {
     if (!anchor || joint.against.length === 0) return undefined;
