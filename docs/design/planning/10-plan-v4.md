@@ -259,6 +259,13 @@ snapping follow the selected piece.
   both kits, it drops exactly those 3 Nordic openings (the wall and its snow and ice variants)
   out of 812. The NavMesh at `NorRmBgWallFrontExSm01`'s door frame now joins, through the narrow
   bridge only: to check in game whether an NPC passes.
+  Third test: still a gap behind the door frame. The cause was elsewhere: a floor sample needs a
+  ceiling over it, and the soffit of the frame's arch is a face turned down but steeper than 78
+  degrees, so it counted as a wall only; the band under it (10 units) had no ceiling and was cut.
+  Rule fixed: a steep face turned down also roofs what is under it, from its lowest point. Why
+  this and not a wider bridge: it is the actual cause, and it was cutting 77 of the 187 Nordic
+  floors under arches (`NorHallBg1way01` 5 rings to 1, `NorCatHallBg4way01` 9 to 1); 8 Imperial
+  floors move by a few vertices, none splits or merges.
 
 ## Step 11 – V4 milestone
 - **What**: the success criterion above, on a new Nordic test dungeon and an Imperial cell

@@ -207,8 +207,11 @@ export function walkablePolygons(
       const reach = Math.hypot(sx, sy) / 2;
       for (let j = j0; j <= j1; j++)
         for (let i = i0; i <= i1; i++) {
-          if (distanceToTriangle2d(cx(i), cy(j), a, b, c) <= reach)
+          if (distanceToTriangle2d(cx(i), cy(j), a, b, c) <= reach) {
             spans[j * nx + i]!.push({ lo, hi });
+            // a steep face turned down (an arch's soffit) roofs what is under it, from its lowest
+            if (nz < 0) ceilings[j * nx + i]!.push(lo);
+          }
         }
       continue;
     }
