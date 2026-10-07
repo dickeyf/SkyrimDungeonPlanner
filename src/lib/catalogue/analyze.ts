@@ -172,10 +172,48 @@ export async function analyseKit(
         obstacle: null,
         review: { auto: true, validated: false },
       }))
-      .map((p) => ({ ...p, walkable: walkableOf(p, collisions.get(p.editorId), kit) })),
+      .map((p) => ({ ...p, walkable: walkableOf(p, collisions.get(p.editorId), kit) }))
+      .map((p) =>
+        withoutFloorlessFaces(
+          p,
+          pieces.find((a) => a.stat.editorId === p.editorId)!,
+        ),
+      ),
   };
 
   return { kit, pieces, faces, grouping, catalogue, elapsedMs: performance.now() - started };
+}
+
+/**
+ * Drops the faces of an opening no walkable floor reaches (V4): the opening's floor height,
+ * near its plane and within its width. Why: a hole in a piece's outer shell is no passage
+ * (`NorRmBgWallSide01`, a recess 384 above the big room's floor, was offered pieces that joined
+ * nothing); measured on both kits, only those 3 Nordic openings of 812 have no floor.
+ */
+function withoutFloorlessFaces(piece: Piece, analysed: AnalysedPiece): Piece {
+  if (!piece.walkable) return piece;
+  const pts = piece.walkable.flat();
+  const floorless = analysed.openings.filter(
+    (o) =>
+      !pts.some((v) => {
+        const along = o.axis === 0 ? v[0] : v[1];
+        const across = o.axis === 0 ? v[1] : v[0];
+        return (
+          Math.abs(along - o.plane) <= 48 &&
+          across >= o.spanMin - 16 &&
+          across <= o.spanMax + 16 &&
+          Math.abs(v[2] - o.zMin) <= 64
+        );
+      }),
+  );
+  if (!floorless.length) return piece;
+  const gone = new Set(
+    floorless.map((o) => {
+      const k = analysed.openings.indexOf(o);
+      return `${o.dir}|${analysed.footprint.openingLevels[k]}`;
+    }),
+  );
+  return { ...piece, faces: piece.faces.filter((f) => !gone.has(`${f.dir}|${f.cell[2]}`)) };
 }
 
 /** Walkable polygons of a tile from its collision (step 4's algorithm), null without one. */

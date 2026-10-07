@@ -253,6 +253,12 @@ snapping follow the selected piece.
      would change 184 of the 187 Nordic floors; instead a **bridge radius** (12, Nordic only)
      keeps a narrow passage only where it joins two parts of the floor: 21 Nordic floors change,
      the Imperial ones none (`bridgeRadius`, `addBridges` in `navmesh/walkable.ts`).
+  Second test: the pieces offered at `NorRmBgWallSide01`'s "gallery doorway" joined nothing, and
+  the user saw no opening there: it is a hole in the wall's outer shell, 384 above the floor. Rule
+  added: an opening no walkable floor reaches is no opening (`withoutFloorlessFaces`); measured on
+  both kits, it drops exactly those 3 Nordic openings (the wall and its snow and ice variants)
+  out of 812. The NavMesh at `NorRmBgWallFrontExSm01`'s door frame now joins, through the narrow
+  bridge only: to check in game whether an NPC passes.
 
 ## Step 11 – V4 milestone
 - **What**: the success criterion above, on a new Nordic test dungeon and an Imperial cell
