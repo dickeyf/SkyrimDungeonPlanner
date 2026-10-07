@@ -91,6 +91,10 @@ check (R16) and texture continuity, Z levels (phase 4). See D63.
   doorway frame on its own, one opening) lead into a cave or another kit; the assistant should
   offer what goes on their other side. Find the other pieces that work this way. Noted on
   4 Oct 2026, after V4.
+- [ ] Join two pieces: select two pieces and let the tool find the pieces (one or a short
+  chain) that link them cleanly, moving the second piece if needed (never turning it). Asked on
+  6 Oct 2026: going from `NorHallSm1way01` to `NorRmBgWallFrontExSm01` needs
+  `NorHallSm1wayEndExSm01` between them, at one exact distance the designer cannot guess.
 
 ## Later
 See `05-ideas.md`: cross-section view, thumbnails, room markers/portals, multiple selection.

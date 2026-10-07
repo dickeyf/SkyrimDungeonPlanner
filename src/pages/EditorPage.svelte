@@ -389,17 +389,19 @@
       : [],
   );
   /** Every tile in front of the joint stands as the game places it (V4 step 9b). */
-  function gamePair(joint: BadJoint): boolean {
-    const self = layout?.tiles.get(joint.tile);
-    if (!self || !VANILLA.size || !joint.against.length) return false;
+  function gamePair(joint: BadJoint, l: Layout | null = layout): boolean {
+    const self = l?.tiles.get(joint.tile);
+    if (!l || !self || !VANILLA.size || !joint.against.length) return false;
     return joint.against.every((k) => {
-      const t = layout!.tiles.get(k);
+      const t = l.tiles.get(k);
       return !!t && overlapAccepted(VANILLA, self, t);
     });
   }
   /** Texture breaks of a joint of the layout (or of a simulated one), undefined until checked. */
   function jointBreaks(joint: BadJoint, l: Layout) {
     if (!anchor || joint.against.length === 0) return undefined;
+    // a pair the game puts together like this shows no break (V4 step 9b)
+    if (gamePair(joint, l)) return [];
     return textureChecker.verdicts.get(layoutJunction(joint, l, pieces, anchor).key);
   }
 
@@ -495,6 +497,8 @@
       if (!placed.ok) return [];
       const js = jointsOfTile(placed.layout, pieces, types, placed.key)
         .filter((j) => j.against.length > 0)
+        // a pair the game puts together like this is not checked (V4 step 9b)
+        .filter((j) => !gamePair(j, placed.layout))
         .map((j) => layoutJunction(j, placed.layout, pieces, a));
       return [{ c, js }];
     });
