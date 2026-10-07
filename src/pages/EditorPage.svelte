@@ -37,6 +37,7 @@
     addTile,
     badJoints,
     candidatesFor,
+    gameCandidates,
     checkCandidates,
     jointsOfTile,
     layoutJunction,
@@ -98,7 +99,8 @@
   import { acceptedOverlaps as vanillaSet, overlapAccepted } from '$lib/grid/overlaps';
 
   /** The pairs of pieces the game puts together, every kit (V4 step 9b). */
-  const VANILLA = vanillaSet(allVanillaPairs());
+  const GAME_PAIRS = allVanillaPairs();
+  const VANILLA = vanillaSet(GAME_PAIRS);
   import { annotationStore } from '$lib/session/annotationStore.svelte';
   import { catalogueStore } from '$lib/session/catalogueStore.svelte';
   import { session } from '$lib/session/session.svelte';
@@ -462,9 +464,23 @@
   const fitting = $derived(
     active && layout
       ? checkCandidates(
-          candidatesFor(active, layout, validPieces, types, fineSearch).sort((a, b) =>
-            pieces.get(a.piece)!.editorId.localeCompare(pieces.get(b.piece)!.editorId),
-          ),
+          [
+            ...candidatesFor(active, layout, validPieces, types, fineSearch),
+            // and what the game puts in front of this face (V4)
+            ...gameCandidates(active, layout, validPieces, GAME_PAIRS),
+          ]
+            .filter(
+              (c, i, all) =>
+                all.findIndex(
+                  (d) =>
+                    d.piece === c.piece &&
+                    d.rotation === c.rotation &&
+                    d.cell.join(',') === c.cell.join(','),
+                ) === i,
+            )
+            .sort((a, b) =>
+              pieces.get(a.piece)!.editorId.localeCompare(pieces.get(b.piece)!.editorId),
+            ),
           layout,
           pieces,
           types,

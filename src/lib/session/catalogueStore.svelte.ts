@@ -11,7 +11,7 @@ import { kvGet, kvSet } from '$lib/fs';
 import { ArchiveIndex } from '$lib/vfs';
 import { session } from './session.svelte';
 
-const ANALYSIS_VERSION = 6; // bump when the analysis output changes shape or meaning
+const ANALYSIS_VERSION = 7; // bump when the analysis output changes shape or meaning
 
 class CatalogueStore {
   /** The kit the Catalogue and Validation pages show. */

@@ -6,6 +6,7 @@ import {
   candidatesFor,
   faceAt,
   faceRect,
+  gameCandidates,
   meetingPairs,
   openFaces,
   openingsOf,
@@ -255,6 +256,21 @@ describe('the pairs the game builds (V4 step 9b)', () => {
     // the same pieces in another relative placement are still judged
     const w = place(place(EMPTY, 'Left', [0, 0, 0], 0), 'Left', [2, 0, 0], 0);
     expect(badJoints(w, PIECES, TYPES, geometry).map((b) => b.tile)).toEqual(['new:1']);
+  });
+
+  it('offers at a face the piece the game puts there, even where the profiles disagree', () => {
+    // the game puts a Door in front of a Straight's +X end, though their types differ
+    const both = place(place(EMPTY, 'Straight', [0, 0, 0], 0), 'Door', [2, 0, 0], 0);
+    const seen = relativePlacement(both.tiles.get('new:1')!, both.tiles.get('new:2')!);
+    const alone = place(EMPTY, 'Straight', [10, 4, 0], 1);
+    const turned = alone.tiles.get('new:1')!;
+    const face = openFaces(alone, PIECES).find((f) => f.tile === turned.key && f.dir === '+Y')!;
+    const c = gameCandidates(face, alone, PIECES, [seen]);
+    expect(c.map((x) => [x.piece, x.rotation])).toEqual([['Door', 1]]);
+    // nothing for a piece the game never pairs with it
+    expect(gameCandidates(face, alone, PIECES, [{ ...seen, pieces: ['Left', 'Door'] }])).toEqual(
+      [],
+    );
   });
 });
 

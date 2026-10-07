@@ -12,6 +12,11 @@ export interface KitDefinition extends Kit {
    * meshes are sparse at their edges.
    */
   minOpenVerts?: number;
+  /**
+   * Walkable floor settings that differ from the defaults for this kit (V4): e.g. a smaller
+   * actor radius, so a narrow door frame is not cut off.
+   */
+  walkable?: { bridgeRadius?: number };
   /** Sub-folder -> category of its tiles; sub-folders not listed are props/other. */
   subkits: Record<string, Exclude<PieceCategory, 'door' | 'other'>>;
 }
@@ -39,6 +44,8 @@ export const NORDIC_KIT: KitDefinition = {
   kit: 'Nordic',
   module: { xy: 128, z: 128 },
   fineStep: { xy: 16, z: 16 },
+  // door frames narrower than an actor's width (NorRmBgWallFrontExSm01): kept as passages
+  walkable: { bridgeRadius: 12 },
   note: 'Measured by V4 step 1 (R19): 166 of 201 pieces on the 128 grid; stairs rise 128 or 256.',
   modelPrefix: 'dungeons/nordic/',
   // the room middles and secret passages carry 12 to 18 vertices on their open sides (step 3)

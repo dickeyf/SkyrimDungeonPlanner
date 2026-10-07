@@ -240,6 +240,19 @@ snapping follow the selected piece.
 - **What**: a two-level Nordic layout baked, welded at the stairs, finalized; checked in the CK
   and in game.
 - **Done when**: an NPC follows the player up and down a Nordic staircase in game.
+- **Progress (6 Oct 2026)**: the user's first test found four things, three fixed:
+  1. The proposed pieces still showed "texture break" for a pair the game uses: fixed.
+  2. Joining two pieces at an exact distance (`NorHallSm1way01` to `NorRmBgWallFrontExSm01`
+     through `NorHallSm1wayEndExSm01`) is hard to find: noted in the roadmap (join two pieces).
+  3. `NorRmBgWallSide01`'s gallery doorway, 384 above the big room's floor, is a real opening
+     the profiles match with nothing (164 wide; the game puts a 158 passage there): the assistant
+     now also offers the pieces the game puts in front of a face (`gameCandidates`, from the
+     game's pairs). Why: the game's assemblies are right even where the profiles disagree.
+  4. A gap in the NavMesh at `NorRmBgWallFrontExSm01`'s door frame: the frame is narrower than
+     an actor (radius 16), so the floor was cut in two. A smaller radius for the whole kit (12)
+     would change 184 of the 187 Nordic floors; instead a **bridge radius** (12, Nordic only)
+     keeps a narrow passage only where it joins two parts of the floor: 21 Nordic floors change,
+     the Imperial ones none (`bridgeRadius`, `addBridges` in `navmesh/walkable.ts`).
 
 ## Step 11 – V4 milestone
 - **What**: the success criterion above, on a new Nordic test dungeon and an Imperial cell

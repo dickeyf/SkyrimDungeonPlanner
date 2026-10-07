@@ -15,6 +15,7 @@ import type {
   FaceDir,
   FormKey,
   Piece,
+  PieceOverlap,
   Vec3,
 } from '../catalogue/types';
 import { facesMate } from '../catalogue/types';
@@ -31,7 +32,16 @@ import {
 } from './joints';
 import { overlapAccepted, type AcceptedOverlaps } from './overlaps';
 import type { GridAnchor, OpaqueRef } from './types';
-import { addCells, cellKey, dirOffset, oppositeDir, rotateDir, type Rotation } from './rotation';
+import {
+  addCells,
+  cellKey,
+  dirOffset,
+  normalizeRotation,
+  oppositeDir,
+  rotateCell,
+  rotateDir,
+  type Rotation,
+} from './rotation';
 
 /** A contiguous run of faces of a piece at rotation 0. */
 export interface Opening {
@@ -453,6 +463,50 @@ export function candidatesFor(
     }
   }
   return out;
+}
+
+/**
+ * The pieces the game puts in front of `open` (V4): for each pair of pieces the game joins
+ * (`pairs`, relative placements from the Vanilla check) whose first piece is the face's tile,
+ * the second piece at that placement, when it covers a cell in front of the face and overlaps
+ * no tile. Why: the profiles do not recognise every junction the game builds (a gallery doorway
+ * high in a big room's wall, 164 wide, takes a 158 passage); the game shows they belong there.
+ */
+export function gameCandidates(
+  open: OpenFace,
+  layout: Layout,
+  pieces: Pieces,
+  pairs: readonly PieceOverlap[],
+): Candidate[] {
+  const tile = layout.tiles.get(open.tile);
+  if (!tile) return [];
+  const front = new Set(open.outside.map(cellKey));
+  const wantDir = oppositeDir(open.dir);
+  const out = new Map<string, Candidate>();
+  const consider = (piece: FormKey, rotation: Rotation, offset: CellIndex) => {
+    const p = pieces.get(piece);
+    if (!p) return;
+    const r = normalizeRotation(tile.rotation + rotation);
+    const cell = addCells(tile.cell, rotateCell(offset, tile.rotation));
+    const cells = footprintCells(p, cell, r);
+    if (!cells.some((c) => front.has(cellKey(c)))) return;
+    const at = { piece, cell, rotation: r };
+    if (conflictsFor(layout, pieces, cells, undefined, at).length) return;
+    const openings = openingsOf(p);
+    const opening = openings.find((o) => rotateDir(o.dir, r) === wantDir) ?? openings[0];
+    if (!opening) return;
+    out.set(`${piece}|${cell.join(',')}|${r}`, { piece, cell, rotation: r, opening });
+  };
+  for (const pair of pairs) {
+    if (pair.pieces[0] === tile.piece) consider(pair.pieces[1], pair.rotation, pair.offset);
+    if (pair.pieces[1] === tile.piece) {
+      // the same pair seen from its second piece
+      const r = normalizeRotation(4 - pair.rotation);
+      const neg: CellIndex = [0 - pair.offset[0], 0 - pair.offset[1], 0 - pair.offset[2]];
+      consider(pair.pieces[0], r, rotateCell(neg, r));
+    }
+  }
+  return [...out.values()];
 }
 
 /** Depth of an open-face marker, as a fraction of the module, measured outward from the face. */

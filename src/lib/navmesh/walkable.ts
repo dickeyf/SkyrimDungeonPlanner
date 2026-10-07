@@ -35,6 +35,12 @@ export interface WalkableOptions {
   maxSlope: number;
   /** Douglas-Peucker tolerance of the outline, units. */
   tolerance: number;
+  /**
+   * A narrow passage kept with this smaller radius when it joins two parts of the floor the
+   * actor radius cut apart (a door frame narrower than an actor's width, V4): the floor is
+   * otherwise unchanged. Absent: no such passage is kept.
+   */
+  bridgeRadius?: number;
 }
 
 /**
@@ -350,6 +356,8 @@ export function walkablePolygons(
   // sample closer.
   for (let k = 0; k < nx * ny; k++)
     inside[k] = dist[k]! - Math.max(sx, sy) / 2 >= o.actorRadius ? 1 : 0;
+  if (o.bridgeRadius !== undefined && o.bridgeRadius < o.actorRadius)
+    addBridges(inside, nx, ny, (k) => dist[k]! - Math.max(sx, sy) / 2 >= o.bridgeRadius!);
   // Erosion may cut a narrow passage: keep what an entry sample still reaches.
   keepReachable(inside, nx, ny, (i, j) => {
     const z = entryFloor(i, j);
@@ -397,6 +405,68 @@ export function walkablePolygons(
  * Clear the walkable areas not connected to an entry sample: actors enter a tile through its
  * openings, so an area enclosed inside (a cavity in a thick wall) is unreachable.
  */
+/** 4-connected components of a mask: a label per sample, 0 outside. */
+function components(mask: (k: number) => boolean, nx: number, ny: number): Int32Array {
+  const label = new Int32Array(nx * ny);
+  let next = 0;
+  for (let start = 0; start < nx * ny; start++) {
+    if (!mask(start) || label[start]) continue;
+    next++;
+    label[start] = next;
+    const stack = [start];
+    while (stack.length) {
+      const k = stack.pop()!;
+      const i = k % nx;
+      for (const n of [
+        i > 0 ? k - 1 : -1,
+        i < nx - 1 ? k + 1 : -1,
+        k >= nx ? k - nx : -1,
+        k < (ny - 1) * nx ? k + nx : -1,
+      ])
+        if (n >= 0 && mask(n) && !label[n]) {
+          label[n] = next;
+          stack.push(n);
+        }
+    }
+  }
+  return label;
+}
+
+/**
+ * Adds to `inside` the samples a smaller radius keeps (`loose`) where they join two or more of
+ * its parts: the narrow passages the actor radius cut, and nothing else.
+ */
+function addBridges(
+  inside: Uint8Array,
+  nx: number,
+  ny: number,
+  loose: (k: number) => boolean,
+): void {
+  const parts = components((k) => !!inside[k], nx, ny);
+  const extra = components((k) => !inside[k] && loose(k), nx, ny);
+  const touches = new Map<number, Set<number>>();
+  for (let k = 0; k < nx * ny; k++) {
+    const e = extra[k]!;
+    if (!e) continue;
+    const i = k % nx;
+    for (const n of [
+      i > 0 ? k - 1 : -1,
+      i < nx - 1 ? k + 1 : -1,
+      k >= nx ? k - nx : -1,
+      k < (ny - 1) * nx ? k + nx : -1,
+    ])
+      if (n >= 0 && parts[n]) {
+        let set = touches.get(e);
+        if (!set) touches.set(e, (set = new Set()));
+        set.add(parts[n]!);
+      }
+  }
+  for (let k = 0; k < nx * ny; k++) {
+    const e = extra[k]!;
+    if (e && (touches.get(e)?.size ?? 0) >= 2) inside[k] = 1;
+  }
+}
+
 function keepReachable(
   mask: Uint8Array,
   nx: number,

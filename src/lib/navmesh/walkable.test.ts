@@ -44,6 +44,21 @@ function area(ring: readonly Vec3[]): number {
 }
 
 describe('walkablePolygons', () => {
+  it('keeps a door frame narrower than an actor as a passage with a bridge radius (V4)', () => {
+    // two rooms 100 x 100 joined by a passage 28 wide and 24 long, walls along the passage
+    const soup = new Soup()
+      .quad([-50, -112, 0], [50, -112, 0], [50, -12, 0], [-50, -12, 0])
+      .quad([-50, 12, 0], [50, 12, 0], [50, 112, 0], [-50, 112, 0])
+      .quad([-14, -12, 0], [14, -12, 0], [14, 12, 0], [-14, 12, 0])
+      .wall(-14, -12, -14, 12, 0, 200)
+      .wall(14, 12, 14, -12, 0, 200)
+      .quad([-50, -112, 300], [-50, 112, 300], [50, 112, 300], [50, -112, 300]);
+    const cut = walkablePolygons(...soup.mesh, { step: 2 });
+    expect(cut.rings.filter((r) => area(r) > 0)).toHaveLength(2);
+    const kept = walkablePolygons(...soup.mesh, { step: 2, bridgeRadius: 10 });
+    expect(kept.rings.filter((r) => area(r) > 0)).toHaveLength(1);
+  });
+
   it('keeps the floor away from the walls, open at the ends', () => {
     const { rings } = walkablePolygons(...hallway().mesh, { actorRadius: 24, step: 4 });
     expect(rings).toHaveLength(1);
