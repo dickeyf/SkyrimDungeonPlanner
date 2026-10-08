@@ -4,9 +4,9 @@
 entirely in the browser (Chrome or Edge, no backend). Your game folder is read in place through
 the File System Access API; nothing is uploaded.
 
-It covers the Imperial kit, on several levels (one shown at a time, stairs and ramps between them): open or create a plugin and its interior cells,
-place tiles on the kit's grid, and let the assistant offer only the pieces that fit every
-neighbour. Junctions are checked on the pieces' own mesh profiles (seams, mismatches, shared
+It covers the Imperial and Nordic kits, on several levels (one shown at a time, stairs and ramps between them): open or create a plugin and its interior cells,
+place tiles on a grid kept to 16 units (the game's own shifts), and let the assistant offer only
+the pieces that fit every neighbour, and those the game itself puts there. Junctions are checked on the pieces' own mesh profiles (seams, mismatches, shared
 cells), deeper for visible leaks, and optionally for texture continuity. The NavMesh is baked from
 the pieces' collision, edited by triangle, edge or vertex, and finalized (door links) in the tool.
 The pieces can be shown with their game textures, and a camera view walks through the level as
@@ -20,11 +20,12 @@ in the game. The result is written back into the plugin, with a backup, for the 
 - [Design documentation](docs/design/README.md)
   - [Architecture](docs/design/arch/README.md): structure, file formats, algorithms and
     concepts.
-  - [Planning](docs/design/planning/README.md): decisions, risks, roadmap, V1 and V2 step plans.
+  - [Planning](docs/design/planning/README.md): decisions, risks, roadmap, step plans.
 
 ## Limits
 
-- **Imperial kit only**: other kits (Nordic, Dwemer, caves) are not supported yet.
+- **Imperial and Nordic kits only**: other kits (Dwemer, caves, ...) are not supported yet; the
+  two kits meet through load doors, as in the game.
 - **Tiles only**: the tool places the kit's structural pieces; clutter, lights, markers and
   anything else in a cell are shown and left untouched, never edited.
 - **No props or lighting**: finish those in the Creation Kit (new cells get a neutral default

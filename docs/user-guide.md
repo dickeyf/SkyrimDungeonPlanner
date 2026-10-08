@@ -1,7 +1,7 @@
 # User guide
 
-Skyrim Dungeon Planner builds Skyrim SE dungeons from the Imperial kit on a top-down grid and
-writes them into your plugin, ready for the Creation Kit. It runs entirely in your browser:
+Skyrim Dungeon Planner builds Skyrim SE dungeons from the Imperial and Nordic kits on a top-down
+grid and writes them into your plugin, ready for the Creation Kit. It runs entirely in your browser:
 your game folder is read in place and nothing is uploaded.
 
 ![The editor](img.png)
@@ -45,8 +45,8 @@ The first time, the app opens **Getting started**, three steps that check themse
    (after a browser restart, it may ask again: click _Re-authorize_).
 2. **Your plugin**: pick the plugin to build in, or create a new one (see
    [New plugins and cells](#new-plugins-and-cells)).
-3. **Build**: open the editor. The first time, the tool analyses the kit's pieces from your
-   game files (about ten seconds); the result is kept for the next times.
+3. **Build**: open the editor. The first time, the tool analyses each kit's pieces from your
+   game files (a few seconds per kit); the result is kept for the next times.
 
 Once set up, the app opens the editor directly.
 
@@ -55,15 +55,27 @@ Once set up, the app opens the editor directly.
 - **Toolbar**: the cell of the plugin (choosing one opens it; the last cell you opened in each
   plugin reopens automatically), _New cell..._, _Undo_ / _Redo_, **Save** (with the number of
   unsaved changes; hover it for the details), _Reload plugin_.
-- **Scene**: the cell seen from above, on the kit's grid. Drag to pan, use the wheel to zoom,
+- **Scene**: the cell seen from above, on the kits' 128-unit grid (see [The grid](#the-grid)). Drag to pan, use the wheel to zoom,
   _Fit_ to frame the whole cell. Pieces are coloured by category: halls, rooms, doors. _Other
   objects_ (lights, clutter, markers, pieces outside the kit) can be shown, faded or hidden:
   they are never changed.
 - **Left panel**: what you are doing (placing a piece, an open face and its compatible pieces,
-  the selected tile), then the **Pieces** palette with a search box and a category filter, then
-  the legend of the marks.
+  the selected tile), then the **Pieces** palette with a search box, a kit filter and a category
+  filter, then the legend of the marks.
 
-Keyboard: **R** / **Shift+R** rotate, **Del** delete, **Esc** cancel, **Ctrl+Z** / **Ctrl+Y**
+**Kits**: the Imperial and Nordic pieces are both offered, in any cell. The game has no piece
+that joins the two kits: build each in its own cell and join the cells with a load door, as
+Bethesda does.
+
+### The grid
+
+Pieces sit on a 128-unit grid, but the game shifts parts of a cell by 16, 32 or 64 units, and so
+does the tool: positions are kept to 16 units. The grid drawn follows the selected piece (its own
+128 grid, through its corner), so the pieces plugged into a shifted piece share its shift. The
+**Step** selector in the top bar (or **G**) sets the snapping step: 128, 64, 32 or 16; at a finer
+step, the 128 lines stay strong and the fine ones pale.
+
+Keyboard: **G** cycles the snapping step, **R** / **Shift+R** rotate, **Del** delete, **Esc** cancel, **Ctrl+Z** / **Ctrl+Y**
 undo / redo, **Ctrl+S** save. _Shortcuts_ in the left panel lists them.
 
 ## Building with the assistant
@@ -75,6 +87,11 @@ Hover a line to preview the piece in place, click to place it. Use the search bo
 category filter above the list to narrow it down; _Esc_ closes it.
 
 Ramps and stairs are offered both ways: going up by their low end, or down by their high end.
+
+The assistant offers every piece that fits at the position the face imposes, shifted by 16, 32
+or 48 units when that is where it fits, and also the pieces **the game itself puts** in front of
+that piece (learned from Skyrim.esm's cells by the Vanilla check, see [Settings](#settings)):
+their junctions are taken as right and never flagged, texture breaks included.
 
 ## Placing and moving pieces
 
@@ -234,13 +251,19 @@ navmesh, doors' teleport links and everything else remain the CK's job.
 ## Settings
 
 - **Folders and plugin**: game folder, MO2 instance and profile, working plugin, new plugin.
-- **Catalogue**: the kit's pieces extracted from `Skyrim.esm` and their analysis.
-- **Validation**: review of the automatic connection types (near matches, composite faces,
-  pieces, accepted overlaps). The decisions are catalogue annotations.
+- **Catalogue**: a kit's pieces extracted from `Skyrim.esm` and their analysis (pick the kit
+  at the top).
+- **Validation**: review, kit by kit, of the automatic connection types (near matches,
+  composite faces, pieces, accepted overlaps) and of each piece's walkable floor (in plan or in
+  3D). The decisions are catalogue annotations.
+- **Vanilla check**: reads the game's own cells built with a kit and runs the tool's checks on
+  them: how many pieces sit on the grid and with which shifts, and which junctions are flagged.
+  What Bethesda built is mostly right, so a frequent flag is a likely false alarm.
 
 ## Limits
 
-- The **Imperial kit** only.
+- The **Imperial and Nordic kits** only; they meet through load doors, never in one cell. Some
+  Nordic families are left out for now (temple, pits, shafts, platforms, bridges, chambers).
 - The tool edits tiles only (the kit's structural pieces); everything else in a cell passes
   through untouched.
 - No props or lighting. The NavMesh is baked, edited and finalized in the tool, but without
