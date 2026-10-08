@@ -81,12 +81,20 @@ NPC follows the player through it in game. V2.**
   NPC does not follow; find how the game handles it. Noted on 7 Oct 2026.
 - [x] ~~Transitions between kits (D54)~~: none in the game, the kits meet through load doors
 
+## Dwemer kit and the other objects – V5, see `11-plan-v5.md`
+- [ ] R21 module, pivots and faces; R22 collision and floors
+- [ ] Kit definition, annotations, game pairs; a Dwemer test dungeon
+- [ ] The other objects of a cell: categories, show / fade / hide / lock, selected and moved
+  with the tiles (D71, D72, R23)
+- [ ] The Nordic families left out at V4 (temple, pits, shafts, platforms, bridges, chambers)
+- [ ] Help for a designer new to a kit: sets for a wide face, the piece that closes one
+
 ## Toward 1.0.0
 Every interior kit of the base `.esm` files (Nordic, Dwemer, caves...), with the deep junction
 check (R16) and texture continuity, Z levels (phase 4). See D63.
 - [ ] The sub-folders left out of each kit's tiles, judged one by one (on the grid or not,
   openings that join the kit's halls): Nordic `temple`, `pits`, `shafts`, `platforms`,
-  `bridges`, `chambers` (set aside at V4 step 1); Imperial, the structural pieces outside
+  `bridges`, `chambers` (set aside at V4 step 1, planned in V5); Imperial, the structural pieces outside
   `smallhall`, `largehall`, `smallroom` and `largeroom`, and the pieces left out by name
   (pillars, braces, beams...). Not in V4.
 - [ ] Openings toward another piece of the world: pieces such as Nordic `NorExSmFree01` (a
@@ -97,7 +105,7 @@ check (R16) and texture continuity, Z levels (phase 4). See D63.
   chain) that link them cleanly, moving the second piece if needed (never turning it). Asked on
   6 Oct 2026: going from `NorHallSm1way01` to `NorRmBgWallFrontExSm01` needs
   `NorHallSm1wayEndExSm01` between them, at one exact distance the designer cannot guess.
-- [ ] Help for a designer new to a kit: an open face wider than any one piece (the long face of
+- [ ] Help for a designer new to a kit (planned in V5): an open face wider than any one piece (the long face of
   `NorRmSmWallFrontExBg01`) takes several pieces side by side (three `NorRmSmMid01`), or one
   piece the designer does not think of (`NorRmSmWallSideExBg01`). Offer such sets and "the piece
   that closes this", ideally from what the game builds there (the Vanilla pairs). Asked on

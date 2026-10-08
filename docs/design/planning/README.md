@@ -18,3 +18,6 @@ The design notes written while planning and building the tool, in reading order:
    rendering, Z levels.
 10. [V4 plan](10-plan-v4.md): the V4 steps (release 0.4.0): the Nordic kit, several kits in one
     cell.
+11. [V5 plan](11-plan-v5.md): the V5 steps (release 0.5.0): the Dwemer kit, the other objects of
+    a cell (shown by category, moved with the tiles), the Nordic families left out, help for a
+    designer new to a kit.

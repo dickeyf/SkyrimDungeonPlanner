@@ -254,5 +254,20 @@ The walkable polygons read one Havok shape type and were tuned on Imperial floor
 may use other shapes and have uneven floors. V4 step 2. **Result (3 Oct 2026)**: settled: the same Havok chain
 as the Imperial kit, every collision read, every catalogue piece with a walkable floor.
 
+### R21 – The Dwemer kit's module and faces
+The Dwemer kit has more families than the others (pipes, platforms, roads, facades) and has never
+been read; some families may not be tiles. V5 step 1.
+
+### R22 – Dwemer collision and floors
+Pipes, grates, gears and stairs the walkable rules have never met; each Nordic surprise
+(risers, soffits, arches) was found only by baking. V5 step 2.
+
+### R23 – Moving the other objects of a cell
+Objects other than tiles carry links the tool never wrote: a door's teleport destination (the
+other door's `XTEL`), enable parents, linked references, patrol paths, a light's place in a
+room's bounds. Moving them may leave such links pointing at the old place. V5 step 7: measure
+which links a move breaks in the test cells, update the ones the tool can (the teleport), flag
+the others.
+
 ### R8 – Ambition
 The full plan is very ambitious. Mitigation: narrow V1 (one kit, one Z, no NavMesh), structures designed broad, proofs of concept first. **So far**: V1 was built and released as 0.1.0 in four days (21–24 Sep 2026), every blocker for V1 proven first.
