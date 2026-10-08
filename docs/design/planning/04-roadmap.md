@@ -71,12 +71,14 @@ NPC follows the player through it in game. V2.**
 - [ ] Spriggit backend: read the mod's YAML/JSON folder, write the REFRs into it; masters always in binary
 - [ ] Check with Spriggit that the modified folder translates into a `.esp` identical to what the tool would have written
 
-## Nordic kit – V4, see `10-plan-v4.md`
-- [ ] R19 module, pivots and faces; R20 collision and floors
-- [ ] Several kits in one catalogue, annotations per kit (D68, D69)
+## Nordic kit – V4, see `10-plan-v4.md` (done 7 Oct 2026, released as 0.4.0)
+- [x] R19 module, pivots and faces; R20 collision and floors
+- [x] Several kits in one catalogue, annotations per kit (D68, D69)
 - [x] Vanilla check: the game's CELLs measured with the tool's checks (4 Oct 2026)
-- [ ] Fine grid, contextual grid (D70)
-- [ ] Assistant, checks, levels and NavMesh on the Nordic kit
+- [x] Fine grid, contextual grid (D70)
+- [x] Assistant, checks, levels and NavMesh on the Nordic kit
+- [ ] NPCs across a drop (a high exit into a lower hall): the NavMesh has no link there and an
+  NPC does not follow; find how the game handles it. Noted on 7 Oct 2026.
 - [x] ~~Transitions between kits (D54)~~: none in the game, the kits meet through load doors
 
 ## Toward 1.0.0

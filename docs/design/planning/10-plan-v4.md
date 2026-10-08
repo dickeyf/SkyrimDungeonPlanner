@@ -317,3 +317,8 @@ snapping follow the selected piece.
   architecture) updated.
 - **Done when**: the criterion is met; the release version is proposed and confirmed (D63),
   tagged, and published.
+- **Done (7 Oct 2026)**: `NordicFinalTest`, a Nordic dungeon on several levels built with the
+  assistant, baked and finalized in the app, joined by a load door to an Imperial cell; in game
+  an NPC follows the player from one cell to the other and back. Left for later: an NPC does not
+  follow down a drop (`NorRmBgWallFrontExBgHigh01`'s high exit), as the NavMesh has no link
+  across it. Released as **0.4.0**.
