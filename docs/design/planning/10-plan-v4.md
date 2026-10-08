@@ -308,6 +308,10 @@ snapping follow the selected piece.
   `NordicFinalTest` (35 faces): a first click 253 ms to 82 ms, the next ones 50 to 28 ms; the
   same 266 placements kept, the same verdicts on 12,410 profile pairs. Baking the verdicts into
   the analysis is set aside unless the browser still shows a wait.
+  Much faster for the user, who asked for 200 to 600 ms: an exact pruning of the distances
+  (segment boxes) gained only 1.1x and was dropped; instead the verdicts are saved in the browser
+  (`JointGeometry.fits`, read back after a reload) and the open faces of the shown level are
+  worked out while the editor is idle, so a click finds them ready.
 - **What**: the success criterion above, on a new Nordic test dungeon and an Imperial cell
   joined to it by a load door. Frictions noted, fixed, then documentation (user guide,
   architecture) updated.

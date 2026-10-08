@@ -229,6 +229,12 @@ export interface JointGeometry {
    * junction is taken as right, whatever the profiles say (the game shows they look right).
    */
   vanilla?: AcceptedOverlaps;
+  /**
+   * A store of profile verdicts that outlives this object, by `fitKey` (V4 step 11): the editor
+   * keeps it across edits and saves it in the browser, so a pair already compared is never
+   * compared again, even after a reload. Without it, verdicts are cached in memory only.
+   */
+  fits?: Map<string, ProfileFit>;
 }
 
 /**
@@ -285,8 +291,16 @@ function profileVerdict(ctx: JointContext, o: OpenFace, p: OpenFace): ProfileFit
   if (!cache) byTheirs.set(theirs, (cache = new Map()));
   const known = cache.get(key);
   if (known) return known;
-  const verdict = profileFitInFrame(mine, theirs, frameOffset(o, p, geometry.module));
+  const stored = geometry.fits?.get(
+    `${minePiece}|${o.opening.dir}|${theirPiece}|${p.opening.dir}|${key}`,
+  );
+  const verdict = stored ?? profileFitInFrame(mine, theirs, frameOffset(o, p, geometry.module));
   cache.set(key, verdict);
+  if (!stored)
+    geometry.fits?.set(
+      `${minePiece}|${o.opening.dir}|${theirPiece}|${p.opening.dir}|${key}`,
+      verdict,
+    );
   return verdict;
 }
 

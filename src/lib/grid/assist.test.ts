@@ -344,6 +344,16 @@ describe('badJoints with geometry', () => {
     ]);
     expect(joints[0]!.gap).toBeCloseTo(5, 0);
   });
+
+  it('keeps the verdicts in a store that outlives the geometry, and reads them back (V4)', () => {
+    const fits = new Map();
+    const first = { module, profileOf: (p: string) => (p === 'Corner' ? shift(5) : HALL), fits };
+    expect(badJoints(pair(), PIECES, TYPES, first).map((j) => j.fit)).toEqual(['seam', 'seam']);
+    expect(fits.size).toBe(2);
+    // profiles that would match exactly: the stored verdicts are read, not computed again
+    const again = { module, profileOf: () => [...HALL], fits };
+    expect(badJoints(pair(), PIECES, TYPES, again).map((j) => j.fit)).toEqual(['seam', 'seam']);
+  });
 });
 
 describe('checkCandidates', () => {

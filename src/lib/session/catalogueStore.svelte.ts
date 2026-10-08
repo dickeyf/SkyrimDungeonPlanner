@@ -6,7 +6,8 @@
  */
 import { analyseKit, type AnalysisResult } from '$lib/catalogue/analyze';
 import { loadKitStats, type KitStatsResult } from '$lib/catalogue/build';
-import { IMPERIAL_KIT, type KitDefinition } from '$lib/catalogue/kits';
+import { IMPERIAL_KIT, KITS, type KitDefinition } from '$lib/catalogue/kits';
+import type { ProfileFit } from '$lib/grid';
 import { kvGet, kvSet } from '$lib/fs';
 import { ArchiveIndex } from '$lib/vfs';
 import { session } from './session.svelte';
@@ -33,6 +34,35 @@ class CatalogueStore {
 
   get analysisFromCache(): boolean {
     return this.fromCacheByKit[this.kit.kit] ?? false;
+  }
+
+  private fits: { key: string; map: Map<string, ProfileFit>; saved: number } | null = null;
+  private fitsTimer: ReturnType<typeof setTimeout> | undefined;
+
+  /**
+   * The junction profile verdicts of the analyses loaded (V4 step 11), kept in the browser like
+   * the analysis: a first click on an open face compared hundreds of profile pairs; once compared,
+   * a pair is read back, even after a reload. Tied to the analyses, so a new analysis starts empty.
+   */
+  async profileFits(): Promise<Map<string, ProfileFit>> {
+    const key = `fits:v${ANALYSIS_VERSION}:${KITS.map((k) => this.statsOf(k)?.cacheKey ?? '-').join('+')}`;
+    if (this.fits?.key !== key) {
+      const stored = await kvGet<[string, ProfileFit][]>(key).catch(() => undefined);
+      const map = new Map(stored ?? []);
+      this.fits = { key, map, saved: map.size };
+    }
+    return this.fits.map;
+  }
+
+  /** Save the verdicts computed since the last save, a few seconds after the last change. */
+  saveProfileFits(): void {
+    clearTimeout(this.fitsTimer);
+    this.fitsTimer = setTimeout(() => {
+      const fits = this.fits;
+      if (!fits || fits.map.size === fits.saved) return;
+      fits.saved = fits.map.size;
+      void kvSet(fits.key, [...fits.map]).catch(() => undefined);
+    }, 3000);
   }
 
   statsOf(kit: KitDefinition): KitStatsResult | null {

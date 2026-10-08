@@ -88,8 +88,18 @@ The thresholds were measured on a real cell: seamless junctions give 0.0, a visi
 piece 1 unit off). When a profile is missing, the verdict falls back to the connection types.
 
 **Cache**: a verdict depends only on the two pieces, their faces and their relative placement,
-which repeat across a level; verdicts are cached per catalogue geometry, so rechecking all the
+which repeat across a level; verdicts are cached by the two profiles, so rechecking all the
 junctions of a 200-tile cell after an edit takes a few milliseconds instead of a second or two.
+Each profile's segments and sample points are prepared once, and the second profile is not
+redrawn in the first's frame: the sample points are moved instead (`profileFitInFrame`).
+
+The editor also gives the geometry a **store that outlives it** (`JointGeometry.fits`, V4 step
+11), saved in the browser with the analyses (`catalogueStore.profileFits`): a pair compared once
+is read back after a reload. While the editor is idle, the open faces of the shown level are
+worked out one by one (`requestIdleCallback`), so a click on one finds its verdicts ready. Why:
+a first click compared hundreds of profile pairs (seconds in the browser); computing the
+verdicts of every pair a kit allows, in advance, was set aside as far larger than what a
+designer ever meets.
 
 ## Deep check (`leaks.ts`, R16, V2)
 

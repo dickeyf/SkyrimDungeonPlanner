@@ -74,6 +74,7 @@
     type BadJoint,
     type Candidate,
     type JointGeometry,
+    type ProfileFit,
     type LayoutJunction,
     type EditResult,
     type History,
@@ -326,6 +327,12 @@
    * Stable between edits (it changes only with the cell or the catalogue analysis), so the
    * profile verdicts cached per geometry are reused from one edit to the next.
    */
+  /** Profile verdicts kept in the browser across reloads (V4 step 11). */
+  let fits = $state.raw<Map<string, ProfileFit> | undefined>(undefined);
+  $effect(() => {
+    void profiles; // a new analysis, a new store
+    void catalogueStore.profileFits().then((m) => (fits = m));
+  });
   const geometry = $derived.by((): JointGeometry | undefined => {
     if (!anchor) return undefined;
     const byKey = profiles;
@@ -334,6 +341,7 @@
       module: anchor.module,
       profileOf: (k, dir) => byKey.get(`${byForm.get(k)?.editorId}:${dir}`),
       vanilla: VANILLA,
+      fits,
     };
   });
   const bad = $derived.by(() => {
@@ -461,33 +469,65 @@
   const validPieces = $derived(new Map([...pieces].filter(([, p]) => p.review.validated)));
   // the clicked face proposes, every neighbour of the new tile must accept (step 15b)
   // placements that fit by profile; those with a junction known to leak are set apart
-  const fitting = $derived(
-    active && layout
-      ? checkCandidates(
-          [
-            ...candidatesFor(active, layout, validPieces, types, fineSearch),
-            // and what the game puts in front of this face (V4)
-            ...gameCandidates(active, layout, validPieces, GAME_PAIRS),
-          ]
-            .filter(
-              (c, i, all) =>
-                all.findIndex(
-                  (d) =>
-                    d.piece === c.piece &&
-                    d.rotation === c.rotation &&
-                    d.cell.join(',') === c.cell.join(','),
-                ) === i,
-            )
-            .sort((a, b) =>
-              pieces.get(a.piece)!.editorId.localeCompare(pieces.get(b.piece)!.editorId),
-            ),
-          layout,
-          pieces,
-          types,
-          geometry,
+  const fitting = $derived(active && layout ? fittingAt(active, layout) : []);
+  $effect(() => {
+    void fitting;
+    void bad;
+    catalogueStore.saveProfileFits();
+  });
+  /**
+   * While the editor is idle, the open faces of the shown level are worked out one by one, so
+   * their verdicts are cached before a click (V4 step 11): a first click then takes no wait.
+   */
+  $effect(() => {
+    const l = layout;
+    const faces = opens;
+    if (!l || !geometry || !faces.length) return;
+    let next = 0;
+    let handle: number | undefined;
+    const idle =
+      typeof requestIdleCallback === 'function'
+        ? (fn: () => void) => requestIdleCallback(fn, { timeout: 2000 })
+        : (fn: () => void) => window.setTimeout(fn, 50);
+    const step = () => {
+      const face = faces[next++];
+      if (!face) {
+        catalogueStore.saveProfileFits();
+        return;
+      }
+      fittingAt(face, l);
+      handle = idle(step);
+    };
+    handle = idle(step);
+    return () => {
+      if (handle === undefined) return;
+      if (typeof cancelIdleCallback === 'function') cancelIdleCallback(handle);
+      else clearTimeout(handle);
+    };
+  });
+  function fittingAt(face: OpenFace, l: Layout): Candidate[] {
+    return checkCandidates(
+      [
+        ...candidatesFor(face, l, validPieces, types, fineSearch),
+        // and what the game puts in front of this face (V4)
+        ...gameCandidates(face, l, validPieces, GAME_PAIRS),
+      ]
+        .filter(
+          (c, i, all) =>
+            all.findIndex(
+              (d) =>
+                d.piece === c.piece &&
+                d.rotation === c.rotation &&
+                d.cell.join(',') === c.cell.join(','),
+            ) === i,
         )
-      : [],
-  );
+        .sort((a, b) => pieces.get(a.piece)!.editorId.localeCompare(pieces.get(b.piece)!.editorId)),
+      l,
+      pieces,
+      types,
+      geometry,
+    );
+  }
   const leakFree = (c: Candidate): boolean => {
     if (!layout || !anchor) return true;
     const placed = addTile(layout, pieces, c.piece, c.cell, c.rotation);
