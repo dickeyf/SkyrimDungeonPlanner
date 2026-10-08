@@ -95,6 +95,11 @@ check (R16) and texture continuity, Z levels (phase 4). See D63.
   chain) that link them cleanly, moving the second piece if needed (never turning it). Asked on
   6 Oct 2026: going from `NorHallSm1way01` to `NorRmBgWallFrontExSm01` needs
   `NorHallSm1wayEndExSm01` between them, at one exact distance the designer cannot guess.
+- [ ] Help for a designer new to a kit: an open face wider than any one piece (the long face of
+  `NorRmSmWallFrontExBg01`) takes several pieces side by side (three `NorRmSmMid01`), or one
+  piece the designer does not think of (`NorRmSmWallSideExBg01`). Offer such sets and "the piece
+  that closes this", ideally from what the game builds there (the Vanilla pairs). Asked on
+  7 Oct 2026, after V4.
 
 ## Later
 See `05-ideas.md`: cross-section view, thumbnails, room markers/portals, multiple selection.
