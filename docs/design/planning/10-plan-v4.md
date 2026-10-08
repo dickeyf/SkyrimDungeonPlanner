@@ -299,6 +299,15 @@ snapping follow the selected piece.
   `ImpHallDetwist01`). Checked on the game's CELLs: every mismatch of the end cap goes (Nordic
   mismatches 547 to 533, open faces 3,811 to 3,593), the Imperial figures do not move; the
   game's pairs (`data/vanilla/nordic.json`) are generated again.
+  A first click on an open face took seconds (3.7 s twice in the user's browser profile): the
+  profile fits (`profileFit`, a point-to-segment scan) were computed again for each candidate,
+  and their cache was tied to the editor's `geometry` object, which it rebuilds, so it was lost.
+  Now the cache is keyed by the two profiles, each profile's segments and sample points are
+  prepared once, the second profile is not redrawn (the points are moved instead), and a piece's
+  openings and a tile's world openings and cells are kept between candidates. Measured on
+  `NordicFinalTest` (35 faces): a first click 253 ms to 82 ms, the next ones 50 to 28 ms; the
+  same 266 placements kept, the same verdicts on 12,410 profile pairs. Baking the verdicts into
+  the analysis is set aside unless the browser still shows a wait.
 - **What**: the success criterion above, on a new Nordic test dungeon and an Imperial cell
   joined to it by a load door. Frictions noted, fixed, then documentation (user guide,
   architecture) updated.

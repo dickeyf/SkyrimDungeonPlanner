@@ -25,8 +25,8 @@ import type { Profile } from '../mesh/profiles';
 import {
   DEPTH_TOL,
   betterFit,
-  inFrameOf,
-  profileFit,
+  frameOffset,
+  profileFitInFrame,
   type JointFit,
   type ProfileFit,
 } from './joints';
@@ -76,8 +76,41 @@ export interface Candidate {
 /** Axis running along a face: faces on ±X run along Y, and conversely. */
 const alongAxis = (dir: FaceDir): 0 | 1 => (dir[1] === 'X' ? 1 : 0);
 
+/**
+ * Results that depend only on a piece, or on a tile and its piece, kept between calls: the
+ * assistant places each candidate in a copy of the layout (V4 step 11: recomputed for every
+ * candidate, they took a third of a first click). Tiles are immutable and shared by the copies.
+ */
+const openingsCache = new WeakMap<Piece, Opening[]>();
+const tileCache = new WeakMap<object, { piece: Piece; openings: OpenFace[]; cells: string[] }>();
+
+function tileData(tile: Layout['tiles'] extends Map<string, infer T> ? T : never, piece: Piece) {
+  let d = tileCache.get(tile);
+  if (d && d.piece === piece) return d;
+  const openings = openingsOf(piece).map((opening, n): OpenFace => {
+    const dir = rotateDir(opening.dir, tile.rotation);
+    const cells = opening.cells.map((c) =>
+      addCells(tile.cell, rotateFootprintCell(c, tile.rotation)),
+    );
+    const outside = cells.map((c) => addCells(c, dirOffset(dir)));
+    return { id: `${tile.key}#${n}`, tile: tile.key, opening, dir, cells, outside };
+  });
+  const cells = footprintCells(piece, tile.cell, tile.rotation).map(cellKey);
+  d = { piece, openings, cells };
+  tileCache.set(tile, d);
+  return d;
+}
+
 /** Group a piece's faces into openings (same direction and type, adjacent cells). */
 export function openingsOf(piece: Piece): Opening[] {
+  const cached = openingsCache.get(piece);
+  if (cached) return cached;
+  const result = groupOpenings(piece);
+  openingsCache.set(piece, result);
+  return result;
+}
+
+function groupOpenings(piece: Piece): Opening[] {
   const groups = new Map<string, Face[]>();
   for (const f of piece.faces) {
     const along = alongAxis(f.dir);
@@ -134,10 +167,10 @@ function occupancy(layout: Layout, pieces: Pieces): Map<string, string[]> {
   for (const tile of layout.tiles.values()) {
     const piece = pieces.get(tile.piece);
     if (!piece) continue;
-    for (const c of footprintCells(piece, tile.cell, tile.rotation)) {
-      const list = used.get(cellKey(c)) ?? [];
-      list.push(tile.key);
-      used.set(cellKey(c), list);
+    for (const k of tileData(tile, piece).cells) {
+      const list = used.get(k);
+      if (list) list.push(tile.key);
+      else used.set(k, [tile.key]);
     }
   }
   return used;
@@ -148,15 +181,7 @@ function worldOpenings(layout: Layout, pieces: Pieces): OpenFace[] {
   const out: OpenFace[] = [];
   for (const tile of layout.tiles.values()) {
     const piece = pieces.get(tile.piece);
-    if (!piece) continue;
-    openingsOf(piece).forEach((opening, n) => {
-      const dir = rotateDir(opening.dir, tile.rotation);
-      const cells = opening.cells.map((c) =>
-        addCells(tile.cell, rotateFootprintCell(c, tile.rotation)),
-      );
-      const outside = cells.map((c) => addCells(c, dirOffset(dir)));
-      out.push({ id: `${tile.key}#${n}`, tile: tile.key, opening, dir, cells, outside });
-    });
+    if (piece) out.push(...tileData(tile, piece).openings);
   }
   return out;
 }
@@ -200,10 +225,12 @@ export interface JointGeometry {
 }
 
 /**
- * Profile verdicts by piece pair and relative placement. The same pairs meet again and again
- * across a level and between edits, so each is computed once per geometry.
+ * Profile verdicts by the two profiles and their relative placement. The same pairs meet again
+ * and again across a level and between edits, so each is computed once. Keyed by the profiles
+ * themselves, not by the geometry object: the editor rebuilds that object, and a cache tied to
+ * it was lost and computed again (V4 step 11: twice 3.7 s on a first click).
  */
-const fitCache = new WeakMap<JointGeometry, Map<string, ProfileFit>>();
+const fitCache = new WeakMap<Profile, WeakMap<Profile, Map<string, ProfileFit>>>();
 
 interface JointContext {
   layout: Layout;
@@ -235,23 +262,23 @@ function profileVerdict(ctx: JointContext, o: OpenFace, p: OpenFace): ProfileFit
   const minePiece = ctx.layout.tiles.get(o.tile)!.piece;
   const theirPiece = ctx.layout.tiles.get(p.tile)!.piece;
   const along = alongAxis(o.dir);
-  const key = [
-    minePiece,
-    o.opening.dir,
-    theirPiece,
-    p.opening.dir,
-    o.dir,
-    span2(p.cells, along) - span2(o.cells, along),
-    p.cells[0]![2] - o.cells[0]![2],
-  ].join('|');
-  let cache = fitCache.get(geometry);
-  if (!cache) fitCache.set(geometry, (cache = new Map()));
-  const known = cache.get(key);
-  if (known) return known;
   const mine = geometry.profileOf(minePiece, o.opening.dir);
   const theirs = geometry.profileOf(theirPiece, p.opening.dir);
   if (!mine || !theirs) return null;
-  const verdict = profileFit(mine, inFrameOf(o, p, theirs, geometry.module));
+  const key = [
+    o.dir,
+    span2(p.cells, along) - span2(o.cells, along),
+    p.cells[0]![2] - o.cells[0]![2],
+    geometry.module.xy,
+    geometry.module.z,
+  ].join('|');
+  let byTheirs = fitCache.get(mine);
+  if (!byTheirs) fitCache.set(mine, (byTheirs = new WeakMap()));
+  let cache = byTheirs.get(theirs);
+  if (!cache) byTheirs.set(theirs, (cache = new Map()));
+  const known = cache.get(key);
+  if (known) return known;
+  const verdict = profileFitInFrame(mine, theirs, frameOffset(o, p, geometry.module));
   cache.set(key, verdict);
   return verdict;
 }
