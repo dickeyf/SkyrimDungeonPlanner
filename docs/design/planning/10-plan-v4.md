@@ -287,6 +287,8 @@ snapping follow the selected piece.
   are right; `NorRmSmWallFrontDam03` gains some floor on the flanks of its rubble pile and a small
   hole (40 by 60) in it, accepted: a rubble pile is a heap of uneven steps, and a piece can
   still be set without NavMesh or touched up in the editor. **Riser rule kept.**
+- **Done (7 Oct 2026)**: the two-level Nordic test cell baked, written and finalized; checked by
+  the user, an NPC follows through the door frame and up and down the staircase.
 
 ## Step 11 – V4 milestone
 - **What**: the success criterion above, on a new Nordic test dungeon and an Imperial cell
