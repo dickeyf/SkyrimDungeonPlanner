@@ -29,6 +29,7 @@
     writeProjectAnnotations,
   } from '$lib/fs';
   import KitPicker from '../components/KitPicker.svelte';
+  import WalkableView3D from '../components/WalkableView3D.svelte';
   import { annotationStore as ann } from '$lib/session/annotationStore.svelte';
   import { catalogueStore as store } from '$lib/session/catalogueStore.svelte';
   import { session } from '$lib/session/session.svelte';
@@ -112,6 +113,8 @@
     pending: walkableView.filter((w) => !w.status).length,
   });
   let walkableSelected = $state<string | null>(null);
+  /** The detail drawn in 3D (V4): the collision as the analysis sees it, the floor at its height. */
+  let walkable3d = $state(false);
   const walkableItem = $derived(
     walkableView.find((w) => w.piece.editorId === walkableSelected) ?? walkableView[0],
   );
@@ -471,37 +474,48 @@
           {@const pad = 32}
           <div class="walkable-detail">
             <h3>{walkableItem.piece.editorId}</h3>
-            <svg
-              viewBox="{f.min[0] - pad} {-f.max[1] - pad} {f.max[0] - f.min[0] + 2 * pad} {f
-                .max[1] -
-                f.min[1] +
-                2 * pad}"
-              width="420"
-              height="420"
-            >
-              <rect
-                x={f.min[0]}
-                y={-f.max[1]}
-                width={f.max[0] - f.min[0]}
-                height={f.max[1] - f.min[1]}
-                class="footprint"
-              />
-              {#each walkableItem.piece.cells as c, i (i)}
+            <p class="view-mode">
+              <button class:active={!walkable3d} onclick={() => (walkable3d = false)}>Plan</button>
+              <button class:active={walkable3d} onclick={() => (walkable3d = true)}>3D</button>
+            </p>
+            {#if walkable3d}
+              <WalkableView3D piece={walkableItem.piece} rings={walkableItem.rings ?? []} />
+            {:else}
+              <svg
+                viewBox="{f.min[0] - pad} {-f.max[1] - pad} {f.max[0] - f.min[0] + 2 * pad} {f
+                  .max[1] -
+                  f.min[1] +
+                  2 * pad}"
+                width="420"
+                height="420"
+              >
                 <rect
-                  x={-walkableItem.piece.pivot[0] + c[0] * analysis!.kit.module.xy!}
-                  y={-(-walkableItem.piece.pivot[1] + (c[1] + 1) * analysis!.kit.module.xy!)}
-                  width={analysis!.kit.module.xy}
-                  height={analysis!.kit.module.xy}
-                  class="cell"
+                  x={f.min[0]}
+                  y={-f.max[1]}
+                  width={f.max[0] - f.min[0]}
+                  height={f.max[1] - f.min[1]}
+                  class="footprint"
                 />
-              {/each}
-              {#each walkableItem.rings ?? [] as ring, i (i)}
-                <polygon points={ringPoints(ring)} class={ringArea(ring) > 0 ? 'outer' : 'hole'} />
-              {/each}
-              {#each f.openings as o, i (i)}
-                <line x1={o.a[0]} y1={-o.a[1]} x2={o.b[0]} y2={-o.b[1]} class="opening" />
-              {/each}
-            </svg>
+                {#each walkableItem.piece.cells as c, i (i)}
+                  <rect
+                    x={-walkableItem.piece.pivot[0] + c[0] * analysis!.kit.module.xy!}
+                    y={-(-walkableItem.piece.pivot[1] + (c[1] + 1) * analysis!.kit.module.xy!)}
+                    width={analysis!.kit.module.xy}
+                    height={analysis!.kit.module.xy}
+                    class="cell"
+                  />
+                {/each}
+                {#each walkableItem.rings ?? [] as ring, i (i)}
+                  <polygon
+                    points={ringPoints(ring)}
+                    class={ringArea(ring) > 0 ? 'outer' : 'hole'}
+                  />
+                {/each}
+                {#each f.openings as o, i (i)}
+                  <line x1={o.a[0]} y1={-o.a[1]} x2={o.b[0]} y2={-o.b[1]} class="opening" />
+                {/each}
+              </svg>
+            {/if}
             <p>
               <button onclick={() => setWalkable(walkableItem.piece.editorId, 'reviewed')}
                 >Reviewed</button
@@ -515,7 +529,7 @@
                 >
               {/if}
             </p>
-            <p class="hint">
+            <p class="hint" hidden={walkable3d}>
               Seen from above, +Y up. Grey: the grid cells; blue: walkable; red: holes; yellow: the
               openings, where the NavMesh meets the neighbours.
             </p>
@@ -631,6 +645,15 @@
   }
   .status.none {
     color: #d9c27a;
+  }
+  .walkable-detail {
+    flex: 1;
+    min-width: 0;
+    max-width: 900px;
+  }
+  .view-mode button.active {
+    border-bottom: 2px solid var(--accent);
+    color: var(--accent);
   }
   .walkable-detail svg {
     background: #15141a;

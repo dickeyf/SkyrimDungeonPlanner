@@ -273,6 +273,15 @@ snapping follow the selected piece.
   frame stays joined (the arch fix was enough). **The bridge radius is removed** (item 4 above is
   superseded). The soffit's ceiling is now taken at its height over each sample (its plane,
   within its own heights) instead of its lowest point: the same floors, and the right rule.
+  The staircase still had no floor between its landings: on a curved stair the risers lean back
+  and are nearly vertical, so seen from above they cover a band with no floor between two steps.
+  A fix (a riser between a lower and a higher floor takes its height) also changed some 1 % of
+  the area of 72 Nordic and 40 Imperial floors, which the numbers alone could not judge: the
+  user asked for a **3D view in the Walkable tab** first. It shows the piece's collision, each
+  face coloured by what the analysis takes it for (`faceKind`, now the one rule both the analysis
+  and the view use: floor, low wall, wall, soffit, ceiling, obstacle), the walkable floor at its
+  height, and the visual mesh faintly (`render/WalkableScene.ts`, `WalkableView3D.svelte`). On
+  `NorHallBg1wayStairs256` it shows the risers as low walls and no floor between them.
 
 ## Step 11 – V4 milestone
 - **What**: the success criterion above, on a new Nordic test dungeon and an Imperial cell

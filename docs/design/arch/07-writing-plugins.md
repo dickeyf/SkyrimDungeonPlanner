@@ -70,9 +70,12 @@ ESL-flagged plugins are refused (V6): their FormID range is restricted.
 tile as rings in piece space (outer counter-clockwise, holes clockwise), each vertex at the floor
 height:
 
-1. the collision is sampled every `step` units over the tile's footprint: upward faces (slope
-   within `maxSlope`, or steeper but no taller than a step) are floor candidates, downward faces
-   ceilings, near-vertical faces walls occupying their height band;
+1. the collision is sampled every `step` units over the tile's footprint. Each face is classed
+   by `faceKind` (the one rule the Walkable tab's 3D view also uses, V4): `floor` (slope within
+   `maxSlope`, or steeper but no taller than a step), `ceiling` (turned down), `wall` (nearly
+   vertical: occupies its height band), `lowWall` (a wall no taller than a step), `soffit`
+   (nearly vertical and turned down, like an arch's underside: a wall that also roofs what is
+   under it, at its height over the sample), `obstacle` (too steep, not a wall);
 2. a candidate is valid with `actorHeight` free above it (obstacles below `stepHeight` are
    stepped over) and a ceiling above (not a wall top or a roof);
 3. floors grow from the openings (the piece's open faces, at their level): each sample takes the

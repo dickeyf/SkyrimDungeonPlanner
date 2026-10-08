@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Vec3 } from '../catalogue/types';
 import type { Piece } from '../catalogue/types';
-import { simplifyRing, tileFrame, traceRings, walkablePolygons } from './walkable';
+import { faceKind, simplifyRing, tileFrame, traceRings, walkablePolygons } from './walkable';
 
 /** Collision soup built from quads (two triangles each, wound as given). */
 class Soup {
@@ -169,5 +169,21 @@ describe('simplifyRing', () => {
       [0, 10],
     ];
     expect(simplifyRing(ring, 1)).toHaveLength(4);
+  });
+});
+
+describe('faceKind', () => {
+  it('tells floors, ceilings, walls, low walls, soffits and steep obstacles apart', () => {
+    expect(faceKind([0, 0, 0], [10, 0, 0], [0, 10, 0])).toBe('floor');
+    expect(faceKind([0, 0, 0], [0, 10, 0], [10, 0, 0])).toBe('ceiling');
+    // vertical, 100 tall: a wall; 30 tall: a low wall the actor steps over
+    expect(faceKind([0, 0, 0], [10, 0, 0], [10, 0, 100])).toBe('wall');
+    expect(faceKind([0, 0, 0], [10, 0, 0], [10, 0, 30])).toBe('lowWall');
+    // nearly vertical, leaning over the floor (turned down): a soffit
+    expect(faceKind([0, 0, 0], [0, 2, 100], [10, 0, 100])).toBe('soffit');
+    // 60 degrees, 100 tall: too steep to walk; the same slope 40 tall is stepped onto
+    expect(faceKind([0, 0, 0], [10, 0, 0], [0, 57.7, 100])).toBe('obstacle');
+    expect(faceKind([0, 0, 0], [10, 0, 0], [0, 23.1, 40])).toBe('floor');
+    expect(faceKind([0, 0, 0], [0, 0, 0], [1, 1, 1])).toBeNull();
   });
 });

@@ -135,6 +135,47 @@ interface Span {
   hi: number;
 }
 
+/**
+ * What the walkable analysis takes a collision triangle for (the 3D view of the Walkable tab
+ * shows it): `floor` (flat enough, or a steep face leaning back no taller than a step, not
+ * nearly vertical), `ceiling` (turned down), `wall` (nearly vertical: blocks its height band),
+ * `lowWall` (a wall no taller than a step, which the actor steps over), `soffit` (nearly vertical
+ * and turned down: a wall that also roofs what is under it), `obstacle` (too steep to walk, not a
+ * wall). Null for a degenerate triangle.
+ */
+export type FaceKind = 'floor' | 'ceiling' | 'wall' | 'lowWall' | 'soffit' | 'obstacle';
+
+const WALL_NZ = 0.2;
+
+export function faceKind(
+  a: Vec3,
+  b: Vec3,
+  c: Vec3,
+  options: Partial<WalkableOptions> = {},
+): FaceKind | null {
+  const o = { ...DEFAULT_WALKABLE_OPTIONS, ...options };
+  const ux = b[0] - a[0];
+  const uy = b[1] - a[1];
+  const uz = b[2] - a[2];
+  const vx = c[0] - a[0];
+  const vy = c[1] - a[1];
+  const vz = c[2] - a[2];
+  const nX = uy * vz - uz * vy;
+  const nY = uz * vx - ux * vz;
+  const nZ = ux * vy - uy * vx;
+  const len = Math.hypot(nX, nY, nZ);
+  if (len === 0) return null;
+  const nz = nZ / len;
+  const height = Math.max(a[2], b[2], c[2]) - Math.min(a[2], b[2], c[2]);
+  if (Math.abs(nz) < WALL_NZ) {
+    if (nz < 0) return 'soffit';
+    return height <= o.stepHeight ? 'lowWall' : 'wall';
+  }
+  // A steep face no taller than a step (a bevel, a sloped riser) is stepped onto like a floor.
+  if (nz >= Math.cos(o.maxSlope) || (nz > 0 && height <= o.stepHeight)) return 'floor';
+  return nz <= -WALL_NZ ? 'ceiling' : 'obstacle';
+}
+
 export function walkablePolygons(
   positions: Float32Array,
   indices: Uint32Array,
@@ -169,8 +210,6 @@ export function walkablePolygons(
   const floors: number[][] = Array.from({ length: nx * ny }, () => []);
   const ceilings: number[][] = Array.from({ length: nx * ny }, () => []);
   const spans: Span[][] = Array.from({ length: nx * ny }, () => []);
-  const cosSlope = Math.cos(o.maxSlope);
-  const wallNz = 0.2;
 
   const p = (k: number): Vec3 => [positions[k * 3]!, positions[k * 3 + 1]!, positions[k * 3 + 2]!];
   for (let t = 0; t < indices.length; t += 3) {
@@ -186,15 +225,14 @@ export function walkablePolygons(
     const nX = uy * vz - uz * vy;
     const nY = uz * vx - ux * vz;
     const nZ = ux * vy - uy * vx;
-    const len = Math.hypot(nX, nY, nZ);
-    if (len === 0) continue;
-    const nz = nZ / len;
+    const kind = faceKind(a, b, c, o);
+    if (!kind) continue;
     const i0 = Math.max(0, Math.floor((Math.min(a[0], b[0], c[0]) - minX) / sx - 0.5));
     const i1 = Math.min(nx - 1, Math.ceil((Math.max(a[0], b[0], c[0]) - minX) / sx - 0.5));
     const j0 = Math.max(0, Math.floor((Math.min(a[1], b[1], c[1]) - minY) / sy - 0.5));
     const j1 = Math.min(ny - 1, Math.ceil((Math.max(a[1], b[1], c[1]) - minY) / sy - 0.5));
 
-    if (Math.abs(nz) < wallNz) {
+    if (kind === 'wall' || kind === 'lowWall' || kind === 'soffit') {
       // Wall: mark its height band on every sample within half a sample of its plan outline.
       const lo = Math.min(a[2], b[2], c[2]);
       const hi = Math.max(a[2], b[2], c[2]);
@@ -205,7 +243,7 @@ export function walkablePolygons(
             spans[j * nx + i]!.push({ lo, hi });
             // a steep face turned down (an arch's soffit) roofs what is under it, at its height
             // over the sample (its plane there, within the face's own heights)
-            if (nz < 0) {
+            if (kind === 'soffit') {
               const z = a[2] - (nX * (cx(i) - a[0]) + nY * (cy(j) - a[1])) / nZ;
               ceilings[j * nx + i]!.push(Math.min(hi, Math.max(lo, z)));
             }
@@ -214,9 +252,6 @@ export function walkablePolygons(
       continue;
     }
     const det = ux * vy - uy * vx;
-    // A steep face no taller than a step (a bevel, a sloped riser) is stepped onto like a floor.
-    const low = nz > 0 && Math.max(a[2], b[2], c[2]) - Math.min(a[2], b[2], c[2]) <= o.stepHeight;
-    const walkable = nz >= cosSlope || low;
     for (let j = j0; j <= j1; j++)
       for (let i = i0; i <= i1; i++) {
         const px = cx(i) - a[0];
@@ -226,8 +261,8 @@ export function walkablePolygons(
         if (l1 < -1e-4 || l2 < -1e-4 || l1 + l2 > 1 + 1e-4) continue;
         const z = a[2] + l1 * uz + l2 * vz;
         const k = j * nx + i;
-        if (walkable) floors[k]!.push(z);
-        else if (nz <= -wallNz) ceilings[k]!.push(z);
+        if (kind === 'floor') floors[k]!.push(z);
+        else if (kind === 'ceiling') ceilings[k]!.push(z);
         else spans[k]!.push({ lo: z, hi: z });
       }
   }

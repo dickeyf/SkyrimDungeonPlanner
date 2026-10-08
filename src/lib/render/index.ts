@@ -9,4 +9,5 @@ export * from './meshCache';
 export * from './textureCache';
 export * from './sceneObjects';
 export * from './transform';
+export * from './WalkableScene';
 export type { NavLayer } from './CellScene';

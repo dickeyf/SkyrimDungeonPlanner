@@ -43,6 +43,17 @@ class CatalogueStore {
     return this.analysisByKit[kit.kit] ?? null;
   }
 
+  private indexOf: { view: unknown; index: Promise<ArchiveIndex> } | null = null;
+
+  /** The meshes of the current Data view, built once per view (the analysis, the 3D views). */
+  meshIndex(): Promise<ArchiveIndex> | null {
+    const view = session.view;
+    if (!view) return null;
+    if (this.indexOf?.view !== view)
+      this.indexOf = { view, index: ArchiveIndex.build(view.overlay, view.plugins) };
+    return this.indexOf.index;
+  }
+
   async loadStats(useCache = true, kit = this.kit): Promise<KitStatsResult | null> {
     if (!session.view) return null;
     return this.run(async () => {
@@ -66,7 +77,7 @@ class CatalogueStore {
           return cached;
         }
       }
-      const index = await ArchiveIndex.build(session.view!.overlay, session.view!.plugins);
+      const index = await this.meshIndex()!;
       const result = await analyseKit(stats.stats, kit, index, (done, total, current) => {
         this.progress = `${done}/${total} ${current}`;
       });

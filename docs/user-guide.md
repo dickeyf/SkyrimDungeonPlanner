@@ -122,6 +122,11 @@ _Show marks_ turns all marks off and on.
 The tool bakes the NavMesh of your tiles from their walkable floor (computed from each piece's
 collision): two triangles per grid cell where the floor is open, small polygons along the walls.
 
+Each piece's walkable floor is reviewed in Validation, tab **Walkable**. **Plan** shows it from
+above; **3D** shows the piece's collision, each face coloured by what the analysis takes it
+for (floor, low wall, wall, soffit, ceiling, obstacle), with the walkable floor in blue at its
+height: drag to turn, right-drag to pan, wheel to zoom. Use it to see why a floor is cut.
+
 Every NavMesh tool is in **Edit NavMesh** mode, where the selection is the NavMesh instead of
 the tiles (the piece list is hidden):
 
