@@ -44,6 +44,17 @@ function area(ring: readonly Vec3[]): number {
 }
 
 describe('walkablePolygons', () => {
+  it('walks over a riser leaning back between two steps (a curved stair, V4)', () => {
+    // a lower floor up to y 0, a riser leaning back to y 5 and z 40 (nearly vertical), a higher floor beyond
+    const soup = new Soup()
+      .quad([-100, -128, 0], [100, -128, 0], [100, 0, 0], [-100, 0, 0])
+      .quad([-100, 0, 0], [100, 0, 0], [100, 5, 40], [-100, 5, 40])
+      .quad([-100, 5, 40], [100, 5, 40], [100, 128, 40], [-100, 128, 40])
+      .quad([-100, -128, 300], [-100, 128, 300], [100, 128, 300], [100, -128, 300]);
+    const { rings } = walkablePolygons(...soup.mesh);
+    expect(rings).toHaveLength(1);
+  });
+
   it('takes a steep face turned down (an arch soffit) as a ceiling (V4)', () => {
     // a floor whose roof has a gap at y 60..80, closed by a steep face turned down high above
     const soup = new Soup()

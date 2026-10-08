@@ -76,6 +76,10 @@ height:
    vertical: occupies its height band), `lowWall` (a wall no taller than a step), `soffit`
    (nearly vertical and turned down, like an arch's underside: a wall that also roofs what is
    under it, at its height over the sample), `obstacle` (too steep, not a wall);
+   A riser leaning back is nearly vertical on a curved stair: seen from above, a band with no
+   floor between two steps. A sample on a `lowWall` leaning back takes its height when it lies
+   between a lower and a higher valid floor (8 to `stepHeight` apart, the riser between them);
+   the foot of a wall, with the same floor along it and none across, stays a wall (V4);
 2. a candidate is valid with `actorHeight` free above it (obstacles below `stepHeight` are
    stepped over) and a ceiling above (not a wall top or a roof);
 3. floors grow from the openings (the piece's open faces, at their level): each sample takes the

@@ -282,6 +282,11 @@ snapping follow the selected piece.
   and the view use: floor, low wall, wall, soffit, ceiling, obstacle), the walkable floor at its
   height, and the visual mesh faintly (`render/WalkableScene.ts`, `WalkableView3D.svelte`). On
   `NorHallBg1wayStairs256` it shows the risers as low walls and no floor between them.
+  Reviewed in 3D with the riser rule: the staircase is walked end to end; `ImpLRoomWall01` (the
+  small slope at the wall's foot, now walkable) and `NorRmBgMid01` (the floor around the column)
+  are right; `NorRmSmWallFrontDam03` gains some floor on the flanks of its rubble pile and a small
+  hole (40 by 60) in it, accepted: a rubble pile is a heap of uneven steps, and a piece can
+  still be set without NavMesh or touched up in the editor. **Riser rule kept.**
 
 ## Step 11 – V4 milestone
 - **What**: the success criterion above, on a new Nordic test dungeon and an Imperial cell

@@ -210,6 +210,8 @@ export function walkablePolygons(
   const floors: number[][] = Array.from({ length: nx * ny }, () => []);
   const ceilings: number[][] = Array.from({ length: nx * ny }, () => []);
   const spans: Span[][] = Array.from({ length: nx * ny }, () => []);
+  // heights of the steep faces leaning back no taller than a step (risers), per sample
+  const risers: number[][] = Array.from({ length: nx * ny }, () => []);
 
   const p = (k: number): Vec3 => [positions[k * 3]!, positions[k * 3 + 1]!, positions[k * 3 + 2]!];
   for (let t = 0; t < indices.length; t += 3) {
@@ -241,6 +243,10 @@ export function walkablePolygons(
         for (let i = i0; i <= i1; i++) {
           if (distanceToTriangle2d(cx(i), cy(j), a, b, c) <= reach) {
             spans[j * nx + i]!.push({ lo, hi });
+            if (kind === 'lowWall' && nZ > 0) {
+              const z = a[2] - (nX * (cx(i) - a[0]) + nY * (cy(j) - a[1])) / nZ;
+              risers[j * nx + i]!.push(Math.min(hi, Math.max(lo, z)));
+            }
             // a steep face turned down (an arch's soffit) roofs what is under it, at its height
             // over the sample (its plane there, within the face's own heights)
             if (kind === 'soffit') {
@@ -295,6 +301,37 @@ export function walkablePolygons(
         );
       }),
   );
+
+  // A riser leaning back is nearly vertical (a curved stair's): seen from above, a band a sample
+  // or two wide with no floor between two steps. A sample on it takes the riser's height when it
+  // lies between a lower and a higher floor (a step), the riser between them; the foot of a wall
+  // has the same floor on both sides along it, and none across.
+  const stepFloor = (i: number, j: number) =>
+    i >= 0 && j >= 0 && i < nx && j < ny ? valid[j * nx + i]![0] : undefined;
+  const fill: [number, number][] = [];
+  for (let j = 0; j < ny; j++)
+    for (let i = 0; i < nx; i++) {
+      const k = j * nx + i;
+      if (valid[k]!.length || !risers[k]!.length) continue;
+      const z = risers[k]!.reduce((x, y) => x + y) / risers[k]!.length;
+      const step = [1, 2, 3].some((d) =>
+        [
+          [1, 0],
+          [0, 1],
+          [1, 1],
+          [1, -1],
+        ].some(([di, dj]) => {
+          const p = stepFloor(i - di! * d, j - dj! * d);
+          const q = stepFloor(i + di! * d, j + dj! * d);
+          if (p === undefined || q === undefined) return false;
+          const lo = Math.min(p, q);
+          const hi = Math.max(p, q);
+          return hi - lo >= MIN_RISE && hi - lo <= o.stepHeight && z >= lo - 1 && z <= hi + 1;
+        }),
+      );
+      if (step) fill.push([k, z]);
+    }
+  for (const [k, z] of fill) valid[k] = [z];
 
   // Floors are grown from the entry samples (on an opening, at its level; the edge without
   // openings): each neighbour takes its valid floor closest in height, within a step. Walking up
@@ -440,6 +477,9 @@ export function walkablePolygons(
  * Clear the walkable areas not connected to an entry sample: actors enter a tile through its
  * openings, so an area enclosed inside (a cavity in a thick wall) is unreachable.
  */
+/** The least height between two floors a riser joins, units. */
+const MIN_RISE = 8;
+
 function keepReachable(
   mask: Uint8Array,
   nx: number,
