@@ -224,5 +224,5 @@ function walkableOf(
 ): Piece['walkable'] {
   if (!collision || !kit.module.xy || !kit.module.z) return null;
   const frame = tileFrame(piece, { xy: kit.module.xy, z: kit.module.z });
-  return walkablePolygons(collision.positions, collision.indices, kit.walkable ?? {}, frame).rings;
+  return walkablePolygons(collision.positions, collision.indices, {}, frame).rings;
 }

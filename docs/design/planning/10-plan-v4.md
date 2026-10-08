@@ -266,6 +266,13 @@ snapping follow the selected piece.
   this and not a wider bridge: it is the actual cause, and it was cutting 77 of the 187 Nordic
   floors under arches (`NorHallBg1way01` 5 rings to 1, `NorCatHallBg4way01` 9 to 1); 8 Imperial
   floors move by a few vertices, none splits or merges.
+  Review of the changed floors: `NorHallBg1wayStairs256` came out in pieces (3 rings to 7). The
+  cause was the bridge radius: its narrow passages, widened, cut new holes and islands in 6
+  pieces (the two big staircases, `NorCatHallSm2way01`, `Sm3way01`, `Sm4way02`). Measured
+  without it: no floor has more parts than before step 10, and `NorRmBgWallFrontExSm01`'s door
+  frame stays joined (the arch fix was enough). **The bridge radius is removed** (item 4 above is
+  superseded). The soffit's ceiling is now taken at its height over each sample (its plane,
+  within its own heights) instead of its lowest point: the same floors, and the right rule.
 
 ## Step 11 – V4 milestone
 - **What**: the success criterion above, on a new Nordic test dungeon and an Imperial cell

@@ -44,19 +44,15 @@ function area(ring: readonly Vec3[]): number {
 }
 
 describe('walkablePolygons', () => {
-  it('keeps a door frame narrower than an actor as a passage with a bridge radius (V4)', () => {
-    // two rooms 100 x 100 joined by a passage 28 wide and 24 long, walls along the passage
+  it('takes a steep face turned down (an arch soffit) as a ceiling (V4)', () => {
+    // a floor whose roof has a gap at y 60..80, closed by a steep face turned down high above
     const soup = new Soup()
-      .quad([-50, -112, 0], [50, -112, 0], [50, -12, 0], [-50, -12, 0])
-      .quad([-50, 12, 0], [50, 12, 0], [50, 112, 0], [-50, 112, 0])
-      .quad([-14, -12, 0], [14, -12, 0], [14, 12, 0], [-14, 12, 0])
-      .wall(-14, -12, -14, 12, 0, 200)
-      .wall(14, 12, 14, -12, 0, 200)
-      .quad([-50, -112, 300], [-50, 112, 300], [50, 112, 300], [50, -112, 300]);
-    const cut = walkablePolygons(...soup.mesh, { step: 2 });
-    expect(cut.rings.filter((r) => area(r) > 0)).toHaveLength(2);
-    const kept = walkablePolygons(...soup.mesh, { step: 2, bridgeRadius: 10 });
-    expect(kept.rings.filter((r) => area(r) > 0)).toHaveLength(1);
+      .quad([-100, -128, 0], [100, -128, 0], [100, 128, 0], [-100, 128, 0])
+      .quad([-100, -128, 300], [-100, 60, 300], [100, 60, 300], [100, -128, 300])
+      .quad([-100, 80, 400], [-100, 128, 400], [100, 128, 400], [100, 80, 400])
+      .quad([-100, 60, 300], [-100, 80, 400], [100, 80, 400], [100, 60, 300]);
+    const { rings } = walkablePolygons(...soup.mesh);
+    expect(rings).toHaveLength(1);
   });
 
   it('keeps the floor away from the walls, open at the ends', () => {
