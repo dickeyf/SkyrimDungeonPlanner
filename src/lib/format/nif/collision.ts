@@ -189,7 +189,8 @@ export function collisionMesh(nif: NifFile): CollisionMesh | undefined {
   if (nif.blocks[dataIndex]?.type !== 'bhkCompressedMeshShapeData') return undefined;
 
   const raw = decodeCompressedMeshData(reader(nif, dataIndex));
-  const world: Transform = root.transform ?? identityTransform();
+  // the root node's transform is ignored by the game for a placed object (see NifFile.shapes)
+  const world: Transform = identityTransform();
   const positions = new Float32Array(raw.vertices.length * 3);
   raw.vertices.forEach((v, i) => {
     let p: [number, number, number] = [v[0] * scale[0], v[1] * scale[1], v[2] * scale[2]];

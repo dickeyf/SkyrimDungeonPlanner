@@ -291,6 +291,14 @@ snapping follow the selected piece.
   the user, an NPC follows through the door frame and up and down the staircase.
 
 ## Step 11 – V4 milestone
+
+- **Progress (7 Oct 2026)**: a piece placed in the app showed the other way round in the CK and
+  the game (`NorHallSm1wayEndCap01`): its NIF's root node is turned by 180 degrees, which the
+  game ignores for a placed object and the tool applied. The root transform is now left out
+  (meshes and collision); 3 structural pieces had one (`NorHallSm1wayEndCap01`, its Snow variant,
+  `ImpHallDetwist01`). Checked on the game's CELLs: every mismatch of the end cap goes (Nordic
+  mismatches 547 to 533, open faces 3,811 to 3,593), the Imperial figures do not move; the
+  game's pairs (`data/vanilla/nordic.json`) are generated again.
 - **What**: the success criterion above, on a new Nordic test dungeon and an Imperial cell
   joined to it by a load door. Frictions noted, fixed, then documentation (user guide,
   architecture) updated.

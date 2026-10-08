@@ -280,13 +280,18 @@ export class NifFile {
     return (path ?? '').toLowerCase().replace(/\\/g, '/');
   }
 
-  /** All BSTriShape blocks reachable from the roots, with their accumulated transforms. */
+  /**
+   * All BSTriShape blocks reachable from the roots, with their accumulated transforms. The root
+   * node's own transform is left out, as the game does for a placed object: its reference gives
+   * the position and angle. Why: `NorHallSm1wayEndCap01` and `ImpHallDetwist01` have a root
+   * turned by 180 degrees that the game ignores; applying it drew them the other way round.
+   */
   shapes(): ShapeInstance[] {
     const out: ShapeInstance[] = [];
     const visit = (ref: number, parent: Transform, path: string): void => {
       const block = this.blocks[ref];
       if (!block) return;
-      const world = composeTransforms(parent, block.transform);
+      const world = path ? composeTransforms(parent, block.transform) : parent;
       const here = path ? `${path}/${block.name}` : block.name;
       if (block.type === 'BSTriShape' && block.vertices) out.push({ block, world, path: here });
       for (const child of block.children) visit(child, world, here);

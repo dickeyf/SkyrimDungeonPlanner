@@ -34,6 +34,19 @@ describe('NifFile', () => {
     expect(Array.from(shapes[1]!.world.translation)).toEqual([0, 0, 100]);
   });
 
+  it('leaves out the root node transform, as the game does for a placed object (V4)', () => {
+    const f = nif();
+    // a root turned by 180 degrees and moved, as NorHallSm1wayEndCap01's
+    f.blocks[0]!.transform = {
+      rotation: new Float64Array([-1, 0, 0, 0, -1, 0, 0, 0, 1]),
+      translation: new Float64Array([50, 0, 0]),
+      scale: 1,
+    };
+    const shapes = f.shapes();
+    expect(Array.from(shapes[0]!.world.rotation)).toEqual([1, 0, 0, 0, 1, 0, 0, 0, 1]);
+    expect(Array.from(shapes[1]!.world.translation)).toEqual([0, 0, 100]);
+  });
+
   it('merges shapes into one mesh with a bounding box', () => {
     const merged = mergeShapes(nif());
     expect(merged.indices.length / 3).toBe(TINY_NIF_EXPECTED.triangleCount);

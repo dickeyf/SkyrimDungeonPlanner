@@ -113,4 +113,8 @@ block the tool does not need is skipped. It reads:
   position size is derived from the offset of the first attribute after it, not from the flag.
 
 `geometry.ts` merges all shapes into one indexed mesh in piece space (Z up, game units), applying
-each shape's world transform. Collision (`bhk*`) is not read yet (phase 3).
+each shape's world transform. The **root node's own transform is left out**, for the shapes and
+the collision alike, as the game does for a placed object (its reference gives the position and
+angle). Why: `NorHallSm1wayEndCap01` (and its Snow variant) and `ImpHallDetwist01` have a root
+turned by 180 degrees; applied, it drew them the other way round from the game, and the Vanilla
+check flagged every junction of the end cap (V4 step 11).
