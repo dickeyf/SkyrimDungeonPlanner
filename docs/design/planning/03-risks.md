@@ -256,7 +256,10 @@ as the Imperial kit, every collision read, every catalogue piece with a walkable
 
 ### R21 – The Dwemer kit's module and faces
 The Dwemer kit has more families than the others (pipes, platforms, roads, facades) and has never
-been read; some families may not be tiles. V5 step 1.
+been read; some families may not be tiles. V5 step 1. **Result (7 Oct 2026)**: module 128 x 128,
+all 82 pieces with openings on the grid; families `bghalls`, `lghalls`, `facades` (the small
+halls), `smrooms`, `lgrooms`; 29 % of the game's ruins pieces are turned by other angles than
+90° and stay opaque to the Vanilla check.
 
 ### R22 – Dwemer collision and floors
 Pipes, grates, gears and stairs the walkable rules have never met; each Nordic surprise

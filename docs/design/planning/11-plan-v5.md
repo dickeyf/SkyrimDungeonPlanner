@@ -63,6 +63,35 @@ module, pivots, faces and collision are measured before anything is built on the
 - **Done when**: the module and fine step are known (kit data, D53), most pieces of the chosen
   families sit on the grid of the game's CELLs, and the families left out are noted with their
   reason (roadmap).
+- **Result (7 Oct 2026, the analysis and the Vanilla check with a provisional `DWEMER_KIT`)**:
+  428 STATs under `dungeons/dwemer/` in 14 families. There is no small hall family: the small
+  halls are in `facades` (`DweFacadeHallSm...`), with the towers, lifts, bridges, balconies and
+  partitions. Families taken: halls `bghalls`, `lghalls`, `facades`; rooms `smrooms`,
+  `lgrooms` (181 pieces). Left out: `animated` (the observatory and repository chambers, set
+  pieces), `platforms` (the exterior platforms of Blackreach and the ruins' outside), `roads`
+  (Blackreach's curved roads, 45-degree pieces), `pipes`, `walls`, `partitions`, `rubble`,
+  `clutter`, the root folder (chandeliers, sconces): props or set pieces, never joined by an
+  opening.
+  - **Module 128 x 128 confirmed**: the 82 pieces with openings all sit on the 128 grid, every
+    opening on an integer level; the 99 others (bridges, balconies, tower roofs and spacers,
+    partitions, shaft bottoms, shelves) have none and stay out of the catalogue on their own.
+    Opening widths: big halls 704 (768 x 768 pieces), large halls 448, small halls 300, small
+    rooms 384 and 512, large rooms 608 and 768, the large room's long walls 1,984; ramps rise
+    two levels (256); the large room's top (`DweRmLgMidTop01`) opens 7 levels up, a gallery.
+  - **The game's CELLs**: in the 37 ruins (Markarth's interiors, built with the kit scaled by
+    0.75 or 0.5, and the caves and mines that borrow a few pieces, set apart), 2,774 kit
+    pieces: **54 % on the main grid**, 5 % in sections offset from it by free amounts (not on
+    the 16 step), and about **29 % turned by angles other than 90°**: whole parts of
+    Avanchnzel, Bthardamz, Raldbthar, Mzinchaleft and Alftand turned by 45, 135, but also 74,
+    164 or 254 degrees. The fine step stays 16 (as for the other kits): it serves the tool's
+    own building; the game's free offsets and angles stay opaque.
+  - **Junctions**: where the game's pieces are read, 0 seams and 87 mismatches, spread over
+    pairs used twice or three times (half small room walls against room middles, a small room
+    against a large room 48 lower): the analysis agrees with the game.
+  - For the next steps: (1) the turned parts of the ruins are lost to the Vanilla check, so to
+    the game's pairs; reading each turned part on its own grid would bring them back (step 3,
+    if the pairs are too few); (2) which `facades` pieces are tiles (the towers and their
+    arches are outside pieces) is decided at validation (step 3).
 
 ### Step 2 – R22: Dwemer collision and walkable floor
 - **Why**: the NavMesh comes from the collision; the Dwemer pieces have pipes, grates, gears and

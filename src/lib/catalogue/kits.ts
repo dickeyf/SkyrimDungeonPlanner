@@ -53,4 +53,24 @@ export const NORDIC_KIT: KitDefinition = {
   },
 };
 
+/**
+ * The Dwemer kit (V5, R21): measured at step 1; not in KITS yet (step 3). `facades` holds the
+ * small halls (`DweFacadeHallSm...`, 300 wide) among towers, bridges and balconies; the pieces
+ * without an opening (bridges, balconies, roofs...) stay out of the catalogue on their own.
+ */
+export const DWEMER_KIT: KitDefinition = {
+  kit: 'Dwemer',
+  module: { xy: 128, z: 128 },
+  fineStep: { xy: 16, z: 16 },
+  note: 'Measured by V5 step 1 (R21): 82 of 181 pieces have openings, all on the 128 grid; ramps rise 256.',
+  modelPrefix: 'dungeons/dwemer/',
+  subkits: {
+    bghalls: 'hall',
+    lghalls: 'hall',
+    facades: 'hall',
+    smrooms: 'room',
+    lgrooms: 'room',
+  },
+};
+
 export const KITS: readonly KitDefinition[] = [IMPERIAL_KIT, NORDIC_KIT];
