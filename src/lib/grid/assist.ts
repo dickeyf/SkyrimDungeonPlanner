@@ -20,7 +20,14 @@ import type {
 } from '../catalogue/types';
 import { facesMate } from '../catalogue/types';
 import { rotateFootprintCell } from './derive';
-import { addTile, conflictsFor, footprintCells, type Layout, type Pieces } from './edit';
+import {
+  addTile,
+  conflictsFor,
+  footprintCells,
+  type EditTile,
+  type Layout,
+  type Pieces,
+} from './edit';
 import type { Profile } from '../mesh/profiles';
 import {
   DEPTH_TOL,
@@ -82,9 +89,9 @@ const alongAxis = (dir: FaceDir): 0 | 1 => (dir[1] === 'X' ? 1 : 0);
  * candidate, they took a third of a first click). Tiles are immutable and shared by the copies.
  */
 const openingsCache = new WeakMap<Piece, Opening[]>();
-const tileCache = new WeakMap<object, { piece: Piece; openings: OpenFace[]; cells: string[] }>();
+const tileCache = new WeakMap<EditTile, { piece: Piece; openings: OpenFace[]; cells: string[] }>();
 
-function tileData(tile: Layout['tiles'] extends Map<string, infer T> ? T : never, piece: Piece) {
+function tileData(tile: EditTile, piece: Piece) {
   let d = tileCache.get(tile);
   if (d && d.piece === piece) return d;
   const openings = openingsOf(piece).map((opening, n): OpenFace => {
