@@ -49,6 +49,12 @@ export interface VanillaReport {
    * are not counted, nor are the CELLs with too few kit pieces.
    */
   used: Record<string, number>;
+  /**
+   * Per face of a piece ("EditorID:dir"), in the main sections: how many times the piece is
+   * placed, and how many times nothing faces that opening (V5: a light-rimmed opening the game
+   * leaves open is no opening).
+   */
+  faces: Record<string, { placed: number; open: number }>;
 }
 
 /** A section holds at least this many pieces; fewer are left as off the grid. */
@@ -78,6 +84,7 @@ export async function checkVanillaCells(
   const seen = new Map<string, VanillaPair>();
   const cells: VanillaCell[] = [];
   const used: Record<string, number> = {};
+  const faceStats: Record<string, { placed: number; open: number }> = {};
   const all = await store.listCells();
   for (const [n, cell] of all.entries()) {
     options.onProgress?.(n, all.length, cell.editorId);
@@ -145,7 +152,17 @@ export async function checkVanillaCells(
         else seen.set(k, { ...rel, count: 1 });
       }
       const bad = badJoints(layout, pieces, types, geometry);
-      open = openFaces(layout, pieces).length;
+      const opens = openFaces(layout, pieces);
+      open = opens.length;
+      for (const t of layout.tiles.values()) {
+        const p = pieces.get(t.piece)!;
+        for (const d of new Set(p.faces.map((f) => f.dir)))
+          (faceStats[`${p.editorId}:${d}`] ??= { placed: 0, open: 0 }).placed++;
+      }
+      for (const f of opens) {
+        const p = pieces.get(layout.tiles.get(f.tile)!.piece)!;
+        (faceStats[`${p.editorId}:${f.opening.dir}`] ??= { placed: 0, open: 0 }).open++;
+      }
       for (const b of bad) {
         const mine = pieces.get(layout.tiles.get(b.tile)!.piece)!.editorId;
         const theirs = b.against
@@ -192,6 +209,7 @@ export async function checkVanillaCells(
   return {
     cells,
     used,
+    faces: faceStats,
     seen: [...seen.values()],
     pairs: [...pairs]
       .map(([pair, e]) => ({ pair, ...e }))

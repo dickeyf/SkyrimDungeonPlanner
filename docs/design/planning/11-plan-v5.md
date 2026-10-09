@@ -195,6 +195,20 @@ module, pivots, faces and collision are measured before anything is built on the
 - **What**: a Dwemer cell on two levels built with the assistant; what goes wrong noted, fixed,
   and recorded with its reason.
 - **Done when**: an NPC follows the player up and down between the two levels in game.
+- **Progress (8 Oct 2026)**: `DweHallLgEndCapExBg01` showed no opening at its end, where the
+  game puts a doorway: the Dwemer `ExBg` doorways (256 x 352, the size of the frame
+  `DweDoorFrameExBgtoExSm01`) have 11 rim vertices, under the 20 the detection asks. A lower
+  threshold (10, as the Nordic kit's) finds them, and also side windows of the facade halls and
+  tower arches that join nothing (`DweFacadeHallSm3way01` would get a fourth side, open in 27
+  of its 28 placements in the game). Rule (the game decides, as for the pieces): the kit's
+  `confirmOpenVerts` (10) finds the light-rimmed openings and marks them `confirm`; the Vanilla
+  check counts, per face, the placements and those left open (`VanillaReport.faces`);
+  `validateUsed` confirms an opening the game joins in at least half of 5 or more placements (a
+  snow or ice variant takes its base's verdict); `applyAnnotations` drops the unconfirmed ones,
+  and leaves out a piece left without any face. Why: the shape alone could not tell a doorway
+  from a window (both light rims); a hand list per piece would not carry to the next kit. Result:
+  10 doorways confirmed (every `ExBg` end and wall), the windows and arches dropped; 81 Dwemer
+  pieces, 657 game pairs; Imperial and Nordic unchanged.
 
 ## Phase C – The other objects of a cell (D71, D72)
 

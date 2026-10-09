@@ -12,6 +12,13 @@ export interface KitDefinition extends Kit {
    * meshes are sparse at their edges.
    */
   minOpenVerts?: number;
+  /**
+   * Openings with fewer rim vertices than `minOpenVerts` but at least this many are found too,
+   * then kept only where the game joins a piece to them (V5, the annotations' `openings`). Why:
+   * the Dwemer doorways (256 x 352, the `ExBg` frames) have 11 rim vertices, like side windows
+   * of the facade halls and tower arches that join nothing; the game tells them apart.
+   */
+  confirmOpenVerts?: number;
   /** Sub-folder -> category of its tiles; sub-folders not listed are props/other. */
   subkits: Record<string, Exclude<PieceCategory, 'door' | 'other'>>;
 }
@@ -64,6 +71,7 @@ export const DWEMER_KIT: KitDefinition = {
   fineStep: { xy: 16, z: 16 },
   note: 'Measured by V5 step 1 (R21): 82 of 181 pieces have openings, all on the 128 grid; ramps rise 256.',
   modelPrefix: 'dungeons/dwemer/',
+  confirmOpenVerts: 10,
   subkits: {
     bghalls: 'hall',
     lghalls: 'hall',

@@ -4,6 +4,9 @@
   "merges": [],
   "composites": [],
   "pieces": {
+    "DweDoorFrameExBgtoExSm01": {
+      "validated": true
+    },
     "DweFacadeFreeExBg01": {
       "validated": true
     },
@@ -53,6 +56,16 @@
       "validated": true
     },
     "DweFacadeHallSmExBg01": {
+      "openings": [
+        "+Y"
+      ],
+      "validated": true
+    },
+    "DweFacadeHallSmExBgExtender01": {
+      "openings": [
+        "+Y",
+        "-Y"
+      ],
       "validated": true
     },
     "DweFacadeLiftDown01": {
@@ -62,6 +75,12 @@
       "validated": true
     },
     "DweFacadeLiftUp01": {
+      "validated": true
+    },
+    "DweFacadePartition01": {
+      "validated": true
+    },
+    "DweFacadePartition01Snow": {
       "validated": true
     },
     "DweFacadePartition2x1": {
@@ -80,6 +99,12 @@
       "validated": true
     },
     "DweFacadeTower02Snow": {
+      "validated": true
+    },
+    "DweFacadeTower1x3": {
+      "validated": true
+    },
+    "DweFacadeTower1x3Snow": {
       "validated": true
     },
     "DweFacadeTower2x3": {
@@ -101,6 +126,18 @@
       "validated": true
     },
     "DweFacadeTowerArch01Snow": {
+      "validated": true
+    },
+    "DweFacadeTowerArch1x3": {
+      "validated": true
+    },
+    "DweFacadeTowerArch1x3Hall": {
+      "exclude": "not used by the game (1 in Skyrim.esm's CELLs)"
+    },
+    "DweFacadeTowerArch1x3HallSnow": {
+      "exclude": "not used by the game (0 in Skyrim.esm's CELLs)"
+    },
+    "DweFacadeTowerArch1x3Snow": {
       "validated": true
     },
     "DweFacadeTowerArchXtnd128": {
@@ -128,6 +165,9 @@
       "validated": true
     },
     "DweHallBgEndCapExBg01": {
+      "openings": [
+        "-Y"
+      ],
       "validated": true
     },
     "DweHallLg1way01": {
@@ -149,9 +189,15 @@
       "validated": true
     },
     "DweHallLgEndCapExBg01": {
+      "openings": [
+        "+Y"
+      ],
       "validated": true
     },
     "DweHallLgEndCapExBg02": {
+      "openings": [
+        "+Y"
+      ],
       "validated": true
     },
     "DweRmLgCorIn01": {
@@ -203,9 +249,15 @@
       "validated": true
     },
     "DweRmSmCorInExBgL01": {
+      "openings": [
+        "+X"
+      ],
       "validated": true
     },
     "DweRmSmCorInExBgR01": {
+      "openings": [
+        "+X"
+      ],
       "validated": true
     },
     "DweRmSmCorInHalf01": {
@@ -233,12 +285,21 @@
       "validated": true
     },
     "DweRmSmWallExBg01": {
+      "openings": [
+        "+X"
+      ],
       "validated": true
     },
     "DweRmSmWallExBgHalf01": {
+      "openings": [
+        "+X"
+      ],
       "validated": true
     },
     "DweRmSmWallExBgHalf01a": {
+      "openings": [
+        "+X"
+      ],
       "validated": true
     },
     "DweRmSmWallHalf01": {

@@ -3,6 +3,7 @@
  * the UI can compare against the committed version; nothing here depends on Svelte.
  */
 import type { AnalysisResult } from './analyze';
+import type { FaceDir } from './types';
 import type { Annotations, OverlapAnnotation, PieceAnnotation } from './annotations';
 
 /** `EditorID:dir` of a face of the analysis. */
@@ -63,6 +64,9 @@ export function setPiece(
   return { ...a, pieces };
 }
 
+/** Placements a light-rimmed opening needs before the game's verdict on it counts. */
+export const CONFIRM_PLACED = 5;
+
 /**
  * The piece a snow or ice variant is made from (`DweFacadeHallSm1way01snow` ->
  * `DweFacadeHallSm1way01`, `NorRmBgWallFront01_HeavySN` -> `NorRmBgWallFront01`), or the id
@@ -84,13 +88,22 @@ export function variantBase(editorId: string): string {
  */
 export function validateUsed(
   a: Annotations,
-  editorIds: readonly string[],
+  pieces: readonly { editorId: string; faces: readonly { dir: FaceDir; confirm?: true }[] }[],
   used: Readonly<Record<string, number>>,
   min: number,
   master: string,
+  /** Per "EditorID:dir", from the Vanilla check: placements and how many left that face open. */
+  faceStats: Readonly<Record<string, { placed: number; open: number }>> = {},
 ): Annotations {
   let out = a;
-  for (const id of editorIds) {
+  for (const { editorId: id, faces } of pieces) {
+    // a light-rimmed opening is confirmed where the game joins a piece to it most of the time
+    const confirmed = [...new Set(faces.filter((f) => f.confirm).map((f) => f.dir))].filter((d) => {
+      // a snow or ice variant takes its base piece's verdict when the game never places it
+      const s = faceStats[`${id}:${d}`] ?? faceStats[`${variantBase(id)}:${d}`];
+      return !!s && s.placed >= CONFIRM_PLACED && s.open / s.placed <= 0.5;
+    });
+    out = setPiece(out, id, { openings: confirmed.length ? confirmed.sort() : undefined });
     const n = used[id] ?? 0;
     const base = variantBase(id);
     out =

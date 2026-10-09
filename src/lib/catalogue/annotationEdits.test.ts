@@ -53,7 +53,13 @@ describe('annotation edits', () => {
 
   it('validates the pieces the game uses and excludes the others, keeping the rest (V5)', () => {
     const before = setPiece(emptyAnnotations('Dwemer'), 'B', { walkable: 'reviewed' });
-    const a = validateUsed(before, ['A', 'B', 'C'], { A: 5, B: 1 }, 2, 'Skyrim.esm');
+    const a = validateUsed(
+      before,
+      ['A', 'B', 'C'].map((editorId) => ({ editorId, faces: [] })),
+      { A: 5, B: 1 },
+      2,
+      'Skyrim.esm',
+    );
     expect(a.pieces['A']).toEqual({ validated: true });
     expect(a.pieces['B']).toEqual({
       walkable: 'reviewed',
@@ -70,12 +76,33 @@ describe('annotation edits', () => {
     expect(variantBase('DweRmSmWallHalf01')).toBe('DweRmSmWallHalf01');
     const a = validateUsed(
       emptyAnnotations('Dwemer'),
-      ['A01', 'A01Snow', 'B01ice'],
+      ['A01', 'A01Snow', 'B01ice'].map((editorId) => ({ editorId, faces: [] })),
       { A01: 3 },
       2,
       'X',
     );
     expect(a.pieces['A01Snow']).toEqual({ validated: true });
     expect(a.pieces['B01ice']!.exclude).toBeDefined();
+  });
+
+  it('confirms a light-rimmed opening the game joins most of the time, not one it leaves open', () => {
+    const pieces = [
+      {
+        editorId: 'Cap',
+        faces: [
+          { dir: '-Y' as const },
+          { dir: '+Y' as const, confirm: true as const },
+          { dir: '+X' as const, confirm: true as const },
+        ],
+      },
+    ];
+    const stats = { 'Cap:+Y': { placed: 20, open: 3 }, 'Cap:+X': { placed: 20, open: 19 } };
+    const a = validateUsed(emptyAnnotations('Dwemer'), pieces, { Cap: 20 }, 2, 'X', stats);
+    expect(a.pieces['Cap']).toEqual({ validated: true, openings: ['+Y'] });
+    // too few placements: not confirmed
+    const b = validateUsed(emptyAnnotations('Dwemer'), pieces, { Cap: 3 }, 2, 'X', {
+      'Cap:+Y': { placed: 3, open: 0 },
+    });
+    expect(b.pieces['Cap']).toEqual({ validated: true });
   });
 });

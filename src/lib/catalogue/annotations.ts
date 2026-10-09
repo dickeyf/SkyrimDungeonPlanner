@@ -51,6 +51,8 @@ export interface PieceAnnotation {
    * piece without NavMesh (not walkable, or a polygon to draw in the CK).
    */
   walkable?: 'reviewed' | 'none';
+  /** The light-rimmed openings (`Face.confirm`) the game confirms, by direction (V5). */
+  openings?: FaceDir[];
 }
 
 export interface Annotations {
@@ -108,8 +110,15 @@ export function parseAnnotations(json: unknown): Annotations {
   };
 }
 
-/** Apply annotations to an automatic catalogue. The input is not modified. */
-export function applyAnnotations(auto: Catalogue, annotations: Annotations): AnnotatedCatalogue {
+/**
+ * Apply annotations to an automatic catalogue. The input is not modified. `keepUnconfirmed`
+ * keeps the light-rimmed faces the annotations do not confirm (the Vanilla check counts them).
+ */
+export function applyAnnotations(
+  auto: Catalogue,
+  annotations: Annotations,
+  options: { keepUnconfirmed?: boolean } = {},
+): AnnotatedCatalogue {
   const issues: AnnotationIssue[] = [];
   const faces = faceIndex(auto);
   const typeIds = auto.connectionTypes.map((t) => t.id);
@@ -188,18 +197,36 @@ export function applyAnnotations(auto: Catalogue, annotations: Annotations): Ann
       excludedPieces.push(piece.editorId);
       continue;
     }
-    pieces.push({
+    const kept: Piece = {
       ...piece,
       category: ann?.category ?? piece.category,
       review: { ...piece.review, validated: ann?.validated ?? piece.review.validated },
       // `none`: no NavMesh from this piece (an empty list, unlike null: not computed)
       ...(ann?.walkable === 'none' ? { walkable: [] } : {}),
-      faces: piece.faces.map((face) => {
-        const conn = finalId(face.conn);
-        const extra = [...(alsoAccepts.get(conn) ?? [])].filter((x) => x !== conn).sort();
-        return { ...face, conn, ...(extra.length ? { extraConn: extra } : {}) };
-      }),
-    });
+      faces: piece.faces
+        .filter(
+          (face) => !face.confirm || options.keepUnconfirmed || ann?.openings?.includes(face.dir),
+        )
+        .map((face) => {
+          const conn = finalId(face.conn);
+          const extra = [...(alsoAccepts.get(conn) ?? [])].filter((x) => x !== conn).sort();
+          const confirmed = face.confirm && ann?.openings?.includes(face.dir);
+          const { confirm: _confirm, ...rest } = face;
+          void _confirm;
+          return {
+            ...(confirmed ? rest : face),
+            conn,
+            ...(extra.length ? { extraConn: extra } : {}),
+          };
+        }),
+    };
+    // a piece whose only openings were light-rimmed ones the game does not confirm has none
+    // left: it is no tile, as the analysis leaves out a piece without an opening (V5)
+    if (piece.faces.length && !kept.faces.length) {
+      excludedPieces.push(piece.editorId);
+      continue;
+    }
+    pieces.push(kept);
   }
 
   // 6. accepted overlaps, by FormKey

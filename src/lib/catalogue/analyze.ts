@@ -9,7 +9,7 @@ import { mergeShapes } from '../format/nif/geometry';
 import { NifFile } from '../format/nif/NifFile';
 import { computeFootprint, type Footprint } from '../mesh/footprint';
 import { weldMesh } from '../mesh/geometry';
-import { findOpenings, type Opening } from '../mesh/openings';
+import { MIN_OPEN_VERTS, findOpenings, type Opening } from '../mesh/openings';
 import { extractProfile, type Profile } from '../mesh/profiles';
 import { groupProfiles, type GroupingResult } from '../mesh/signatures';
 import { tileFrame, walkablePolygons } from '../navmesh/walkable';
@@ -77,7 +77,7 @@ export async function analyseKit(
       const collision = collisionMesh(nif);
       if (collision) collisions.set(stat.editorId, collision);
       const g = weldMesh(mesh);
-      const openings = findOpenings(g, kit.minOpenVerts);
+      const openings = findOpenings(g, kit.confirmOpenVerts ?? kit.minOpenVerts);
       const footprint = computeFootprint(g, openings, module, zModule, kit.fineStep);
       const piece: AnalysedPiece = {
         stat,
@@ -166,6 +166,9 @@ export async function analyseKit(
             dir: f.opening.dir as FaceDir,
             conn: `${kit.kit}:G${f.group}`,
             ...(f.inset ? { inset: Math.round(f.inset * 2) / 2 } : {}),
+            ...(kit.confirmOpenVerts && f.opening.rim < (kit.minOpenVerts ?? MIN_OPEN_VERTS)
+              ? { confirm: true as const }
+              : {}),
           }));
         }),
         walkable: null,

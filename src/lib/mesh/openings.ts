@@ -30,6 +30,8 @@ export interface Opening {
   zMin: number;
   zMax: number;
   verts: number;
+  /** Vertices of the plane on open edges (the opening's rim). */
+  rim: number;
   centre: number;
   width: number;
 }
@@ -94,6 +96,7 @@ export function findOpenings(g: WeldedGeometry, minVerts = MIN_OPEN_VERTS): Open
           zMin: round1(zMin),
           zMax: round1(zMax),
           verts: onPlane.length,
+          rim: rimVerts,
           centre: round1((spanMin + spanMax) / 2),
           width: round1(spanMax - spanMin),
         });

@@ -30,6 +30,11 @@ export interface Face {
   /** Composite profiles (D56): further types this face also mates with. */
   extraConn?: string[];
   /**
+   * An opening with a light rim, kept only once the game confirms it (V5, a kit's
+   * `confirmOpenVerts`): the annotations list the confirmed ones, the others are dropped.
+   */
+  confirm?: true;
+  /**
    * How far the opening's plane lies inside the cell boundary (units, negative when it sticks
    * out); absent when on the boundary. Two facing openings leave a gap of the sum.
    */

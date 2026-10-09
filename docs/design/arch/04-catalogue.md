@@ -79,6 +79,10 @@ opening can be denser than its rim). A plane is an **opening** when its vertices
 - **Opening cells, level and inset**: the cells an opening covers along its side; its level
   (`round(zMin / zModule)`); its **inset**, how far its plane lies inside the cell boundary.
   Two facing openings stand `insetA + insetB` apart.
+- **Light-rimmed openings** (V5 step 4): a kit may set `confirmOpenVerts` below the detection's
+  `minOpenVerts`: openings with that many rim vertices are found too, their faces marked
+  `confirm`, and kept only when the annotations list them (`PieceAnnotation.openings`), which
+  the Vanilla check fills with the openings the game joins most of the time (`validateUsed`).
 - **Off the module, on the fine step** (V5 step 3b): with the kit's fine step (D70), an opening
   half a level up or down (`ImpHall1Way64U01`, `...64D01`), or a piece half a module long
   (`ImpHall1Way64Short01`), is no longer rejected: its level, or its cell across the face, is a

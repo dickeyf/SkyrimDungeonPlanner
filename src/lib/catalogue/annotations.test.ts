@@ -208,4 +208,30 @@ describe('serialization', () => {
     expect(back.pieces).toEqual(a.pieces);
     expect(() => parseAnnotations({ version: 2, kit: 'x' })).toThrow('version');
   });
+
+  it('drops the light-rimmed faces the game does not confirm, and a piece left without one (V5)', () => {
+    const cat = auto();
+    const hall = cat.pieces[0]!;
+    const door = cat.pieces[1]!;
+    cat.pieces[0] = {
+      ...hall,
+      faces: hall.faces.map((f) => (f.dir === '+Y' ? { ...f, confirm: true as const } : f)),
+    };
+    cat.pieces[1] = { ...door, faces: door.faces.map((f) => ({ ...f, confirm: true as const })) };
+    const none = applyAnnotations(cat, emptyAnnotations('Imperial'));
+    expect(none.catalogue.pieces[0]!.faces.map((f) => f.dir)).toEqual(['-Y', '-Y']);
+    expect(none.excludedPieces).toContain('ImpLHallDoor01');
+    const ann = emptyAnnotations('Imperial');
+    ann.pieces['ImpHall1Way01'] = { openings: ['+Y'] };
+    const confirmed = applyAnnotations(cat, ann).catalogue.pieces[0]!;
+    expect(confirmed.faces.map((f) => [f.dir, f.confirm])).toEqual([
+      ['-Y', undefined],
+      ['-Y', undefined],
+      ['+Y', undefined],
+      ['+Y', undefined],
+    ]);
+    // the Vanilla check keeps them all, to count them
+    const kept = applyAnnotations(cat, emptyAnnotations('Imperial'), { keepUnconfirmed: true });
+    expect(kept.catalogue.pieces[1]!.faces).toHaveLength(4);
+  });
 });

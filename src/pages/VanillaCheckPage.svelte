@@ -66,10 +66,11 @@
       const ids = analysis.catalogue.pieces.map((p) => p.editorId);
       const next = validateUsed(
         annotationStore.currentOf(kit.kit),
-        ids,
+        analysis.catalogue.pieces,
         report.used,
         MIN_VANILLA_COUNT,
         master,
+        report.faces,
       );
       const path = await writeProjectFile(
         project,
@@ -113,10 +114,10 @@
       const kit = store.kit;
       const analysis = store.analysisOf(kit) ?? (await store.analyse(false, kit));
       if (!analysis) throw new Error(store.error || 'no analysis');
-      const catalogue = applyAnnotations(
-        analysis.catalogue,
-        annotationStore.currentOf(kit.kit),
-      ).catalogue;
+      // the light-rimmed openings are kept, so the check counts whether the game joins them
+      const catalogue = applyAnnotations(analysis.catalogue, annotationStore.currentOf(kit.kit), {
+        keepUnconfirmed: true,
+      }).catalogue;
       const editorIds = new Map(catalogue.pieces.map((p) => [p.formKey, p.editorId]));
       const profiles = new Map(
         analysis.faces.map((f) => [`${f.piece}:${f.opening.dir}`, f.profile]),
