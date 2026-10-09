@@ -213,7 +213,12 @@ module, pivots, faces and collision are measured before anything is built on the
   the threshold was tried had stayed in the browser's cache under the same key, which held the
   analysis version and the kit's base objects but not the kit's definition. The cache key now
   holds a fingerprint of the kit's definition (`kitStamp`), so a change to a kit's settings is a
-  new analysis.
+  new analysis. That was not the whole story: a dev probe (`__sdp.piece(...)` in the browser's
+  console, dev builds only) showed the openings without their rim count. Vite's file watcher
+  had missed the change to `openings.ts` and kept serving the old transform, so the browser
+  analysed with the old code; restarting the dev server with `--force` fixed it (version 17
+  for the analyses made meanwhile). Lesson: when the browser and Node disagree on the same
+  code, check what the dev server serves first.
 
 ## Phase C – The other objects of a cell (D71, D72)
 

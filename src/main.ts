@@ -6,4 +6,6 @@ const app = mount(App, {
   target: document.getElementById('app')!,
 });
 
+if (import.meta.env.DEV) void import('./lib/session/devProbe').then((m) => m.installDevProbe());
+
 export default app;

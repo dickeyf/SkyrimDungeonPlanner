@@ -12,7 +12,7 @@ import { kvGet, kvSet } from '$lib/fs';
 import { ArchiveIndex } from '$lib/vfs';
 import { session } from './session.svelte';
 
-const ANALYSIS_VERSION = 16; // bump when the analysis output changes shape or meaning
+const ANALYSIS_VERSION = 17; // bump when the analysis output changes shape or meaning
 
 /**
  * A short fingerprint of a kit's definition (module, thresholds, families...), part of the
