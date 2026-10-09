@@ -54,7 +54,7 @@ export const NORDIC_KIT: KitDefinition = {
 };
 
 /**
- * The Dwemer kit (V5, R21): measured at step 1; not in KITS yet (step 3). `facades` holds the
+ * The Dwemer kit (V5, R21): measured at step 1, offered from step 3. `facades` holds the
  * small halls (`DweFacadeHallSm...`, 300 wide) among towers, bridges and balconies; the pieces
  * without an opening (bridges, balconies, roofs...) stay out of the catalogue on their own.
  */
@@ -73,4 +73,4 @@ export const DWEMER_KIT: KitDefinition = {
   },
 };
 
-export const KITS: readonly KitDefinition[] = [IMPERIAL_KIT, NORDIC_KIT];
+export const KITS: readonly KitDefinition[] = [IMPERIAL_KIT, NORDIC_KIT, DWEMER_KIT];

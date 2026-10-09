@@ -1,0 +1,254 @@
+{
+  "version": 1,
+  "kit": "Dwemer",
+  "merges": [],
+  "composites": [],
+  "pieces": {
+    "DweFacadeFreeExBg01": {
+      "validated": true
+    },
+    "DweFacadeFreeExBg01Falmer": {
+      "exclude": "not used by the game (0 in Skyrim.esm's CELLs)"
+    },
+    "DweFacadeFreeExBg01Snow": {
+      "exclude": "not used by the game (0 in Skyrim.esm's CELLs)"
+    },
+    "DweFacadeHallSm1way01": {
+      "validated": true
+    },
+    "DweFacadeHallSm1way01snow": {
+      "exclude": "not used by the game (0 in Skyrim.esm's CELLs)"
+    },
+    "DweFacadeHallSm1wayRamp01": {
+      "validated": true
+    },
+    "DweFacadeHallSm1wayRamp01snow": {
+      "exclude": "not used by the game (0 in Skyrim.esm's CELLs)"
+    },
+    "DweFacadeHallSm2way01": {
+      "validated": true
+    },
+    "DweFacadeHallSm3way01": {
+      "validated": true
+    },
+    "DweFacadeHallSm3way01_Snow": {
+      "exclude": "not used by the game (0 in Skyrim.esm's CELLs)"
+    },
+    "DweFacadeHallSm4way01": {
+      "validated": true
+    },
+    "DweFacadeHallSm4way01Snow": {
+      "exclude": "not used by the game (0 in Skyrim.esm's CELLs)"
+    },
+    "DweFacadeHallSm4way01SnowLight": {
+      "exclude": "not used by the game (0 in Skyrim.esm's CELLs)"
+    },
+    "DweFacadeHallSmAlcove01": {
+      "validated": true
+    },
+    "DweFacadeHallSmAlcove01ice": {
+      "exclude": "not used by the game (0 in Skyrim.esm's CELLs)"
+    },
+    "DweFacadeHallSmEndCap01": {
+      "validated": true
+    },
+    "DweFacadeHallSmExBg01": {
+      "validated": true
+    },
+    "DweFacadeLiftDown01": {
+      "validated": true
+    },
+    "DweFacadeLiftDown01ice": {
+      "exclude": "not used by the game (0 in Skyrim.esm's CELLs)"
+    },
+    "DweFacadeLiftUp01": {
+      "validated": true
+    },
+    "DweFacadePartition2x1": {
+      "validated": true
+    },
+    "DweFacadePartition2x1Snow": {
+      "exclude": "not used by the game (0 in Skyrim.esm's CELLs)"
+    },
+    "DweFacadeTower01": {
+      "validated": true
+    },
+    "DweFacadeTower01Snow": {
+      "validated": true
+    },
+    "DweFacadeTower02": {
+      "validated": true
+    },
+    "DweFacadeTower02Snow": {
+      "validated": true
+    },
+    "DweFacadeTower2x3": {
+      "validated": true
+    },
+    "DweFacadeTower2x3Snow": {
+      "exclude": "not used by the game (0 in Skyrim.esm's CELLs)"
+    },
+    "DweFacadeTower3x3": {
+      "exclude": "not used by the game (1 in Skyrim.esm's CELLs)"
+    },
+    "DweFacadeTower4x3": {
+      "exclude": "not used by the game (0 in Skyrim.esm's CELLs)"
+    },
+    "DweFacadeTower5x3": {
+      "exclude": "not used by the game (0 in Skyrim.esm's CELLs)"
+    },
+    "DweFacadeTowerArch01": {
+      "validated": true
+    },
+    "DweFacadeTowerArch01Snow": {
+      "validated": true
+    },
+    "DweFacadeTowerArchXtnd128": {
+      "exclude": "not used by the game (0 in Skyrim.esm's CELLs)"
+    },
+    "DweHallBg1way01": {
+      "validated": true
+    },
+    "DweHallBg1way02": {
+      "validated": true
+    },
+    "DweHallBg1wayRamp01": {
+      "validated": true
+    },
+    "DweHallBg2way01": {
+      "validated": true
+    },
+    "DweHallBg3way01": {
+      "validated": true
+    },
+    "DweHallBg4way01": {
+      "validated": true
+    },
+    "DweHallBgEndCap01": {
+      "validated": true
+    },
+    "DweHallBgEndCapExBg01": {
+      "validated": true
+    },
+    "DweHallLg1way01": {
+      "validated": true
+    },
+    "DweHallLg1wayRamp01": {
+      "validated": true
+    },
+    "DweHallLg2way01": {
+      "validated": true
+    },
+    "DweHallLg3way01": {
+      "validated": true
+    },
+    "DweHallLg4way01": {
+      "validated": true
+    },
+    "DweHallLgEndCap01": {
+      "validated": true
+    },
+    "DweHallLgEndCapExBg01": {
+      "validated": true
+    },
+    "DweHallLgEndCapExBg02": {
+      "validated": true
+    },
+    "DweRmLgCorIn01": {
+      "validated": true
+    },
+    "DweRmLgCorIntoLgHallDbl01": {
+      "validated": true
+    },
+    "DweRmLgCorIntoLgHallL01": {
+      "validated": true
+    },
+    "DweRmLgCorIntoLgHallR01": {
+      "validated": true
+    },
+    "DweRmLgCorOut01": {
+      "validated": true
+    },
+    "DweRmLgMid01": {
+      "validated": true
+    },
+    "DweRmLgMidTop01": {
+      "validated": true
+    },
+    "DweRmLgMidTopXtnd01": {
+      "validated": true
+    },
+    "DweRmLgWall01": {
+      "validated": true
+    },
+    "DweRmLgWallCorInX2": {
+      "validated": true
+    },
+    "DweRmLgWallMidWall01": {
+      "validated": true
+    },
+    "DweRmLgWallMidWall02": {
+      "exclude": "not used by the game (0 in Skyrim.esm's CELLs)"
+    },
+    "DweRmLgWallMidWall03": {
+      "exclude": "not used by the game (0 in Skyrim.esm's CELLs)"
+    },
+    "DweRmLgWalltoLgHall01": {
+      "validated": true
+    },
+    "DweRmLgWalltoLgHallCorInX2": {
+      "exclude": "not used by the game (1 in Skyrim.esm's CELLs)"
+    },
+    "DweRmSmCorIn01": {
+      "validated": true
+    },
+    "DweRmSmCorInExBgL01": {
+      "validated": true
+    },
+    "DweRmSmCorInExBgR01": {
+      "validated": true
+    },
+    "DweRmSmCorInHalf01": {
+      "validated": true
+    },
+    "DweRmSmCorInHalfL01": {
+      "validated": true
+    },
+    "DweRmSmCorInHalfR01": {
+      "validated": true
+    },
+    "DweRmSmCorInHoleL01": {
+      "exclude": "not used by the game (1 in Skyrim.esm's CELLs)"
+    },
+    "DweRmSmCorOut01": {
+      "validated": true
+    },
+    "DweRmSmMid01": {
+      "validated": true
+    },
+    "DweRmSmWall01": {
+      "validated": true
+    },
+    "DweRmSmWall02": {
+      "validated": true
+    },
+    "DweRmSmWallExBg01": {
+      "validated": true
+    },
+    "DweRmSmWallExBgHalf01": {
+      "validated": true
+    },
+    "DweRmSmWallExBgHalf01a": {
+      "validated": true
+    },
+    "DweRmSmWallHalf01": {
+      "validated": true
+    },
+    "DweRmSmWallHalf02": {
+      "validated": true
+    },
+    "DweRmSmWallHole01": {
+      "validated": true
+    }
+  }
+}

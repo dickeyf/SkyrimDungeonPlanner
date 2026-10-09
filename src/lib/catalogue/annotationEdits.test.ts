@@ -6,6 +6,7 @@ import {
   setMergeDecision,
   setOverlap,
   setPiece,
+  validateUsed,
 } from './annotationEdits';
 import { emptyAnnotations } from './annotations';
 
@@ -47,5 +48,16 @@ describe('annotation edits', () => {
     expect(a.overlaps).toEqual([nested]);
     a = setOverlap(a, nested, false);
     expect(a.overlaps).toEqual([]);
+  });
+
+  it('validates the pieces the game uses and excludes the others, keeping the rest (V5)', () => {
+    const before = setPiece(emptyAnnotations('Dwemer'), 'B', { walkable: 'reviewed' });
+    const a = validateUsed(before, ['A', 'B', 'C'], { A: 5, B: 1 }, 2, 'Skyrim.esm');
+    expect(a.pieces['A']).toEqual({ validated: true });
+    expect(a.pieces['B']).toEqual({
+      walkable: 'reviewed',
+      exclude: "not used by the game (1 in Skyrim.esm's CELLs)",
+    });
+    expect(a.pieces['C']!.exclude).toContain('0 in');
   });
 });

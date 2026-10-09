@@ -1,0 +1,8262 @@
+{
+ "version": 1,
+ "kit": "Dwemer",
+ "master": "Skyrim.esm",
+ "pairs": [
+  {
+   "pieces": [
+    "0x0003B6AB:Skyrim.esm",
+    "0x0004C55F:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -6,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0003B6AB:Skyrim.esm",
+    "0x0004C564:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    6,
+    -6,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0003B6AB:Skyrim.esm",
+    "0x0004C564:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    12,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0003B6AB:Skyrim.esm",
+    "0x0004C567:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    9,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0003B6AB:Skyrim.esm",
+    "0x0004C568:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -3,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0003B6C9:Skyrim.esm",
+    "0x0004C55F:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -6,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0003B6C9:Skyrim.esm",
+    "0x0004C55F:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    6,
+    2
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0003B6C9:Skyrim.esm",
+    "0x0004C564:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -6,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0003B6C9:Skyrim.esm",
+    "0x0004C564:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    12,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0003B6C9:Skyrim.esm",
+    "0x0004C565:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    6,
+    6,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0003B6C9:Skyrim.esm",
+    "0x0004C568:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -3,
+    0
+   ],
+   "count": 5
+  },
+  {
+   "pieces": [
+    "0x0003B6C9:Skyrim.esm",
+    "0x0004C568:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    9,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004406B:Skyrim.esm",
+    "0x0004406B:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 11
+  },
+  {
+   "pieces": [
+    "0x0004406B:Skyrim.esm",
+    "0x0004406B:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 11
+  },
+  {
+   "pieces": [
+    "0x0004406B:Skyrim.esm",
+    "0x0004406C:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    -4,
+    0,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x0004406B:Skyrim.esm",
+    "0x0004406D:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -4,
+    0
+   ],
+   "count": 22
+  },
+  {
+   "pieces": [
+    "0x0004406B:Skyrim.esm",
+    "0x0004406D:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 25
+  },
+  {
+   "pieces": [
+    "0x0004406B:Skyrim.esm",
+    "0x0004406E:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 7
+  },
+  {
+   "pieces": [
+    "0x0004406B:Skyrim.esm",
+    "0x0004406F:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -4,
+    0
+   ],
+   "count": 20
+  },
+  {
+   "pieces": [
+    "0x0004406B:Skyrim.esm",
+    "0x0004406F:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 17
+  },
+  {
+   "pieces": [
+    "0x0004406B:Skyrim.esm",
+    "0x000581B9:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -2,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004406B:Skyrim.esm",
+    "0x000581BC:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    -2,
+    -4,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004406B:Skyrim.esm",
+    "0x000581BF:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    -2,
+    -4,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0004406B:Skyrim.esm",
+    "0x000581BF:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    0,
+    -2,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0004406B:Skyrim.esm",
+    "0x0005F6E8:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    0,
+    -2,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004406B:Skyrim.esm",
+    "0x0005F6E9:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -4,
+    0
+   ],
+   "count": 15
+  },
+  {
+   "pieces": [
+    "0x0004406B:Skyrim.esm",
+    "0x0005F6E9:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 16
+  },
+  {
+   "pieces": [
+    "0x0004406B:Skyrim.esm",
+    "0x000E41B9:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -4,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x0004406B:Skyrim.esm",
+    "0x000E41B9:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x0004406C:Skyrim.esm",
+    "0x0004406B:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    4,
+    0,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x0004406C:Skyrim.esm",
+    "0x0004406D:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    8,
+    0,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x0004406C:Skyrim.esm",
+    "0x0004406E:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    4,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004406C:Skyrim.esm",
+    "0x000581BC:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    4,
+    -4,
+    0
+   ],
+   "count": 5
+  },
+  {
+   "pieces": [
+    "0x0004406C:Skyrim.esm",
+    "0x000581BE:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    4,
+    0,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0004406C:Skyrim.esm",
+    "0x000581BF:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    4,
+    0,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x0004406C:Skyrim.esm",
+    "0x0005F6E8:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    4,
+    0,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0004406C:Skyrim.esm",
+    "0x0005F6E9:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    8,
+    0,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x0004406D:Skyrim.esm",
+    "0x0004406B:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 22
+  },
+  {
+   "pieces": [
+    "0x0004406D:Skyrim.esm",
+    "0x0004406B:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 25
+  },
+  {
+   "pieces": [
+    "0x0004406D:Skyrim.esm",
+    "0x0004406C:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    8,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x0004406D:Skyrim.esm",
+    "0x0004406D:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -4,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x0004406D:Skyrim.esm",
+    "0x0004406D:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x0004406D:Skyrim.esm",
+    "0x0004406E:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 5
+  },
+  {
+   "pieces": [
+    "0x0004406D:Skyrim.esm",
+    "0x0004406F:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0004406D:Skyrim.esm",
+    "0x000581BD:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    -4,
+    0,
+    0
+   ],
+   "count": 7
+  },
+  {
+   "pieces": [
+    "0x0004406D:Skyrim.esm",
+    "0x000581BD:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 9
+  },
+  {
+   "pieces": [
+    "0x0004406D:Skyrim.esm",
+    "0x000581BD:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0004406D:Skyrim.esm",
+    "0x000581BD:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -4,
+    4,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004406D:Skyrim.esm",
+    "0x000581BE:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004406D:Skyrim.esm",
+    "0x000581BF:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0004406D:Skyrim.esm",
+    "0x0005F6E9:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x0004406E:Skyrim.esm",
+    "0x0004406B:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 7
+  },
+  {
+   "pieces": [
+    "0x0004406E:Skyrim.esm",
+    "0x0004406C:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    -4,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004406E:Skyrim.esm",
+    "0x0004406D:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 5
+  },
+  {
+   "pieces": [
+    "0x0004406E:Skyrim.esm",
+    "0x000581BC:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -4,
+    0
+   ],
+   "count": 7
+  },
+  {
+   "pieces": [
+    "0x0004406E:Skyrim.esm",
+    "0x000581BE:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -4,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004406E:Skyrim.esm",
+    "0x000581BF:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -4,
+    0
+   ],
+   "count": 5
+  },
+  {
+   "pieces": [
+    "0x0004406E:Skyrim.esm",
+    "0x0005F6E9:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004406F:Skyrim.esm",
+    "0x0004406B:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 20
+  },
+  {
+   "pieces": [
+    "0x0004406F:Skyrim.esm",
+    "0x0004406B:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 17
+  },
+  {
+   "pieces": [
+    "0x0004406F:Skyrim.esm",
+    "0x0004406D:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0004406F:Skyrim.esm",
+    "0x000581BD:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    -4,
+    0,
+    0
+   ],
+   "count": 5
+  },
+  {
+   "pieces": [
+    "0x0004406F:Skyrim.esm",
+    "0x000581BD:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x0004406F:Skyrim.esm",
+    "0x000581BD:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x0004406F:Skyrim.esm",
+    "0x000581BD:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -4,
+    4,
+    0
+   ],
+   "count": 5
+  },
+  {
+   "pieces": [
+    "0x0004C55F:Skyrim.esm",
+    "0x0003B6AB:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    6,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004C55F:Skyrim.esm",
+    "0x0003B6C9:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -6,
+    -2
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004C55F:Skyrim.esm",
+    "0x0003B6C9:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    6,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004C55F:Skyrim.esm",
+    "0x0004C55F:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -6,
+    -2
+   ],
+   "count": 8
+  },
+  {
+   "pieces": [
+    "0x0004C55F:Skyrim.esm",
+    "0x0004C55F:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    6,
+    2
+   ],
+   "count": 8
+  },
+  {
+   "pieces": [
+    "0x0004C55F:Skyrim.esm",
+    "0x0004C564:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -6,
+    -2
+   ],
+   "count": 7
+  },
+  {
+   "pieces": [
+    "0x0004C55F:Skyrim.esm",
+    "0x0004C564:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    6,
+    -6,
+    -2
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004C55F:Skyrim.esm",
+    "0x0004C564:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    12,
+    0
+   ],
+   "count": 5
+  },
+  {
+   "pieces": [
+    "0x0004C55F:Skyrim.esm",
+    "0x0004C564:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    12,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004C55F:Skyrim.esm",
+    "0x0004C565:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    12,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0004C55F:Skyrim.esm",
+    "0x0004C565:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    0,
+    -2
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x0004C55F:Skyrim.esm",
+    "0x0004C565:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    12,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0004C55F:Skyrim.esm",
+    "0x0004C568:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -3,
+    -2
+   ],
+   "count": 13
+  },
+  {
+   "pieces": [
+    "0x0004C55F:Skyrim.esm",
+    "0x0004C568:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    9,
+    0
+   ],
+   "count": 11
+  },
+  {
+   "pieces": [
+    "0x0004C564:Skyrim.esm",
+    "0x0003B6AB:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    12,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004C564:Skyrim.esm",
+    "0x0003B6AB:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    6,
+    6,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004C564:Skyrim.esm",
+    "0x0003B6C9:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    6,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004C564:Skyrim.esm",
+    "0x0003B6C9:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    12,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004C564:Skyrim.esm",
+    "0x0004C55F:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    6,
+    2
+   ],
+   "count": 7
+  },
+  {
+   "pieces": [
+    "0x0004C564:Skyrim.esm",
+    "0x0004C55F:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    12,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004C564:Skyrim.esm",
+    "0x0004C55F:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    12,
+    0
+   ],
+   "count": 5
+  },
+  {
+   "pieces": [
+    "0x0004C564:Skyrim.esm",
+    "0x0004C55F:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    6,
+    6,
+    2
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004C564:Skyrim.esm",
+    "0x0004C564:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    12,
+    6,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004C564:Skyrim.esm",
+    "0x0004C564:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    12,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x0004C564:Skyrim.esm",
+    "0x0004C565:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    6,
+    6,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0004C564:Skyrim.esm",
+    "0x0004C565:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    12,
+    6,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x0004C564:Skyrim.esm",
+    "0x0004C566:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    6,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004C564:Skyrim.esm",
+    "0x0004C568:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    9,
+    0,
+    0
+   ],
+   "count": 10
+  },
+  {
+   "pieces": [
+    "0x0004C564:Skyrim.esm",
+    "0x0004C568:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    9,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x0004C565:Skyrim.esm",
+    "0x0003B6C9:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -6,
+    6,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004C565:Skyrim.esm",
+    "0x0004C55F:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    0,
+    0,
+    2
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x0004C565:Skyrim.esm",
+    "0x0004C55F:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    12,
+    0,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0004C565:Skyrim.esm",
+    "0x0004C55F:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    12,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0004C565:Skyrim.esm",
+    "0x0004C564:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    12,
+    6,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x0004C565:Skyrim.esm",
+    "0x0004C564:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -6,
+    6,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0004C565:Skyrim.esm",
+    "0x0004C565:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    6,
+    6,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004C565:Skyrim.esm",
+    "0x0004C565:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    0,
+    6,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x0004C565:Skyrim.esm",
+    "0x0004C565:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    12,
+    6,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x0004C565:Skyrim.esm",
+    "0x0004C565:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -6,
+    6,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004C565:Skyrim.esm",
+    "0x0004C567:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    9,
+    0,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0004C565:Skyrim.esm",
+    "0x0004C567:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    9,
+    0
+   ],
+   "count": 9
+  },
+  {
+   "pieces": [
+    "0x0004C565:Skyrim.esm",
+    "0x0004C567:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -3,
+    6,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0004C565:Skyrim.esm",
+    "0x0004C568:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    9,
+    0,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x0004C565:Skyrim.esm",
+    "0x0004C568:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    9,
+    0
+   ],
+   "count": 8
+  },
+  {
+   "pieces": [
+    "0x0004C565:Skyrim.esm",
+    "0x0004C568:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -3,
+    6,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x0004C566:Skyrim.esm",
+    "0x0004C564:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    -6,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004C566:Skyrim.esm",
+    "0x0004C566:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    -6,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004C566:Skyrim.esm",
+    "0x0004C566:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -6,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0004C566:Skyrim.esm",
+    "0x0004C566:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    6,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0004C566:Skyrim.esm",
+    "0x0004C566:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    6,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004C566:Skyrim.esm",
+    "0x0004C567:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -3,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x0004C566:Skyrim.esm",
+    "0x0004C567:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    9,
+    0,
+    0
+   ],
+   "count": 9
+  },
+  {
+   "pieces": [
+    "0x0004C566:Skyrim.esm",
+    "0x0004C567:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    9,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x0004C566:Skyrim.esm",
+    "0x0004C567:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -3,
+    6,
+    0
+   ],
+   "count": 9
+  },
+  {
+   "pieces": [
+    "0x0004C566:Skyrim.esm",
+    "0x0004C568:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -3,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x0004C566:Skyrim.esm",
+    "0x0004C568:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    9,
+    0,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0004C566:Skyrim.esm",
+    "0x0004C568:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    9,
+    0
+   ],
+   "count": 5
+  },
+  {
+   "pieces": [
+    "0x0004C567:Skyrim.esm",
+    "0x0003B6AB:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    9,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004C567:Skyrim.esm",
+    "0x0004C565:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    6,
+    3,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0004C567:Skyrim.esm",
+    "0x0004C565:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    9,
+    0
+   ],
+   "count": 9
+  },
+  {
+   "pieces": [
+    "0x0004C567:Skyrim.esm",
+    "0x0004C565:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    9,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0004C567:Skyrim.esm",
+    "0x0004C566:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    3,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x0004C567:Skyrim.esm",
+    "0x0004C566:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    6,
+    3,
+    0
+   ],
+   "count": 9
+  },
+  {
+   "pieces": [
+    "0x0004C567:Skyrim.esm",
+    "0x0004C566:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    9,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x0004C567:Skyrim.esm",
+    "0x0004C566:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    9,
+    0
+   ],
+   "count": 9
+  },
+  {
+   "pieces": [
+    "0x0004C567:Skyrim.esm",
+    "0x0004C568:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    6,
+    0
+   ],
+   "count": 14
+  },
+  {
+   "pieces": [
+    "0x0004C568:Skyrim.esm",
+    "0x0003B6AB:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    3,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004C568:Skyrim.esm",
+    "0x0003B6C9:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    3,
+    0
+   ],
+   "count": 5
+  },
+  {
+   "pieces": [
+    "0x0004C568:Skyrim.esm",
+    "0x0003B6C9:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    9,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004C568:Skyrim.esm",
+    "0x0004C55F:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    3,
+    2
+   ],
+   "count": 13
+  },
+  {
+   "pieces": [
+    "0x0004C568:Skyrim.esm",
+    "0x0004C55F:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    9,
+    0
+   ],
+   "count": 11
+  },
+  {
+   "pieces": [
+    "0x0004C568:Skyrim.esm",
+    "0x0004C564:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    9,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x0004C568:Skyrim.esm",
+    "0x0004C564:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    9,
+    0
+   ],
+   "count": 10
+  },
+  {
+   "pieces": [
+    "0x0004C568:Skyrim.esm",
+    "0x0004C565:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    6,
+    3,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x0004C568:Skyrim.esm",
+    "0x0004C565:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    9,
+    0
+   ],
+   "count": 8
+  },
+  {
+   "pieces": [
+    "0x0004C568:Skyrim.esm",
+    "0x0004C565:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    9,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x0004C568:Skyrim.esm",
+    "0x0004C566:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    3,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x0004C568:Skyrim.esm",
+    "0x0004C566:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    9,
+    0
+   ],
+   "count": 5
+  },
+  {
+   "pieces": [
+    "0x0004C568:Skyrim.esm",
+    "0x0004C566:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    9,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0004C568:Skyrim.esm",
+    "0x0004C567:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    6,
+    0
+   ],
+   "count": 14
+  },
+  {
+   "pieces": [
+    "0x0004C568:Skyrim.esm",
+    "0x0004C568:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    6,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x0004E2C4:Skyrim.esm",
+    "0x0004E2C4:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -6,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004E2C4:Skyrim.esm",
+    "0x0004E2C4:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    6,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004E2C4:Skyrim.esm",
+    "0x0004E2D1:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    6,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x0004E2C4:Skyrim.esm",
+    "0x0004E2D1:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    0,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0004E2C4:Skyrim.esm",
+    "0x0004E870:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    0,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x0004E2C4:Skyrim.esm",
+    "0x0004E870:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0004E2C4:Skyrim.esm",
+    "0x0004E871:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004E2C4:Skyrim.esm",
+    "0x0004F82E:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    6,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004E2C4:Skyrim.esm",
+    "0x00051566:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    12,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0004E2C4:Skyrim.esm",
+    "0x0005618E:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004E2D1:Skyrim.esm",
+    "0x0004E2C4:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -6,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x0004E2D1:Skyrim.esm",
+    "0x0004E2C4:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    0,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0004E2D1:Skyrim.esm",
+    "0x0004E870:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    0,
+    0
+   ],
+   "count": 7
+  },
+  {
+   "pieces": [
+    "0x0004E2D1:Skyrim.esm",
+    "0x0004E871:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    6,
+    -6,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x0004E2D1:Skyrim.esm",
+    "0x0004E871:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    0,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x0004E2D1:Skyrim.esm",
+    "0x0004E871:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 5
+  },
+  {
+   "pieces": [
+    "0x0004E2D1:Skyrim.esm",
+    "0x0004E872:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    6,
+    -6,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004E2D1:Skyrim.esm",
+    "0x0004E872:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004E2D1:Skyrim.esm",
+    "0x0004F82E:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004E2D1:Skyrim.esm",
+    "0x0004F82F:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -6,
+    0
+   ],
+   "count": 5
+  },
+  {
+   "pieces": [
+    "0x0004E2D1:Skyrim.esm",
+    "0x0004F82F:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    0,
+    2
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0004E2D1:Skyrim.esm",
+    "0x00051566:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    6,
+    -6,
+    0
+   ],
+   "count": 22
+  },
+  {
+   "pieces": [
+    "0x0004E2D1:Skyrim.esm",
+    "0x0005187A:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    4,
+    -6,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004E2D1:Skyrim.esm",
+    "0x000518C3:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    6,
+    -6,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004E2D1:Skyrim.esm",
+    "0x000518CC:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    0,
+    0
+   ],
+   "count": 7
+  },
+  {
+   "pieces": [
+    "0x0004E2D1:Skyrim.esm",
+    "0x000518CD:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    6,
+    -6,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x0004E870:Skyrim.esm",
+    "0x0004E2C4:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0004E870:Skyrim.esm",
+    "0x0004E2C4:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    0,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x0004E870:Skyrim.esm",
+    "0x0004E2D1:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    0,
+    0
+   ],
+   "count": 7
+  },
+  {
+   "pieces": [
+    "0x0004E870:Skyrim.esm",
+    "0x0004E870:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    0,
+    6,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x0004E870:Skyrim.esm",
+    "0x0004E871:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    0,
+    6,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0004E870:Skyrim.esm",
+    "0x0004E871:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004E870:Skyrim.esm",
+    "0x0004F82F:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -6,
+    6,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004E870:Skyrim.esm",
+    "0x000518CC:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0004E870:Skyrim.esm",
+    "0x000518CC:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    0,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0004E870:Skyrim.esm",
+    "0x000518CD:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    -6,
+    0,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0004E870:Skyrim.esm",
+    "0x0005618E:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004E871:Skyrim.esm",
+    "0x0004E2C4:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004E871:Skyrim.esm",
+    "0x0004E2D1:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 5
+  },
+  {
+   "pieces": [
+    "0x0004E871:Skyrim.esm",
+    "0x0004E2D1:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    0,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x0004E871:Skyrim.esm",
+    "0x0004E2D1:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    6,
+    6,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x0004E871:Skyrim.esm",
+    "0x0004E870:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004E871:Skyrim.esm",
+    "0x0004E870:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    0,
+    6,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0004E871:Skyrim.esm",
+    "0x0004E871:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    -6,
+    0,
+    0
+   ],
+   "count": 5
+  },
+  {
+   "pieces": [
+    "0x0004E871:Skyrim.esm",
+    "0x0004E871:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    6,
+    0,
+    0
+   ],
+   "count": 5
+  },
+  {
+   "pieces": [
+    "0x0004E871:Skyrim.esm",
+    "0x0004E871:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    6,
+    -6,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004E871:Skyrim.esm",
+    "0x0004E871:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    0,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x0004E871:Skyrim.esm",
+    "0x0004E871:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    6,
+    6,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004E871:Skyrim.esm",
+    "0x0004E872:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -6,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004E871:Skyrim.esm",
+    "0x0004F82E:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004E871:Skyrim.esm",
+    "0x0004F82E:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    6,
+    6,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0004E871:Skyrim.esm",
+    "0x0004F82F:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -6,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004E871:Skyrim.esm",
+    "0x0005618E:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004E872:Skyrim.esm",
+    "0x0004E2D1:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004E872:Skyrim.esm",
+    "0x0004E2D1:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    6,
+    6,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004E872:Skyrim.esm",
+    "0x0004E871:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    6,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004E872:Skyrim.esm",
+    "0x0004E872:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -6,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0004E872:Skyrim.esm",
+    "0x0004E872:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    6,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0004E872:Skyrim.esm",
+    "0x0004F82E:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    6,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x0004E872:Skyrim.esm",
+    "0x0004F82E:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x0004E872:Skyrim.esm",
+    "0x0004F82E:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    0,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0004E872:Skyrim.esm",
+    "0x0004F82E:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    6,
+    6,
+    0
+   ],
+   "count": 5
+  },
+  {
+   "pieces": [
+    "0x0004E872:Skyrim.esm",
+    "0x0005618E:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0004E872:Skyrim.esm",
+    "0x0005618E:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    6,
+    6,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0004F82E:Skyrim.esm",
+    "0x0004E2C4:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -6,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004F82E:Skyrim.esm",
+    "0x0004E2D1:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004F82E:Skyrim.esm",
+    "0x0004E871:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    6,
+    -6,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0004F82E:Skyrim.esm",
+    "0x0004E871:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004F82E:Skyrim.esm",
+    "0x0004E872:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -6,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x0004F82E:Skyrim.esm",
+    "0x0004E872:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    6,
+    -6,
+    0
+   ],
+   "count": 5
+  },
+  {
+   "pieces": [
+    "0x0004F82E:Skyrim.esm",
+    "0x0004E872:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    0,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0004F82E:Skyrim.esm",
+    "0x0004E872:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x0004F82E:Skyrim.esm",
+    "0x00051566:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    6,
+    -6,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x0004F82E:Skyrim.esm",
+    "0x000518CD:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    6,
+    -6,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0004F82F:Skyrim.esm",
+    "0x0004E2D1:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    6,
+    0
+   ],
+   "count": 5
+  },
+  {
+   "pieces": [
+    "0x0004F82F:Skyrim.esm",
+    "0x0004E2D1:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    0,
+    -2
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0004F82F:Skyrim.esm",
+    "0x0004E870:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    6,
+    6,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004F82F:Skyrim.esm",
+    "0x0004E871:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    6,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004F82F:Skyrim.esm",
+    "0x0004F82F:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -6,
+    -2
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x0004F82F:Skyrim.esm",
+    "0x0004F82F:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    6,
+    2
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x0004F82F:Skyrim.esm",
+    "0x00051566:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    6,
+    -6,
+    -2
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0004F82F:Skyrim.esm",
+    "0x0005618E:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    0,
+    -2
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x00051545:Skyrim.esm",
+    "0x00051545:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    -6,
+    0,
+    0
+   ],
+   "count": 16
+  },
+  {
+   "pieces": [
+    "0x00051545:Skyrim.esm",
+    "0x00051545:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -6,
+    0
+   ],
+   "count": 21
+  },
+  {
+   "pieces": [
+    "0x00051545:Skyrim.esm",
+    "0x00051545:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    6,
+    0
+   ],
+   "count": 21
+  },
+  {
+   "pieces": [
+    "0x00051545:Skyrim.esm",
+    "0x00051545:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    6,
+    0,
+    0
+   ],
+   "count": 16
+  },
+  {
+   "pieces": [
+    "0x00051545:Skyrim.esm",
+    "0x00051546:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    6,
+    0,
+    0
+   ],
+   "count": 20
+  },
+  {
+   "pieces": [
+    "0x00051545:Skyrim.esm",
+    "0x00051546:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    6,
+    6,
+    0
+   ],
+   "count": 15
+  },
+  {
+   "pieces": [
+    "0x00051545:Skyrim.esm",
+    "0x00051546:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    0,
+    6,
+    0
+   ],
+   "count": 18
+  },
+  {
+   "pieces": [
+    "0x00051545:Skyrim.esm",
+    "0x00051546:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 16
+  },
+  {
+   "pieces": [
+    "0x00051545:Skyrim.esm",
+    "0x00051566:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    6,
+    0,
+    0
+   ],
+   "count": 12
+  },
+  {
+   "pieces": [
+    "0x00051545:Skyrim.esm",
+    "0x00051566:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    6,
+    6,
+    0
+   ],
+   "count": 12
+  },
+  {
+   "pieces": [
+    "0x00051545:Skyrim.esm",
+    "0x00051566:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    0,
+    6,
+    0
+   ],
+   "count": 10
+  },
+  {
+   "pieces": [
+    "0x00051545:Skyrim.esm",
+    "0x00051566:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 12
+  },
+  {
+   "pieces": [
+    "0x00051545:Skyrim.esm",
+    "0x0005187D:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -6,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x00051545:Skyrim.esm",
+    "0x0005187D:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    6,
+    0,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x00051545:Skyrim.esm",
+    "0x0005187D:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    12,
+    0,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x00051545:Skyrim.esm",
+    "0x0005187D:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    6,
+    6,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x00051545:Skyrim.esm",
+    "0x0005187D:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    0,
+    6,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x00051545:Skyrim.esm",
+    "0x0005187D:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    12,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x00051545:Skyrim.esm",
+    "0x0005187D:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -6,
+    6,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x00051545:Skyrim.esm",
+    "0x0005187D:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x00051546:Skyrim.esm",
+    "0x00051545:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    -6,
+    0,
+    0
+   ],
+   "count": 20
+  },
+  {
+   "pieces": [
+    "0x00051546:Skyrim.esm",
+    "0x00051545:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 16
+  },
+  {
+   "pieces": [
+    "0x00051546:Skyrim.esm",
+    "0x00051545:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    0,
+    6,
+    0
+   ],
+   "count": 18
+  },
+  {
+   "pieces": [
+    "0x00051546:Skyrim.esm",
+    "0x00051545:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -6,
+    6,
+    0
+   ],
+   "count": 15
+  },
+  {
+   "pieces": [
+    "0x00051546:Skyrim.esm",
+    "0x00051546:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -6,
+    0
+   ],
+   "count": 31
+  },
+  {
+   "pieces": [
+    "0x00051546:Skyrim.esm",
+    "0x00051546:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    6,
+    0
+   ],
+   "count": 31
+  },
+  {
+   "pieces": [
+    "0x00051546:Skyrim.esm",
+    "0x00051546:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    0,
+    6,
+    0
+   ],
+   "count": 16
+  },
+  {
+   "pieces": [
+    "0x00051546:Skyrim.esm",
+    "0x00051566:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -6,
+    0
+   ],
+   "count": 11
+  },
+  {
+   "pieces": [
+    "0x00051546:Skyrim.esm",
+    "0x00051566:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    6,
+    0
+   ],
+   "count": 7
+  },
+  {
+   "pieces": [
+    "0x00051546:Skyrim.esm",
+    "0x00051566:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    0,
+    6,
+    0
+   ],
+   "count": 7
+  },
+  {
+   "pieces": [
+    "0x00051546:Skyrim.esm",
+    "0x0005187A:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -6,
+    0
+   ],
+   "count": 36
+  },
+  {
+   "pieces": [
+    "0x00051546:Skyrim.esm",
+    "0x0005187A:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    6,
+    6,
+    0
+   ],
+   "count": 45
+  },
+  {
+   "pieces": [
+    "0x00051546:Skyrim.esm",
+    "0x0005187D:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    6,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x00051546:Skyrim.esm",
+    "0x0005187D:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    6,
+    -6,
+    0
+   ],
+   "count": 5
+  },
+  {
+   "pieces": [
+    "0x00051546:Skyrim.esm",
+    "0x0005187D:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    0,
+    6,
+    0
+   ],
+   "count": 5
+  },
+  {
+   "pieces": [
+    "0x00051546:Skyrim.esm",
+    "0x0005187D:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -6,
+    6,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x00051546:Skyrim.esm",
+    "0x000518CC:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -6,
+    0
+   ],
+   "count": 13
+  },
+  {
+   "pieces": [
+    "0x00051546:Skyrim.esm",
+    "0x000518CC:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    6,
+    6,
+    0
+   ],
+   "count": 12
+  },
+  {
+   "pieces": [
+    "0x00051546:Skyrim.esm",
+    "0x000518CD:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -6,
+    0
+   ],
+   "count": 14
+  },
+  {
+   "pieces": [
+    "0x00051546:Skyrim.esm",
+    "0x000518CD:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    6,
+    6,
+    0
+   ],
+   "count": 9
+  },
+  {
+   "pieces": [
+    "0x00051546:Skyrim.esm",
+    "0x00055116:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    1.375,
+    0,
+    1.625
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x00051546:Skyrim.esm",
+    "0x00055116:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    1.375,
+    12,
+    1.625
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x00051566:Skyrim.esm",
+    "0x0004E2C4:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    12,
+    0,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x00051566:Skyrim.esm",
+    "0x0004E2D1:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    6,
+    6,
+    0
+   ],
+   "count": 22
+  },
+  {
+   "pieces": [
+    "0x00051566:Skyrim.esm",
+    "0x0004F82E:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    6,
+    6,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x00051566:Skyrim.esm",
+    "0x0004F82F:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    6,
+    6,
+    2
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x00051566:Skyrim.esm",
+    "0x00051545:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    -6,
+    0,
+    0
+   ],
+   "count": 12
+  },
+  {
+   "pieces": [
+    "0x00051566:Skyrim.esm",
+    "0x00051545:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 12
+  },
+  {
+   "pieces": [
+    "0x00051566:Skyrim.esm",
+    "0x00051545:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    0,
+    6,
+    0
+   ],
+   "count": 10
+  },
+  {
+   "pieces": [
+    "0x00051566:Skyrim.esm",
+    "0x00051545:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -6,
+    6,
+    0
+   ],
+   "count": 12
+  },
+  {
+   "pieces": [
+    "0x00051566:Skyrim.esm",
+    "0x00051546:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -6,
+    0
+   ],
+   "count": 7
+  },
+  {
+   "pieces": [
+    "0x00051566:Skyrim.esm",
+    "0x00051546:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    6,
+    0
+   ],
+   "count": 11
+  },
+  {
+   "pieces": [
+    "0x00051566:Skyrim.esm",
+    "0x00051546:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    0,
+    6,
+    0
+   ],
+   "count": 7
+  },
+  {
+   "pieces": [
+    "0x00051566:Skyrim.esm",
+    "0x00051566:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -6,
+    0
+   ],
+   "count": 5
+  },
+  {
+   "pieces": [
+    "0x00051566:Skyrim.esm",
+    "0x00051566:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    6,
+    0
+   ],
+   "count": 5
+  },
+  {
+   "pieces": [
+    "0x00051566:Skyrim.esm",
+    "0x00051566:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    0,
+    6,
+    0
+   ],
+   "count": 8
+  },
+  {
+   "pieces": [
+    "0x00051566:Skyrim.esm",
+    "0x00051566:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    12,
+    6,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x00051566:Skyrim.esm",
+    "0x0005187A:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -6,
+    0
+   ],
+   "count": 45
+  },
+  {
+   "pieces": [
+    "0x00051566:Skyrim.esm",
+    "0x0005187A:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    6,
+    6,
+    0
+   ],
+   "count": 36
+  },
+  {
+   "pieces": [
+    "0x00051566:Skyrim.esm",
+    "0x000518CC:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -6,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x00051566:Skyrim.esm",
+    "0x000518CC:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    6,
+    6,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x00051566:Skyrim.esm",
+    "0x000518CD:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -6,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x00051566:Skyrim.esm",
+    "0x000518CD:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    6,
+    6,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x00051566:Skyrim.esm",
+    "0x00055116:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    1.375,
+    6,
+    1.625
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x00051566:Skyrim.esm",
+    "0x0005618E:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    6,
+    6,
+    0
+   ],
+   "count": 15
+  },
+  {
+   "pieces": [
+    "0x0005187A:Skyrim.esm",
+    "0x00051546:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    6,
+    0
+   ],
+   "count": 36
+  },
+  {
+   "pieces": [
+    "0x0005187A:Skyrim.esm",
+    "0x00051546:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -6,
+    6,
+    0
+   ],
+   "count": 45
+  },
+  {
+   "pieces": [
+    "0x0005187A:Skyrim.esm",
+    "0x00051566:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    6,
+    0
+   ],
+   "count": 45
+  },
+  {
+   "pieces": [
+    "0x0005187A:Skyrim.esm",
+    "0x00051566:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -6,
+    6,
+    0
+   ],
+   "count": 36
+  },
+  {
+   "pieces": [
+    "0x0005187A:Skyrim.esm",
+    "0x0005187A:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    6,
+    6,
+    0
+   ],
+   "count": 14
+  },
+  {
+   "pieces": [
+    "0x0005187A:Skyrim.esm",
+    "0x0005187A:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -6,
+    6,
+    0
+   ],
+   "count": 14
+  },
+  {
+   "pieces": [
+    "0x0005187A:Skyrim.esm",
+    "0x0005187D:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    -6,
+    0,
+    0
+   ],
+   "count": 16
+  },
+  {
+   "pieces": [
+    "0x0005187A:Skyrim.esm",
+    "0x0005187D:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    6,
+    0
+   ],
+   "count": 14
+  },
+  {
+   "pieces": [
+    "0x0005187A:Skyrim.esm",
+    "0x000518CC:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    6,
+    6,
+    0
+   ],
+   "count": 11
+  },
+  {
+   "pieces": [
+    "0x0005187A:Skyrim.esm",
+    "0x000518CC:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -6,
+    6,
+    0
+   ],
+   "count": 10
+  },
+  {
+   "pieces": [
+    "0x0005187A:Skyrim.esm",
+    "0x000518CD:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    6,
+    6,
+    0
+   ],
+   "count": 10
+  },
+  {
+   "pieces": [
+    "0x0005187A:Skyrim.esm",
+    "0x000518CD:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -6,
+    6,
+    0
+   ],
+   "count": 10
+  },
+  {
+   "pieces": [
+    "0x0005187A:Skyrim.esm",
+    "0x00055116:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    0,
+    4.625,
+    1.625
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0005187A:Skyrim.esm",
+    "0x00055116:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    1.375,
+    12,
+    1.625
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0005187D:Skyrim.esm",
+    "0x00051545:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    -6,
+    0,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x0005187D:Skyrim.esm",
+    "0x00051545:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    6,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0005187D:Skyrim.esm",
+    "0x00051545:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0005187D:Skyrim.esm",
+    "0x00051545:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    6,
+    6,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x0005187D:Skyrim.esm",
+    "0x00051545:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    0,
+    6,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0005187D:Skyrim.esm",
+    "0x00051545:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    12,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0005187D:Skyrim.esm",
+    "0x00051545:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -6,
+    6,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0005187D:Skyrim.esm",
+    "0x00051545:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    12,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0005187D:Skyrim.esm",
+    "0x00051546:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -6,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x0005187D:Skyrim.esm",
+    "0x00051546:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    6,
+    6,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x0005187D:Skyrim.esm",
+    "0x00051546:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    0,
+    6,
+    0
+   ],
+   "count": 5
+  },
+  {
+   "pieces": [
+    "0x0005187D:Skyrim.esm",
+    "0x00051546:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    6,
+    6,
+    0
+   ],
+   "count": 5
+  },
+  {
+   "pieces": [
+    "0x0005187D:Skyrim.esm",
+    "0x0005187A:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -6,
+    0
+   ],
+   "count": 14
+  },
+  {
+   "pieces": [
+    "0x0005187D:Skyrim.esm",
+    "0x0005187A:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    6,
+    0,
+    0
+   ],
+   "count": 16
+  },
+  {
+   "pieces": [
+    "0x0005187D:Skyrim.esm",
+    "0x0005187D:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    6,
+    6,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x0005187D:Skyrim.esm",
+    "0x0005187D:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    12,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0005187D:Skyrim.esm",
+    "0x0005187D:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -6,
+    6,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x0005187D:Skyrim.esm",
+    "0x000518CC:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -6,
+    0
+   ],
+   "count": 5
+  },
+  {
+   "pieces": [
+    "0x0005187D:Skyrim.esm",
+    "0x000518CD:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    6,
+    0,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x000518C3:Skyrim.esm",
+    "0x0004E2D1:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    6,
+    6,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x000518CC:Skyrim.esm",
+    "0x0004E2D1:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    0,
+    0
+   ],
+   "count": 7
+  },
+  {
+   "pieces": [
+    "0x000518CC:Skyrim.esm",
+    "0x0004E870:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    0,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x000518CC:Skyrim.esm",
+    "0x0004E870:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x000518CC:Skyrim.esm",
+    "0x00051546:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    6,
+    0
+   ],
+   "count": 13
+  },
+  {
+   "pieces": [
+    "0x000518CC:Skyrim.esm",
+    "0x00051546:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -6,
+    6,
+    0
+   ],
+   "count": 12
+  },
+  {
+   "pieces": [
+    "0x000518CC:Skyrim.esm",
+    "0x00051566:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    6,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x000518CC:Skyrim.esm",
+    "0x00051566:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -6,
+    6,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x000518CC:Skyrim.esm",
+    "0x0005187A:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    6,
+    6,
+    0
+   ],
+   "count": 10
+  },
+  {
+   "pieces": [
+    "0x000518CC:Skyrim.esm",
+    "0x0005187A:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -6,
+    6,
+    0
+   ],
+   "count": 11
+  },
+  {
+   "pieces": [
+    "0x000518CC:Skyrim.esm",
+    "0x0005187D:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    6,
+    0
+   ],
+   "count": 5
+  },
+  {
+   "pieces": [
+    "0x000518CC:Skyrim.esm",
+    "0x000518CC:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    6,
+    6,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x000518CC:Skyrim.esm",
+    "0x000518CC:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -6,
+    6,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x000518CC:Skyrim.esm",
+    "0x000518CD:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    6,
+    6,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x000518CC:Skyrim.esm",
+    "0x000518CD:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -6,
+    6,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x000518CC:Skyrim.esm",
+    "0x0005618E:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    0,
+    0
+   ],
+   "count": 14
+  },
+  {
+   "pieces": [
+    "0x000518CD:Skyrim.esm",
+    "0x0004E2D1:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    6,
+    6,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x000518CD:Skyrim.esm",
+    "0x0004E870:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    6,
+    0,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x000518CD:Skyrim.esm",
+    "0x0004F82E:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    6,
+    6,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x000518CD:Skyrim.esm",
+    "0x00051546:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    6,
+    0
+   ],
+   "count": 14
+  },
+  {
+   "pieces": [
+    "0x000518CD:Skyrim.esm",
+    "0x00051546:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -6,
+    6,
+    0
+   ],
+   "count": 9
+  },
+  {
+   "pieces": [
+    "0x000518CD:Skyrim.esm",
+    "0x00051566:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    6,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x000518CD:Skyrim.esm",
+    "0x00051566:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -6,
+    6,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x000518CD:Skyrim.esm",
+    "0x0005187A:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    6,
+    6,
+    0
+   ],
+   "count": 10
+  },
+  {
+   "pieces": [
+    "0x000518CD:Skyrim.esm",
+    "0x0005187A:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -6,
+    6,
+    0
+   ],
+   "count": 10
+  },
+  {
+   "pieces": [
+    "0x000518CD:Skyrim.esm",
+    "0x0005187D:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    -6,
+    0,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x000518CD:Skyrim.esm",
+    "0x000518CC:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    6,
+    6,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x000518CD:Skyrim.esm",
+    "0x000518CC:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -6,
+    6,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x000518CD:Skyrim.esm",
+    "0x000518CD:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    12,
+    6,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x000518CD:Skyrim.esm",
+    "0x0005618E:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    6,
+    6,
+    0
+   ],
+   "count": 10
+  },
+  {
+   "pieces": [
+    "0x00055117:Skyrim.esm",
+    "0x00055117:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -4,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x00055117:Skyrim.esm",
+    "0x00055117:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x00055117:Skyrim.esm",
+    "0x00055118:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    3,
+    4,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x00055117:Skyrim.esm",
+    "0x00055118:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    3,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x00055117:Skyrim.esm",
+    "0x00055119:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    3,
+    4,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x00055117:Skyrim.esm",
+    "0x00055119:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -1,
+    0,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x00055117:Skyrim.esm",
+    "0x00055119:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -1,
+    8,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x00055117:Skyrim.esm",
+    "0x0005511A:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    -1,
+    -4,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x00055117:Skyrim.esm",
+    "0x00055123:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    -2,
+    -1,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x00055117:Skyrim.esm",
+    "0x00055123:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    4,
+    5,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x00055117:Skyrim.esm",
+    "0x00055C0E:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x00055117:Skyrim.esm",
+    "0x00055C0E:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    2,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x00055118:Skyrim.esm",
+    "0x00055117:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    3,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x00055118:Skyrim.esm",
+    "0x00055117:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -4,
+    3,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x00055118:Skyrim.esm",
+    "0x00055118:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x00055118:Skyrim.esm",
+    "0x00055118:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x00055118:Skyrim.esm",
+    "0x00055118:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x00055118:Skyrim.esm",
+    "0x00055119:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    -4,
+    0,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x00055118:Skyrim.esm",
+    "0x00055119:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x00055118:Skyrim.esm",
+    "0x00055C0E:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    0,
+    1,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x00055118:Skyrim.esm",
+    "0x00055C0E:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    3,
+    0,
+    0
+   ],
+   "count": 8
+  },
+  {
+   "pieces": [
+    "0x00055118:Skyrim.esm",
+    "0x0007BDF6:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    1,
+    -4,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x00055118:Skyrim.esm",
+    "0x0007BDF6:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    0,
+    1,
+    2
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x00055119:Skyrim.esm",
+    "0x00055117:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    0,
+    1,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x00055119:Skyrim.esm",
+    "0x00055117:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    8,
+    1,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x00055119:Skyrim.esm",
+    "0x00055117:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -4,
+    3,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x00055119:Skyrim.esm",
+    "0x00055118:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    4,
+    0,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x00055119:Skyrim.esm",
+    "0x00055118:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x00055119:Skyrim.esm",
+    "0x00055119:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    -4,
+    0,
+    0
+   ],
+   "count": 8
+  },
+  {
+   "pieces": [
+    "0x00055119:Skyrim.esm",
+    "0x00055119:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    4,
+    0,
+    0
+   ],
+   "count": 8
+  },
+  {
+   "pieces": [
+    "0x00055119:Skyrim.esm",
+    "0x00055119:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    4,
+    -4,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x00055119:Skyrim.esm",
+    "0x00055119:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    4,
+    0,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x00055119:Skyrim.esm",
+    "0x00055119:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    4,
+    4,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x00055119:Skyrim.esm",
+    "0x00055123:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    -1,
+    -1,
+    0
+   ],
+   "count": 10
+  },
+  {
+   "pieces": [
+    "0x00055119:Skyrim.esm",
+    "0x00055123:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    5,
+    -1,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x00055119:Skyrim.esm",
+    "0x00055123:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -1,
+    5,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x00055119:Skyrim.esm",
+    "0x00055C0C:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    0,
+    1,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x00055119:Skyrim.esm",
+    "0x00055C0C:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    3,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x00055119:Skyrim.esm",
+    "0x00055C0E:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    3,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x00055119:Skyrim.esm",
+    "0x00055C0E:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    4,
+    3,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0005511A:Skyrim.esm",
+    "0x00055117:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    1,
+    4,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0005511A:Skyrim.esm",
+    "0x00055123:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    -1,
+    -1,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x0005511A:Skyrim.esm",
+    "0x00055123:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    5,
+    -1,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x0005511A:Skyrim.esm",
+    "0x00055123:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    5,
+    5,
+    0
+   ],
+   "count": 5
+  },
+  {
+   "pieces": [
+    "0x0005511A:Skyrim.esm",
+    "0x00055123:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -1,
+    5,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x0005511A:Skyrim.esm",
+    "0x00055C0C:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    1,
+    4,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0005511A:Skyrim.esm",
+    "0x00055C0C:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    0,
+    1,
+    0
+   ],
+   "count": 5
+  },
+  {
+   "pieces": [
+    "0x0005511A:Skyrim.esm",
+    "0x00055C0C:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    4,
+    3,
+    0
+   ],
+   "count": 7
+  },
+  {
+   "pieces": [
+    "0x0005511A:Skyrim.esm",
+    "0x00055C0E:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    1,
+    4,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0005511A:Skyrim.esm",
+    "0x00055C0E:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    3,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x00055123:Skyrim.esm",
+    "0x00055117:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    2,
+    1,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x00055123:Skyrim.esm",
+    "0x00055117:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    4,
+    5,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x00055123:Skyrim.esm",
+    "0x00055119:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    1,
+    1,
+    0
+   ],
+   "count": 10
+  },
+  {
+   "pieces": [
+    "0x00055123:Skyrim.esm",
+    "0x00055119:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    5,
+    1,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x00055123:Skyrim.esm",
+    "0x00055119:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    1,
+    5,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x00055123:Skyrim.esm",
+    "0x0005511A:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    1,
+    1,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x00055123:Skyrim.esm",
+    "0x0005511A:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    5,
+    1,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x00055123:Skyrim.esm",
+    "0x0005511A:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    5,
+    5,
+    0
+   ],
+   "count": 5
+  },
+  {
+   "pieces": [
+    "0x00055123:Skyrim.esm",
+    "0x0005511A:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    1,
+    5,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x00055123:Skyrim.esm",
+    "0x00055123:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    2,
+    0
+   ],
+   "count": 10
+  },
+  {
+   "pieces": [
+    "0x00055123:Skyrim.esm",
+    "0x00055C0C:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    2,
+    1,
+    0.5
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x00055123:Skyrim.esm",
+    "0x00055C0D:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    2,
+    1,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x00055123:Skyrim.esm",
+    "0x00055C0E:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    2,
+    1,
+    0
+   ],
+   "count": 5
+  },
+  {
+   "pieces": [
+    "0x00055123:Skyrim.esm",
+    "0x00061518:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    1,
+    1,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x00055C0C:Skyrim.esm",
+    "0x00055119:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    3,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x00055C0C:Skyrim.esm",
+    "0x00055119:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -1,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x00055C0C:Skyrim.esm",
+    "0x0005511A:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    -1,
+    -4,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x00055C0C:Skyrim.esm",
+    "0x0005511A:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    3,
+    -4,
+    0
+   ],
+   "count": 7
+  },
+  {
+   "pieces": [
+    "0x00055C0C:Skyrim.esm",
+    "0x0005511A:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -1,
+    0,
+    0
+   ],
+   "count": 5
+  },
+  {
+   "pieces": [
+    "0x00055C0C:Skyrim.esm",
+    "0x00055123:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    -2,
+    -1,
+    -0.5
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x00055C0C:Skyrim.esm",
+    "0x00061518:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    -1,
+    -4,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x00055C0C:Skyrim.esm",
+    "0x00061518:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    3,
+    -4,
+    0
+   ],
+   "count": 5
+  },
+  {
+   "pieces": [
+    "0x00055C0C:Skyrim.esm",
+    "0x00061518:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    3,
+    0,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x00055C0C:Skyrim.esm",
+    "0x00061518:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -1,
+    0,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x00055C0C:Skyrim.esm",
+    "0x00061519:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    -1,
+    -4,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x00055C0C:Skyrim.esm",
+    "0x00061519:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    3,
+    -4,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x00055C0C:Skyrim.esm",
+    "0x00061519:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    3,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x00055C0C:Skyrim.esm",
+    "0x00061519:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -1,
+    0,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x00055C0D:Skyrim.esm",
+    "0x00055123:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    -2,
+    -1,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x00055C0E:Skyrim.esm",
+    "0x00055117:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -4,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x00055C0E:Skyrim.esm",
+    "0x00055117:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    2,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x00055C0E:Skyrim.esm",
+    "0x00055118:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    3,
+    0,
+    0
+   ],
+   "count": 8
+  },
+  {
+   "pieces": [
+    "0x00055C0E:Skyrim.esm",
+    "0x00055118:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -1,
+    0,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x00055C0E:Skyrim.esm",
+    "0x00055119:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    3,
+    -4,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x00055C0E:Skyrim.esm",
+    "0x00055119:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    3,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x00055C0E:Skyrim.esm",
+    "0x0005511A:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    -1,
+    -4,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x00055C0E:Skyrim.esm",
+    "0x0005511A:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    3,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x00055C0E:Skyrim.esm",
+    "0x00055123:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    -2,
+    -1,
+    0
+   ],
+   "count": 5
+  },
+  {
+   "pieces": [
+    "0x00055C0E:Skyrim.esm",
+    "0x00055C0E:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    2,
+    0,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x00055C0E:Skyrim.esm",
+    "0x00061518:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    3,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x00055C0E:Skyrim.esm",
+    "0x00061519:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    -1,
+    -4,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x00055C0E:Skyrim.esm",
+    "0x0007BDF6:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -4,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x00055C0E:Skyrim.esm",
+    "0x0007BDF6:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    2,
+    0,
+    2
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x0005618E:Skyrim.esm",
+    "0x0004E2C4:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0005618E:Skyrim.esm",
+    "0x0004E870:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0005618E:Skyrim.esm",
+    "0x0004E871:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0005618E:Skyrim.esm",
+    "0x0004E872:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    6,
+    -6,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0005618E:Skyrim.esm",
+    "0x0004E872:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0005618E:Skyrim.esm",
+    "0x0004F82F:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    0,
+    2
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0005618E:Skyrim.esm",
+    "0x00051566:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    6,
+    -6,
+    0
+   ],
+   "count": 15
+  },
+  {
+   "pieces": [
+    "0x0005618E:Skyrim.esm",
+    "0x000518CC:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    6,
+    0,
+    0
+   ],
+   "count": 14
+  },
+  {
+   "pieces": [
+    "0x0005618E:Skyrim.esm",
+    "0x000518CD:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    6,
+    -6,
+    0
+   ],
+   "count": 10
+  },
+  {
+   "pieces": [
+    "0x000581B9:Skyrim.esm",
+    "0x0004406B:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    0,
+    2,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x000581B9:Skyrim.esm",
+    "0x000581B9:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x000581B9:Skyrim.esm",
+    "0x000581B9:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x000581B9:Skyrim.esm",
+    "0x000581BA:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x000581B9:Skyrim.esm",
+    "0x000581BA:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 5
+  },
+  {
+   "pieces": [
+    "0x000581B9:Skyrim.esm",
+    "0x000581BB:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -4,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x000581B9:Skyrim.esm",
+    "0x000581BB:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x000581B9:Skyrim.esm",
+    "0x000581BC:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    -4,
+    0,
+    0
+   ],
+   "count": 5
+  },
+  {
+   "pieces": [
+    "0x000581B9:Skyrim.esm",
+    "0x000581BC:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -4,
+    0
+   ],
+   "count": 5
+  },
+  {
+   "pieces": [
+    "0x000581B9:Skyrim.esm",
+    "0x000581BE:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -4,
+    0
+   ],
+   "count": 12
+  },
+  {
+   "pieces": [
+    "0x000581B9:Skyrim.esm",
+    "0x000581BE:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 9
+  },
+  {
+   "pieces": [
+    "0x000581B9:Skyrim.esm",
+    "0x000581BF:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -4,
+    0
+   ],
+   "count": 10
+  },
+  {
+   "pieces": [
+    "0x000581B9:Skyrim.esm",
+    "0x000581BF:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 9
+  },
+  {
+   "pieces": [
+    "0x000581B9:Skyrim.esm",
+    "0x0005F6E8:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -4,
+    0
+   ],
+   "count": 8
+  },
+  {
+   "pieces": [
+    "0x000581B9:Skyrim.esm",
+    "0x0005F6E8:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 9
+  },
+  {
+   "pieces": [
+    "0x000581BA:Skyrim.esm",
+    "0x000581B9:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 5
+  },
+  {
+   "pieces": [
+    "0x000581BA:Skyrim.esm",
+    "0x000581B9:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x000581BA:Skyrim.esm",
+    "0x000581BC:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    -4,
+    0,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x000581BA:Skyrim.esm",
+    "0x000581BE:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -4,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x000581BA:Skyrim.esm",
+    "0x000581BF:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x000581BB:Skyrim.esm",
+    "0x000581B9:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x000581BB:Skyrim.esm",
+    "0x000581B9:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x000581BB:Skyrim.esm",
+    "0x000581BC:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -4,
+    4,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x000581BB:Skyrim.esm",
+    "0x000581BC:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    8,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x000581BB:Skyrim.esm",
+    "0x000581BE:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x000581BB:Skyrim.esm",
+    "0x000581BE:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -4,
+    4,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x000581BB:Skyrim.esm",
+    "0x000581BF:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -4,
+    4,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x000581BC:Skyrim.esm",
+    "0x0004406B:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    2,
+    4,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x000581BC:Skyrim.esm",
+    "0x0004406C:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    4,
+    4,
+    0
+   ],
+   "count": 5
+  },
+  {
+   "pieces": [
+    "0x000581BC:Skyrim.esm",
+    "0x0004406E:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 7
+  },
+  {
+   "pieces": [
+    "0x000581BC:Skyrim.esm",
+    "0x000581B9:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 5
+  },
+  {
+   "pieces": [
+    "0x000581BC:Skyrim.esm",
+    "0x000581B9:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    4,
+    0,
+    0
+   ],
+   "count": 5
+  },
+  {
+   "pieces": [
+    "0x000581BC:Skyrim.esm",
+    "0x000581BA:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    4,
+    0,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x000581BC:Skyrim.esm",
+    "0x000581BB:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    4,
+    4,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x000581BC:Skyrim.esm",
+    "0x000581BB:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    8,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x000581BC:Skyrim.esm",
+    "0x000581BC:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x000581BC:Skyrim.esm",
+    "0x000581BC:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    8,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x000581BC:Skyrim.esm",
+    "0x000581BC:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x000581BC:Skyrim.esm",
+    "0x000581BC:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    4,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x000581BC:Skyrim.esm",
+    "0x000581BC:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x000581BC:Skyrim.esm",
+    "0x000581BC:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    8,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x000581BC:Skyrim.esm",
+    "0x000581BD:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    -4,
+    0,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x000581BC:Skyrim.esm",
+    "0x000581BD:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x000581BC:Skyrim.esm",
+    "0x000581BD:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    4,
+    -4,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x000581BC:Skyrim.esm",
+    "0x000581BD:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    4,
+    0,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x000581BC:Skyrim.esm",
+    "0x000581BD:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -4,
+    4,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x000581BC:Skyrim.esm",
+    "0x000581BD:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x000581BC:Skyrim.esm",
+    "0x000581BE:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x000581BC:Skyrim.esm",
+    "0x000581BE:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    8,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x000581BC:Skyrim.esm",
+    "0x000581BE:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x000581BC:Skyrim.esm",
+    "0x000581BE:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x000581BC:Skyrim.esm",
+    "0x000581BF:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x000581BC:Skyrim.esm",
+    "0x0005F6E8:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x000581BC:Skyrim.esm",
+    "0x0005F6E8:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    8,
+    0,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x000581BC:Skyrim.esm",
+    "0x0005F6E8:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x000581BC:Skyrim.esm",
+    "0x0005F6E8:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x000581BC:Skyrim.esm",
+    "0x0005F6E9:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x000581BC:Skyrim.esm",
+    "0x000E41B9:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    2,
+    4,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x000581BD:Skyrim.esm",
+    "0x0004406D:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    4,
+    0,
+    0
+   ],
+   "count": 7
+  },
+  {
+   "pieces": [
+    "0x000581BD:Skyrim.esm",
+    "0x0004406D:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    4,
+    4,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x000581BD:Skyrim.esm",
+    "0x0004406D:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x000581BD:Skyrim.esm",
+    "0x0004406D:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 9
+  },
+  {
+   "pieces": [
+    "0x000581BD:Skyrim.esm",
+    "0x0004406F:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    4,
+    0,
+    0
+   ],
+   "count": 5
+  },
+  {
+   "pieces": [
+    "0x000581BD:Skyrim.esm",
+    "0x0004406F:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    4,
+    4,
+    0
+   ],
+   "count": 5
+  },
+  {
+   "pieces": [
+    "0x000581BD:Skyrim.esm",
+    "0x0004406F:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x000581BD:Skyrim.esm",
+    "0x0004406F:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x000581BD:Skyrim.esm",
+    "0x000581BC:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    4,
+    0,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x000581BD:Skyrim.esm",
+    "0x000581BC:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x000581BD:Skyrim.esm",
+    "0x000581BC:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    4,
+    4,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x000581BD:Skyrim.esm",
+    "0x000581BC:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    4,
+    0,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x000581BD:Skyrim.esm",
+    "0x000581BC:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x000581BD:Skyrim.esm",
+    "0x000581BC:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    4,
+    4,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x000581BD:Skyrim.esm",
+    "0x000581BD:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    -4,
+    0,
+    0
+   ],
+   "count": 13
+  },
+  {
+   "pieces": [
+    "0x000581BD:Skyrim.esm",
+    "0x000581BD:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -4,
+    0
+   ],
+   "count": 15
+  },
+  {
+   "pieces": [
+    "0x000581BD:Skyrim.esm",
+    "0x000581BD:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 15
+  },
+  {
+   "pieces": [
+    "0x000581BD:Skyrim.esm",
+    "0x000581BD:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    4,
+    0,
+    0
+   ],
+   "count": 13
+  },
+  {
+   "pieces": [
+    "0x000581BD:Skyrim.esm",
+    "0x000581BE:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    4,
+    0,
+    0
+   ],
+   "count": 5
+  },
+  {
+   "pieces": [
+    "0x000581BD:Skyrim.esm",
+    "0x000581BE:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    4,
+    4,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x000581BD:Skyrim.esm",
+    "0x000581BE:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x000581BD:Skyrim.esm",
+    "0x000581BE:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x000581BD:Skyrim.esm",
+    "0x000581BF:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    4,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x000581BD:Skyrim.esm",
+    "0x000581BF:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    4,
+    4,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x000581BD:Skyrim.esm",
+    "0x000581BF:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x000581BD:Skyrim.esm",
+    "0x000581BF:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x000581BD:Skyrim.esm",
+    "0x0005F6E8:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    4,
+    0,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x000581BD:Skyrim.esm",
+    "0x0005F6E8:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    4,
+    4,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x000581BD:Skyrim.esm",
+    "0x0005F6E8:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 5
+  },
+  {
+   "pieces": [
+    "0x000581BD:Skyrim.esm",
+    "0x0005F6E8:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x000581BD:Skyrim.esm",
+    "0x0005F6E9:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    4,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x000581BD:Skyrim.esm",
+    "0x0005F6E9:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    4,
+    4,
+    0
+   ],
+   "count": 5
+  },
+  {
+   "pieces": [
+    "0x000581BD:Skyrim.esm",
+    "0x0005F6E9:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x000581BE:Skyrim.esm",
+    "0x0004406C:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    4,
+    0,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x000581BE:Skyrim.esm",
+    "0x0004406D:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x000581BE:Skyrim.esm",
+    "0x0004406E:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x000581BE:Skyrim.esm",
+    "0x000581B9:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 12
+  },
+  {
+   "pieces": [
+    "0x000581BE:Skyrim.esm",
+    "0x000581B9:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 9
+  },
+  {
+   "pieces": [
+    "0x000581BE:Skyrim.esm",
+    "0x000581BA:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x000581BE:Skyrim.esm",
+    "0x000581BB:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -4,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x000581BE:Skyrim.esm",
+    "0x000581BB:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    4,
+    4,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x000581BE:Skyrim.esm",
+    "0x000581BC:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -4,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x000581BE:Skyrim.esm",
+    "0x000581BC:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x000581BE:Skyrim.esm",
+    "0x000581BC:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x000581BE:Skyrim.esm",
+    "0x000581BC:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    8,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x000581BE:Skyrim.esm",
+    "0x000581BD:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    -4,
+    0,
+    0
+   ],
+   "count": 5
+  },
+  {
+   "pieces": [
+    "0x000581BE:Skyrim.esm",
+    "0x000581BD:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x000581BE:Skyrim.esm",
+    "0x000581BD:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x000581BE:Skyrim.esm",
+    "0x000581BD:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -4,
+    4,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x000581BE:Skyrim.esm",
+    "0x000581BE:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -4,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x000581BE:Skyrim.esm",
+    "0x000581BE:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x000581BE:Skyrim.esm",
+    "0x000581BE:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x000581BE:Skyrim.esm",
+    "0x000581BF:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x000581BF:Skyrim.esm",
+    "0x0004406B:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    2,
+    4,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x000581BF:Skyrim.esm",
+    "0x0004406B:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    2,
+    0,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x000581BF:Skyrim.esm",
+    "0x0004406C:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    4,
+    0,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x000581BF:Skyrim.esm",
+    "0x0004406D:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x000581BF:Skyrim.esm",
+    "0x0004406E:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 5
+  },
+  {
+   "pieces": [
+    "0x000581BF:Skyrim.esm",
+    "0x000581B9:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 10
+  },
+  {
+   "pieces": [
+    "0x000581BF:Skyrim.esm",
+    "0x000581B9:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 9
+  },
+  {
+   "pieces": [
+    "0x000581BF:Skyrim.esm",
+    "0x000581BA:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x000581BF:Skyrim.esm",
+    "0x000581BB:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    4,
+    4,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x000581BF:Skyrim.esm",
+    "0x000581BC:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -4,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x000581BF:Skyrim.esm",
+    "0x000581BD:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    -4,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x000581BF:Skyrim.esm",
+    "0x000581BD:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x000581BF:Skyrim.esm",
+    "0x000581BD:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x000581BF:Skyrim.esm",
+    "0x000581BD:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -4,
+    4,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x000581BF:Skyrim.esm",
+    "0x000581BE:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x000581BF:Skyrim.esm",
+    "0x000581BF:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x000581BF:Skyrim.esm",
+    "0x000E41B9:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    2,
+    4,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x000581BF:Skyrim.esm",
+    "0x000E41B9:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -2,
+    0,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0005F6E8:Skyrim.esm",
+    "0x0004406B:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    2,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0005F6E8:Skyrim.esm",
+    "0x0004406C:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    4,
+    0,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0005F6E8:Skyrim.esm",
+    "0x000581B9:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 8
+  },
+  {
+   "pieces": [
+    "0x0005F6E8:Skyrim.esm",
+    "0x000581B9:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 9
+  },
+  {
+   "pieces": [
+    "0x0005F6E8:Skyrim.esm",
+    "0x000581BC:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -4,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0005F6E8:Skyrim.esm",
+    "0x000581BC:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0005F6E8:Skyrim.esm",
+    "0x000581BC:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x0005F6E8:Skyrim.esm",
+    "0x000581BC:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    8,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x0005F6E8:Skyrim.esm",
+    "0x000581BD:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    -4,
+    0,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x0005F6E8:Skyrim.esm",
+    "0x000581BD:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0005F6E8:Skyrim.esm",
+    "0x000581BD:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 5
+  },
+  {
+   "pieces": [
+    "0x0005F6E8:Skyrim.esm",
+    "0x000581BD:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -4,
+    4,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x0005F6E8:Skyrim.esm",
+    "0x0005F6E8:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -4,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0005F6E8:Skyrim.esm",
+    "0x0005F6E8:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0005F6E9:Skyrim.esm",
+    "0x0004406B:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 15
+  },
+  {
+   "pieces": [
+    "0x0005F6E9:Skyrim.esm",
+    "0x0004406B:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 16
+  },
+  {
+   "pieces": [
+    "0x0005F6E9:Skyrim.esm",
+    "0x0004406C:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    8,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x0005F6E9:Skyrim.esm",
+    "0x0004406D:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x0005F6E9:Skyrim.esm",
+    "0x0004406E:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0005F6E9:Skyrim.esm",
+    "0x000581BC:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0005F6E9:Skyrim.esm",
+    "0x000581BD:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    -4,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0005F6E9:Skyrim.esm",
+    "0x000581BD:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0005F6E9:Skyrim.esm",
+    "0x000581BD:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -2,
+    4,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0005F6E9:Skyrim.esm",
+    "0x000581BD:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -4,
+    4,
+    0
+   ],
+   "count": 5
+  },
+  {
+   "pieces": [
+    "0x0005F6E9:Skyrim.esm",
+    "0x0005F6E9:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -4,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x0005F6E9:Skyrim.esm",
+    "0x0005F6E9:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x00061518:Skyrim.esm",
+    "0x00055123:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    -1,
+    -1,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x00061518:Skyrim.esm",
+    "0x00055C0C:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    1,
+    4,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x00061518:Skyrim.esm",
+    "0x00055C0C:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    0,
+    1,
+    0
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x00061518:Skyrim.esm",
+    "0x00055C0C:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    3,
+    0,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x00061518:Skyrim.esm",
+    "0x00055C0C:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    4,
+    3,
+    0
+   ],
+   "count": 5
+  },
+  {
+   "pieces": [
+    "0x00061518:Skyrim.esm",
+    "0x00055C0E:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    3,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x00061519:Skyrim.esm",
+    "0x00055C0C:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    1,
+    4,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x00061519:Skyrim.esm",
+    "0x00055C0C:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    0,
+    1,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x00061519:Skyrim.esm",
+    "0x00055C0C:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    3,
+    0,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x00061519:Skyrim.esm",
+    "0x00055C0C:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    4,
+    3,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x00061519:Skyrim.esm",
+    "0x00055C0E:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    1,
+    4,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x0007BDF6:Skyrim.esm",
+    "0x00055118:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    -1,
+    4,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0007BDF6:Skyrim.esm",
+    "0x00055118:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -1,
+    0,
+    -2
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x0007BDF6:Skyrim.esm",
+    "0x00055C0E:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0007BDF6:Skyrim.esm",
+    "0x00055C0E:Skyrim.esm"
+   ],
+   "rotation": 2,
+   "offset": [
+    2,
+    0,
+    -2
+   ],
+   "count": 4
+  },
+  {
+   "pieces": [
+    "0x0007BDF6:Skyrim.esm",
+    "0x0007BDF6:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    -4,
+    -2
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x0007BDF6:Skyrim.esm",
+    "0x0007BDF6:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    4,
+    2
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x000E41B9:Skyrim.esm",
+    "0x0004406B:Skyrim.esm"
+   ],
+   "rotation": 0,
+   "offset": [
+    0,
+    4,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x000E41B9:Skyrim.esm",
+    "0x0004406B:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    0,
+    0,
+    0
+   ],
+   "count": 6
+  },
+  {
+   "pieces": [
+    "0x000E41B9:Skyrim.esm",
+    "0x000581BC:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -4,
+    2,
+    0
+   ],
+   "count": 2
+  },
+  {
+   "pieces": [
+    "0x000E41B9:Skyrim.esm",
+    "0x000581BF:Skyrim.esm"
+   ],
+   "rotation": 1,
+   "offset": [
+    0,
+    2,
+    0
+   ],
+   "count": 3
+  },
+  {
+   "pieces": [
+    "0x000E41B9:Skyrim.esm",
+    "0x000581BF:Skyrim.esm"
+   ],
+   "rotation": 3,
+   "offset": [
+    -4,
+    2,
+    0
+   ],
+   "count": 3
+  }
+ ]
+}

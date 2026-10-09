@@ -63,6 +63,34 @@ export function setPiece(
   return { ...a, pieces };
 }
 
+/**
+ * Validate a kit's pieces from what the game builds (V5 step 3): a piece the game places at
+ * least `min` times (`used`, from the Vanilla check) is validated, any other is excluded with
+ * the reason. Why: a designer new to a kit cannot judge each piece; what the game uses is right,
+ * and a piece it never uses (a set piece, an outside piece) would only clutter the palette.
+ * The other annotations (merges, composites, overlaps, walkable reviews) are kept.
+ */
+export function validateUsed(
+  a: Annotations,
+  editorIds: readonly string[],
+  used: Readonly<Record<string, number>>,
+  min: number,
+  master: string,
+): Annotations {
+  let out = a;
+  for (const id of editorIds) {
+    const n = used[id] ?? 0;
+    out =
+      n >= min
+        ? setPiece(out, id, { validated: true, exclude: undefined })
+        : setPiece(out, id, {
+            validated: undefined,
+            exclude: `not used by the game (${n} in ${master}'s CELLs)`,
+          });
+  }
+  return out;
+}
+
 const sameOverlap = (x: OverlapAnnotation, y: OverlapAnnotation) =>
   x.pieces[0] === y.pieces[0] &&
   x.pieces[1] === y.pieces[1] &&

@@ -43,6 +43,12 @@ export interface VanillaReport {
   pairs: { pair: string; seams: number; mismatches: number }[];
   /** The pairs of pieces meeting at an opening in the main sections, with their counts. */
   seen: VanillaPair[];
+  /**
+   * How many times the game places each piece (by EditorID) in the CELLs read, at its own size
+   * (V5 step 3): the pieces it scales (Markarth's interiors build with the Dwemer kit at 0.75)
+   * are not counted, nor are the CELLs with too few kit pieces.
+   */
+  used: Record<string, number>;
 }
 
 /** A section holds at least this many pieces; fewer are left as off the grid. */
@@ -71,6 +77,7 @@ export async function checkVanillaCells(
   const pairs = new Map<string, { seams: number; mismatches: number }>();
   const seen = new Map<string, VanillaPair>();
   const cells: VanillaCell[] = [];
+  const used: Record<string, number> = {};
   const all = await store.listCells();
   for (const [n, cell] of all.entries()) {
     options.onProgress?.(n, all.length, cell.editorId);
@@ -79,6 +86,11 @@ export async function checkVanillaCells(
       .filter((r) => pieces.has(r.base))
       .map((r) => ({ refFormKey: r.key, base: r.base, pos: r.pos, rot: r.rot, scale: r.scale }));
     if (placed.length < (options.minTiles ?? 15)) continue;
+    for (const r of placed) {
+      if (Math.abs(r.scale - 1) > 0.001) continue;
+      const id = pieces.get(r.base)!.editorId;
+      used[id] = (used[id] ?? 0) + 1;
+    }
 
     // sections: the grid derived again on the pieces the previous sections left off it
     const sections: VanillaSection[] = [];
@@ -179,6 +191,7 @@ export async function checkVanillaCells(
   options.onProgress?.(all.length, all.length, '');
   return {
     cells,
+    used,
     seen: [...seen.values()],
     pairs: [...pairs]
       .map(([pair, e]) => ({ pair, ...e }))

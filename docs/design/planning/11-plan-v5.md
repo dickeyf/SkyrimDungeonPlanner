@@ -124,6 +124,21 @@ module, pivots, faces and collision are measured before anything is built on the
   Vanilla check (`data/vanilla/dwemer.json`).
 - **Done when**: the editor offers the Dwemer pieces, and the junctions the game builds are not
   flagged.
+- **Changed (8 Oct 2026, the user's request)**: no review piece by piece; **the pieces the game
+  uses are the ones validated**. The Vanilla check now counts how many times the game places
+  each piece at its own size (`VanillaReport.used`; the scaled pieces, Markarth's interiors
+  built with the kit at 0.75, are not counted), and `validateUsed` validates the pieces placed
+  at least twice (`MIN_VANILLA_COUNT`, as for the game's pairs) and excludes the others with the
+  reason; the other annotations are kept. A dev button on the Vanilla check page writes the
+  kit's file ("Validate the pieces the game uses"). Why: a designer new to a kit cannot judge each
+  piece, what the game builds is right (V4 step 9b), and a piece the game never uses (a set or
+  outside piece, a snow variant) would only clutter the palette. Set aside: validating every
+  piece with openings (the palette would offer pieces never seen in a ruin).
+- **Result (8 Oct 2026)**: **63 of the 82 Dwemer pieces validated**, the 19 others excluded: the
+  snow and ice variants (the interiors never use them), `DweRmLgWallMidWall02` and `03`, the
+  towers 3x3 to 5x3, `DweFacadeTowerArchXtnd128`, and three pieces placed once. **635 game
+  pairs** (`data/vanilla/dwemer.json`). The kit is in `KITS`: the editor offers it. The walkable
+  floors are not reviewed one by one either: they are checked by building (step 4).
 
 ### Step 4 – A Dwemer test dungeon
 - **Why**: as for the Nordic kit (V4 step 10), building is where the analysis is really tested:

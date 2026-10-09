@@ -5,7 +5,8 @@
    */
   import SessionNotice from '../components/SessionNotice.svelte';
   import KitPicker from '../components/KitPicker.svelte';
-  import { applyAnnotations } from '$lib/catalogue/annotations';
+  import { applyAnnotations, serializeAnnotations } from '$lib/catalogue/annotations';
+  import { validateUsed } from '$lib/catalogue/annotationEdits';
   import type { JointGeometry } from '$lib/grid/assist';
   import {
     HANDLE_KEYS,
@@ -36,19 +37,60 @@
   let usePairs = $state(true);
   let saveMessage = $state('');
 
+  /** The project checkout to write into (dev only), asked once and remembered. */
+  async function projectFolder(): Promise<FileSystemDirectoryHandle | null> {
+    let project = await loadHandle<FileSystemDirectoryHandle>(HANDLE_KEYS.projectFolder);
+    if (!project || !(await ensureAccess(project, 'readwrite')))
+      project = await pickDirectory('project-folder', 'readwrite');
+    if (!(await isProjectFolder(project))) {
+      saveMessage = `"${project.name}" is not a checkout of this project (package.json).`;
+      return null;
+    }
+    await saveHandle(HANDLE_KEYS.projectFolder, project);
+    return project;
+  }
+
+  /**
+   * Validate the kit's pieces the game uses (at least MIN_VANILLA_COUNT times) and exclude the
+   * others, in the kit's annotation file (V5 step 3): no review piece by piece.
+   */
+  async function validateFromGame(): Promise<void> {
+    if (!report) return;
+    saveMessage = '';
+    try {
+      const project = await projectFolder();
+      if (!project) return;
+      const kit = store.kit;
+      const analysis = store.analysisOf(kit);
+      if (!analysis) throw new Error('no analysis');
+      const ids = analysis.catalogue.pieces.map((p) => p.editorId);
+      const next = validateUsed(
+        annotationStore.currentOf(kit.kit),
+        ids,
+        report.used,
+        MIN_VANILLA_COUNT,
+        master,
+      );
+      const path = await writeProjectFile(
+        project,
+        'data/annotations',
+        `${kit.kit.toLowerCase()}.json`,
+        serializeAnnotations(next),
+      );
+      const valid = ids.filter((id) => next.pieces[id]?.validated).length;
+      saveMessage = `${valid} of ${ids.length} pieces validated (used by the game), the others excluded, in ${path}: review and commit it with git (reload the page to use it).`;
+    } catch (e) {
+      saveMessage = `Not saved: ${(e as Error).message}`;
+    }
+  }
+
   /** Write the pairs the game uses (at least MIN_VANILLA_COUNT times) into the repository. */
   async function savePairs(): Promise<void> {
     if (!report) return;
     saveMessage = '';
     try {
-      let project = await loadHandle<FileSystemDirectoryHandle>(HANDLE_KEYS.projectFolder);
-      if (!project || !(await ensureAccess(project, 'readwrite')))
-        project = await pickDirectory('project-folder', 'readwrite');
-      if (!(await isProjectFolder(project))) {
-        saveMessage = `"${project.name}" is not a checkout of this project (package.json).`;
-        return;
-      }
-      await saveHandle(HANDLE_KEYS.projectFolder, project);
+      const project = await projectFolder();
+      if (!project) return;
       const pairs = report.seen.filter((p) => p.count >= MIN_VANILLA_COUNT);
       const path = await writeProjectFile(
         project,
@@ -217,7 +259,8 @@
       ).length} of them at least {MIN_VANILLA_COUNT} times.
       {#if import.meta.env.DEV}<button onclick={savePairs}
           >Save the game's pairs to the repository</button
-        >{/if}
+        >
+        <button onclick={validateFromGame}>Validate the pieces the game uses</button>{/if}
       {#if saveMessage}<span class="hint">{saveMessage}</span>{/if}
     </p>
 
