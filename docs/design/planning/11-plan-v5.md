@@ -230,8 +230,13 @@ together, and never edited.
   objects stay read-only (D22). Risk R23. A door's teleport: when a door moves, the other door's
   destination (its `XTEL`) points at the old place, and is updated or flagged (to be measured).
   The NavMesh under a moved room is marked stale (the existing Replace bakes it again).
+- **Also (found at step 3b, 8 Oct 2026)**: a group dragged onto an open face does not snap in
+  height: several tiles moved together onto `ImpHall1Way64D01`'s lower end stay on their level
+  instead of going down the half level, while the same tiles plugged one by one fit. A group
+  move must snap like a single tile, in Z too (half levels included): the move of a furnished
+  room is the same gesture.
 - **Done when**: the criterion's furnished room moves in the tool with its contents and stays
-  right in the CK and in game.
+  right in the CK and in game, and a group snaps onto an open face in height as a tile does.
 
 ## Phase D – The Nordic families left out
 
