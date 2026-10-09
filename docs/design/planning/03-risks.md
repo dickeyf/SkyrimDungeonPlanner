@@ -263,7 +263,8 @@ halls), `smrooms`, `lgrooms`; 29 % of the game's ruins pieces are turned by othe
 
 ### R22 – Dwemer collision and floors
 Pipes, grates, gears and stairs the walkable rules have never met; each Nordic surprise
-(risers, soffits, arches) was found only by baking. V5 step 2.
+(risers, soffits, arches) was found only by baking. V5 step 2. **Result (8 Oct 2026)**: every collision of the 82 catalogue
+pieces is read with the same Havok chain; the floors' review moves to step 3.
 
 ### R23 – Moving the other objects of a cell
 Objects other than tiles carry links the tool never wrote: a door's teleport destination (the

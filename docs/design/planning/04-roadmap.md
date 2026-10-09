@@ -83,7 +83,7 @@ NPC follows the player through it in game. V2.**
 
 ## Dwemer kit and the other objects – V5, see `11-plan-v5.md`
 - [x] R21 module, pivots and faces (7 Oct 2026)
-- [ ] R22 collision and floors
+- [x] R22 collision and floors (8 Oct 2026: all read; the review at step 3)
 - [ ] Kit definition, annotations, game pairs; a Dwemer test dungeon
 - [ ] The other objects of a cell: categories, show / fade / hide / lock, selected and moved
   with the tiles (D71, D72, R23)

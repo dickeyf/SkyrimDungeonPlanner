@@ -103,6 +103,17 @@ module, pivots, faces and collision are measured before anything is built on the
   is reviewed).
 - **Done when**: every Dwemer tile's floor is reviewed or set aside, and the Imperial and Nordic
   floors are unchanged.
+- **Result (8 Oct 2026)**: R22 is settled for the reading: every collision of the 82 Dwemer
+  catalogue pieces is read (the same Havok chain as the other kits), with no code change, so the
+  Imperial and Nordic floors are untouched. The walkable floors, measured as the share of a
+  level they cover: the small halls 82 to 100 %, the small rooms 62 to 100 %, the big halls 57 to
+  98 % (two of them with two holes), the large rooms 61 to 100 % (the floor 28 below the opening,
+  a sunken centre); to look at in the review: the large halls cover only 42 to 75 % (side
+  channels, or a floor cut too far?), the lifts (`DweFacadeLift...`) are 4 small parts (8 %),
+  and 16 pieces have no floor at all: the towers and their partitions (outside pieces), the free
+  doorway `DweFacadeFreeExBg01` and the large room's top (`DweRmLgMidTop01`, a ceiling with a
+  gallery opening). As for the Nordic kit (V4 step 2), the review itself moves to step 3, where
+  the Validation page shows the kit's floors in plan and in 3D.
 
 ## Phase B – Building with the Dwemer kit
 
