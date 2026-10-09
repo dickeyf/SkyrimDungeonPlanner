@@ -64,10 +64,22 @@ export function setPiece(
 }
 
 /**
+ * The piece a snow or ice variant is made from (`DweFacadeHallSm1way01snow` ->
+ * `DweFacadeHallSm1way01`, `NorRmBgWallFront01_HeavySN` -> `NorRmBgWallFront01`), or the id
+ * itself when it is no such variant.
+ */
+export function variantBase(editorId: string): string {
+  return editorId.replace(/(_?(heavy|light|lt)?(snow|ice|sn)(light|heavy)?)+$/i, '');
+}
+
+/**
  * Validate a kit's pieces from what the game builds (V5 step 3): a piece the game places at
- * least `min` times (`used`, from the Vanilla check) is validated, any other is excluded with
- * the reason. Why: a designer new to a kit cannot judge each piece; what the game uses is right,
- * and a piece it never uses (a set piece, an outside piece) would only clutter the palette.
+ * least `min` times (`used`, from the Vanilla check) is validated, and so is a snow or ice
+ * variant of such a piece (`variantBase`); any other is excluded with the reason. Why: a
+ * designer new to a kit cannot judge each piece; what the game uses is right, and a piece it
+ * never uses (a set piece, an outside piece) would only clutter the palette. The variants are
+ * the same mesh with other textures, which a snowy dungeon needs and which fit as their base
+ * does (the user's choice, 8 Oct 2026: the Nordic kit, validated by hand, kept them).
  * The other annotations (merges, composites, overlaps, walkable reviews) are kept.
  */
 export function validateUsed(
@@ -80,8 +92,9 @@ export function validateUsed(
   let out = a;
   for (const id of editorIds) {
     const n = used[id] ?? 0;
+    const base = variantBase(id);
     out =
-      n >= min
+      n >= min || (base !== id && (used[base] ?? 0) >= min)
         ? setPiece(out, id, { validated: true, exclude: undefined })
         : setPiece(out, id, {
             validated: undefined,

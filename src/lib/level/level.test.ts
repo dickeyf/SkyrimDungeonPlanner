@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Catalogue, Piece } from '../catalogue/types';
-import { buildPlugin, refrRecord } from '../format/esp/testPlugin';
+import { RecordFlags } from '../format/esp/records';
+import { buildPlugin, record, refrRecord } from '../format/esp/testPlugin';
 import { buildNavMesh } from '../navmesh/build';
 import { EspLevelStore } from './espStore';
 import { loadCell, piecesByFormKey } from './loadCell';
@@ -170,6 +171,14 @@ describe('EspLevelStore', () => {
       ['0x00012345:Skyrim.esm', HALL_KEY, false],
     ]);
     await expect(s.readRefs('0x00000001:MyDungeon.esp')).rejects.toThrow('not an interior cell');
+  });
+
+  it('skips a deleted reference, which has no position (Update.esm has some, V5)', async () => {
+    const bytes = buildPlugin({
+      refs: [record('REFR', 0x01000d70, new Uint8Array(0), RecordFlags.deleted)],
+    });
+    const s = EspLevelStore.parse(bytes, 'MyDungeon.esp');
+    expect(await s.readRefs('0x00000D62:MyDungeon.esp')).toEqual([]);
   });
 });
 

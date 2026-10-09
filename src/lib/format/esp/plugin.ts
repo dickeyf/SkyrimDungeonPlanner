@@ -89,6 +89,8 @@ export async function collectCellRefs(cell: CellEntry): Promise<RefEntry[]> {
     if (group.kind !== 'group') continue;
     for (const node of group.children) {
       if (node.kind !== 'record' || node.type !== 'REFR') continue;
+      // a deleted reference (Update.esm deletes some) carries no position: nothing to place
+      if (node.flags & RecordFlags.deleted) continue;
       out.push({ record: node, info: await decodeRefr(node), groupType: group.groupType });
     }
   }

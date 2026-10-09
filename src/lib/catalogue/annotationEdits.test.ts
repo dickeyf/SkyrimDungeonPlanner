@@ -7,6 +7,7 @@ import {
   setOverlap,
   setPiece,
   validateUsed,
+  variantBase,
 } from './annotationEdits';
 import { emptyAnnotations } from './annotations';
 
@@ -59,5 +60,22 @@ describe('annotation edits', () => {
       exclude: "not used by the game (1 in Skyrim.esm's CELLs)",
     });
     expect(a.pieces['C']!.exclude).toContain('0 in');
+  });
+
+  it('validates the snow and ice variants of a piece the game uses (V5)', () => {
+    expect(variantBase('DweFacadeHallSm1way01snow')).toBe('DweFacadeHallSm1way01');
+    expect(variantBase('NorRmBgWallFront01_HeavySN')).toBe('NorRmBgWallFront01');
+    expect(variantBase('NorCatHallBg1wayRamp256LtSnow')).toBe('NorCatHallBg1wayRamp256');
+    expect(variantBase('NorHallSm4way01SnowLight')).toBe('NorHallSm4way01');
+    expect(variantBase('DweRmSmWallHalf01')).toBe('DweRmSmWallHalf01');
+    const a = validateUsed(
+      emptyAnnotations('Dwemer'),
+      ['A01', 'A01Snow', 'B01ice'],
+      { A01: 3 },
+      2,
+      'X',
+    );
+    expect(a.pieces['A01Snow']).toEqual({ validated: true });
+    expect(a.pieces['B01ice']!.exclude).toBeDefined();
   });
 });

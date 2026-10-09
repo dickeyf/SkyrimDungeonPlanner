@@ -139,6 +139,36 @@ module, pivots, faces and collision are measured before anything is built on the
   towers 3x3 to 5x3, `DweFacadeTowerArchXtnd128`, and three pieces placed once. **635 game
   pairs** (`data/vanilla/dwemer.json`). The kit is in `KITS`: the editor offers it. The walkable
   floors are not reviewed one by one either: they are checked by building (step 4).
+- **The DLCs (8 Oct 2026, the user's question)**: the count read Skyrim.esm only. Counted again
+  with Update, Dawnguard, HearthFires and Dragonborn (a deleted REFR in Update.esm, without a
+  position, made the reader fail: deleted references are now skipped): for Dwemer they add 2
+  ruins of Dawnguard (Arkngthamz, Bthalft) and Kagrumez (Dragonborn), and **no piece**; for
+  Imperial 2 pieces, for Nordic 2 (Solstheim's barrows, Dawnguard's crypts). The DLCs also
+  define a few Dwemer pieces of their own (Dawnguard's `..._Mine` road chunks, Dragonborn's
+  snowy halls `DLC2dunFahlbtharz...`), which the catalogue does not read (Skyrim.esm's STATs
+  only): noted in the roadmap.
+- **Snow and ice variants (8 Oct 2026, the user's choice)**: the rule excluded the Dwemer snow
+  and ice variants, which the interiors never use, while the Nordic kit, validated by hand,
+  keeps its own (39 Nordic pieces the game uses less than twice are nearly all such variants).
+  `validateUsed` now also validates a snow or ice variant of a piece the game uses
+  (`variantBase` strips the suffix): the same mesh with other textures, which a snowy dungeon
+  needs and which fits as its base does. **73 of the 82 Dwemer pieces validated**; out stay a
+  Falmer variant, the towers 3x3 to 5x3, the arch extension, the long walls `MidWall02` and `03`
+  and two pieces placed once.
+- **Imperial, compared (8 Oct 2026)**: 105 pieces validated by hand, 107 used by the game; six
+  halls the game uses often (`ImpHall1Way64U01` 26 times, `ImpHall1Way64D01` 24) were excluded
+  by the V1 analysis because they rise 64 or open 32 off the 128 grid: step 3b.
+
+### Step 3b – The Imperial halls that rise 64
+- **Why**: found while counting what the game uses (step 3): `ImpHall1Way64U01`,
+  `ImpHall1Way64D01`, `ImpHall1Way64Short01` and their large variants (six pieces, 73 uses in
+  the game's CELLs) were left out at V1, the 128 grid unable to hold a rise of 64 or an opening
+  32 off the grid. V4's fine grid (16 units, D70) can hold them.
+- **What**: the analysis accepts an opening level or a shift that falls on the kit's fine step
+  (a half level of 64, an offset of 32) instead of rejecting the piece; the six pieces analysed,
+  validated (the game uses them), and offered by the assistant where their openings fit.
+- **Done when**: the six halls are in the catalogue, the Vanilla check reads them in the game's
+  Imperial CELLs without new mismatches, and the user builds a hall that rises 64 in game.
 
 ### Step 4 – A Dwemer test dungeon
 - **Why**: as for the Nordic kit (V4 step 10), building is where the analysis is really tested:

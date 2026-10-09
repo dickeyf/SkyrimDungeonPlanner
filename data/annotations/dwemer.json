@@ -11,19 +11,19 @@
       "exclude": "not used by the game (0 in Skyrim.esm's CELLs)"
     },
     "DweFacadeFreeExBg01Snow": {
-      "exclude": "not used by the game (0 in Skyrim.esm's CELLs)"
+      "validated": true
     },
     "DweFacadeHallSm1way01": {
       "validated": true
     },
     "DweFacadeHallSm1way01snow": {
-      "exclude": "not used by the game (0 in Skyrim.esm's CELLs)"
+      "validated": true
     },
     "DweFacadeHallSm1wayRamp01": {
       "validated": true
     },
     "DweFacadeHallSm1wayRamp01snow": {
-      "exclude": "not used by the game (0 in Skyrim.esm's CELLs)"
+      "validated": true
     },
     "DweFacadeHallSm2way01": {
       "validated": true
@@ -32,22 +32,22 @@
       "validated": true
     },
     "DweFacadeHallSm3way01_Snow": {
-      "exclude": "not used by the game (0 in Skyrim.esm's CELLs)"
+      "validated": true
     },
     "DweFacadeHallSm4way01": {
       "validated": true
     },
     "DweFacadeHallSm4way01Snow": {
-      "exclude": "not used by the game (0 in Skyrim.esm's CELLs)"
+      "validated": true
     },
     "DweFacadeHallSm4way01SnowLight": {
-      "exclude": "not used by the game (0 in Skyrim.esm's CELLs)"
+      "validated": true
     },
     "DweFacadeHallSmAlcove01": {
       "validated": true
     },
     "DweFacadeHallSmAlcove01ice": {
-      "exclude": "not used by the game (0 in Skyrim.esm's CELLs)"
+      "validated": true
     },
     "DweFacadeHallSmEndCap01": {
       "validated": true
@@ -59,7 +59,7 @@
       "validated": true
     },
     "DweFacadeLiftDown01ice": {
-      "exclude": "not used by the game (0 in Skyrim.esm's CELLs)"
+      "validated": true
     },
     "DweFacadeLiftUp01": {
       "validated": true
@@ -68,7 +68,7 @@
       "validated": true
     },
     "DweFacadePartition2x1Snow": {
-      "exclude": "not used by the game (0 in Skyrim.esm's CELLs)"
+      "validated": true
     },
     "DweFacadeTower01": {
       "validated": true
@@ -86,7 +86,7 @@
       "validated": true
     },
     "DweFacadeTower2x3Snow": {
-      "exclude": "not used by the game (0 in Skyrim.esm's CELLs)"
+      "validated": true
     },
     "DweFacadeTower3x3": {
       "exclude": "not used by the game (1 in Skyrim.esm's CELLs)"
