@@ -209,6 +209,11 @@ module, pivots, faces and collision are measured before anything is built on the
   from a window (both light rims); a hand list per piece would not carry to the next kit. Result:
   10 doorways confirmed (every `ExBg` end and wall), the windows and arches dropped; 81 Dwemer
   pieces, 657 game pairs; Imperial and Nordic unchanged.
+  In the user's browser the facade halls still showed their side windows: an analysis made while
+  the threshold was tried had stayed in the browser's cache under the same key, which held the
+  analysis version and the kit's base objects but not the kit's definition. The cache key now
+  holds a fingerprint of the kit's definition (`kitStamp`), so a change to a kit's settings is a
+  new analysis.
 
 ## Phase C – The other objects of a cell (D71, D72)
 

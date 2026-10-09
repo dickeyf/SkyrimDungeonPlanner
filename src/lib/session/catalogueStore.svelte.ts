@@ -14,6 +14,18 @@ import { session } from './session.svelte';
 
 const ANALYSIS_VERSION = 16; // bump when the analysis output changes shape or meaning
 
+/**
+ * A short fingerprint of a kit's definition (module, thresholds, families...), part of the
+ * analysis cache key: a change to a kit's settings is a new analysis without a version bump
+ * (V5: a Dwemer analysis made while its thresholds were tried stayed in a browser's cache).
+ */
+function kitStamp(kit: KitDefinition): string {
+  const text = JSON.stringify(kit);
+  let h = 2166136261;
+  for (let i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 16777619);
+  return (h >>> 0).toString(36);
+}
+
 class CatalogueStore {
   /** The kit the Catalogue and Validation pages show. */
   kit = $state.raw<KitDefinition>(IMPERIAL_KIT);
@@ -45,7 +57,7 @@ class CatalogueStore {
    * a pair is read back, even after a reload. Tied to the analyses, so a new analysis starts empty.
    */
   async profileFits(): Promise<Map<string, ProfileFit>> {
-    const key = `fits:v${ANALYSIS_VERSION}:${KITS.map((k) => this.statsOf(k)?.cacheKey ?? '-').join('+')}`;
+    const key = `fits:v${ANALYSIS_VERSION}:${KITS.map((k) => `${kitStamp(k)}.${this.statsOf(k)?.cacheKey ?? '-'}`).join('+')}`;
     if (this.fits?.key !== key) {
       const stored = await kvGet<[string, ProfileFit][]>(key).catch(() => undefined);
       const map = new Map(stored ?? []);
@@ -97,7 +109,7 @@ class CatalogueStore {
   async analyse(force = false, kit = this.kit): Promise<AnalysisResult | null> {
     const stats = this.statsOf(kit) ?? (await this.loadStats(true, kit));
     if (!stats || !session.view) return null;
-    const key = `analysis:v${ANALYSIS_VERSION}:${stats.cacheKey}`;
+    const key = `analysis:v${ANALYSIS_VERSION}:${kitStamp(kit)}:${stats.cacheKey}`;
     return this.run(async () => {
       if (!force) {
         const cached = await kvGet<AnalysisResult>(key);
