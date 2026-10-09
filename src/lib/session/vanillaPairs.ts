@@ -10,9 +10,16 @@ const files = import.meta.glob<unknown>('../../../data/vanilla/*.json', {
 });
 
 const byKit = new Map<string, VanillaPair[]>();
+const breaks = new Set<string>();
 for (const json of Object.values(files)) {
   const v = parseVanillaPairs(json);
   byKit.set(v.kit, v.pairs);
+  for (const b of v.breaks ?? []) breaks.add(b);
+}
+
+/** The texture break signatures the game shows, every kit (V5 step 3c). */
+export function gameBreaks(): ReadonlySet<string> {
+  return breaks;
 }
 
 /** The pairs of one kit, empty when none are committed. */

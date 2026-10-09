@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { MergedMesh } from '../format/nif/geometry';
 import type { JunctionFrame } from './leaks';
-import { placeTextured, textureBreaks } from './textures';
+import { breakSignature, placeTextured, textureBreaks } from './textures';
 
 /**
  * A wall quad in the plane y = 0, from x0 to x1 and z 0 to 100, its texture coordinates running
@@ -49,5 +49,13 @@ describe('textureBreaks', () => {
   it('reports a different texture file', () => {
     const [b] = breaksOf(wall(-100, 0, 0, 1), wall(0, 100, 1, 2, 'stone.dds'));
     expect(b).toMatchObject({ cause: 'texture', texture: 'wall.dds', other: 'stone.dds' });
+  });
+
+  it('signs a break by its textures or its texture and offset, not by where it is (V5)', () => {
+    const a = { cause: 'texture' as const, texture: 'b.dds', other: 'a.dds', offset: 0 };
+    const b = { cause: 'texture' as const, texture: 'a.dds', other: 'b.dds', offset: 0.3 };
+    expect(breakSignature(a)).toBe('T|a.dds|b.dds');
+    expect(breakSignature(b)).toBe(breakSignature(a));
+    expect(breakSignature({ cause: 'offset', texture: 'a.dds', offset: 0.49 })).toBe('O|a.dds|0.5');
   });
 });

@@ -147,6 +147,14 @@ shells of the pieces meet on the plane too and never match: they are left out.
 once the meshes are read, `MeshCache.merged`). With the option on, the editor marks breaks in
 cyan and ranks the assistant's placements: continuous first, not checked yet, then breaks.
 
+**Breaks the game shows** (V5 step 3c): a break's signature is its two textures, or its
+texture and offset to an eighth of a repeat (`breakSignature`). The signatures the game's own
+junctions show at least twice are saved per kit with the game's pairs (`breaks`, found by
+`level/vanillaTextures.ts` when the Vanilla check page saves the pairs), and the texture checker
+drops a break carrying one. Why: the check flagged 59 to 81 % of the game's junctions, which
+look right in game; learnt from half the game's CELLs, the signatures leave 0 to 0.3 % of the
+other half flagged. Set aside: by texture only (no better, and any offset would pass).
+
 ## The game's pairs (`catalogue/vanillaPairs.ts`, V4 step 9b)
 
 The Vanilla check (`level/vanillaCheck.ts`) reads the master's CELLs built with a kit and lists

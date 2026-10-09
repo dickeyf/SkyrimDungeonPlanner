@@ -19,6 +19,11 @@ export interface VanillaPairs {
   /** The master the pairs were read from. */
   master: string;
   pairs: VanillaPair[];
+  /**
+   * Texture break signatures the game's junctions show at least MIN_VANILLA_COUNT times
+   * (`breakSignature`, V5 step 3c): a break with one of them does not show, and is not flagged.
+   */
+  breaks?: string[];
 }
 
 /** A pair is kept once the game uses it this many times (a one-off may be a mistake). */
@@ -28,7 +33,13 @@ export function parseVanillaPairs(json: unknown): VanillaPairs {
   const v = json as Partial<VanillaPairs>;
   if (v?.version !== 1 || typeof v.kit !== 'string' || !Array.isArray(v.pairs))
     throw new Error('vanilla pairs: unsupported file');
-  return { version: 1, kit: v.kit, master: v.master ?? 'Skyrim.esm', pairs: v.pairs };
+  return {
+    version: 1,
+    kit: v.kit,
+    master: v.master ?? 'Skyrim.esm',
+    pairs: v.pairs,
+    ...(Array.isArray(v.breaks) ? { breaks: v.breaks } : {}),
+  };
 }
 
 export function serializeVanillaPairs(v: VanillaPairs): string {
@@ -39,5 +50,6 @@ export function serializeVanillaPairs(v: VanillaPairs): string {
       a.rotation - b.rotation ||
       a.offset.join(',').localeCompare(b.offset.join(',')),
   );
-  return `${JSON.stringify({ ...v, pairs }, null, 1)}\n`;
+  const breaks = v.breaks ? { breaks: [...v.breaks].sort() } : {};
+  return `${JSON.stringify({ ...v, pairs, ...breaks }, null, 1)}\n`;
 }

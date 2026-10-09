@@ -189,6 +189,28 @@ module, pivots, faces and collision are measured before anything is built on the
   profile, 5 units off (a seam). A cell is 128; a piece half a cell long needs half-cell
   occupancy, a change to the whole grid (occupancy, conflicts, open faces).
 
+### Step 3c – Texture breaks the game does not show
+- **Why**: found at step 4 (9 Oct 2026): run on every junction the game builds, the texture
+  continuity check flags 59 % of the Dwemer and Nordic ones and 81 % of the Imperial ones, the
+  same pairs every time (small room corners against walls, `ImpRoomMid01` against itself),
+  which look right in game. The game's pairs hide them, but any pair the game never built is
+  flagged about one time in two: the check cries wolf.
+- **What**: learn from the game's junctions which breaks do not show, by signature (two
+  different textures side by side, a texture whose coordinates jump), and flag only the
+  breaks whose signature the game never shows; measured first by cross-validation (learnt on
+  half the game's CELLs, tested on the other half), then kept per kit with the game's pairs.
+- **Done when**: few of the game's own junctions are flagged, on all three kits, and the user
+  finds the remaining marks believable.
+- **Result (9 Oct 2026)**: a break's signature (`breakSignature`) is its two textures, or its
+  texture and its coordinate offset to an eighth of a repeat. Cross-validated (learnt on the
+  odd CELLs, tested on the even ones and the reverse): with the signatures seen at least twice,
+  0.0 to 0.3 % of the other half's game junctions stay flagged, against 59 to 81 % before; by
+  texture only (variant A) did no better and would let any offset through, so the offset is
+  kept. The signatures (Dwemer 19, Nordic 20, Imperial 6: floor and wall textures shifted by
+  eighths, and two floor-wall pairs per kit) are saved with the game's pairs
+  (`data/vanilla/<kit>.json`, `breaks`, by `gameBreakSignatures` from the Vanilla check page's
+  save) and the texture checker drops the breaks that carry one.
+
 ### Step 4 – A Dwemer test dungeon
 - **Why**: as for the Nordic kit (V4 step 10), building is where the analysis is really tested:
   the assistant, the junction checks, textures, levels, NavMesh and Finalize, all on the new kit.

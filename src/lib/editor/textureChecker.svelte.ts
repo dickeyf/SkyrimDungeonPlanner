@@ -16,6 +16,8 @@ import {
   type TexturedMesh,
 } from '$lib/grid';
 import type { MeshCache } from '$lib/render';
+import { breakSignature } from '$lib/grid';
+import { gameBreaks } from '$lib/session/vanillaPairs';
 
 const PREF = 'textureCheck';
 
@@ -51,7 +53,13 @@ class TextureChecker {
         const facing = (await Promise.all(j.facing.map(mesh))).filter(
           (m): m is TexturedMesh => !!m,
         );
-        const breaks = mine ? facing.flatMap((f) => textureBreaks(mine, f, j.frame)) : [];
+        // a break the game shows everywhere does not show (V5 step 3c): not flagged
+        const shown = gameBreaks();
+        const breaks = mine
+          ? facing
+              .flatMap((f) => textureBreaks(mine, f, j.frame))
+              .filter((b) => !shown.has(breakSignature(b)))
+          : [];
         this.verdicts.set(j.key, breaks);
       } finally {
         this.pending.delete(j.key);

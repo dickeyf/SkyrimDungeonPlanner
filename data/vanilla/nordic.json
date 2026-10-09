@@ -28538,5 +28538,27 @@
    ],
    "count": 2
   }
+ ],
+ "breaks": [
+  "O|textures/dungeons/ridgedstone01.dds|0.125",
+  "O|textures/dungeons/ridgedstone01.dds|0.25",
+  "O|textures/dungeons/ridgedstone01.dds|0.375",
+  "O|textures/dungeons/ridgedstone01.dds|0.5",
+  "O|textures/dungeons/ridgedstonefloor01.dds|0.125",
+  "O|textures/dungeons/ridgedstonefloor01.dds|0.25",
+  "O|textures/dungeons/ridgedstonefloor01.dds|0.375",
+  "O|textures/dungeons/ridgedstonefloor01.dds|0.5",
+  "O|textures/dungeons/ridgedstonefloor01.dds|0.625",
+  "O|textures/dungeons/ridgedstonefloor01.dds|0.75",
+  "O|textures/dungeons/ridgedstonefloor01.dds|1",
+  "O|textures/dungeons/ridgedstonefloor01.dds|1.125",
+  "O|textures/dungeons/ridgedstonefloor01.dds|1.5",
+  "O|textures/dungeons/ridgedstonefloor02.dds|0.375",
+  "O|textures/dungeons/ridgedstonefloor02.dds|0.5",
+  "O|textures/dungeons/ridgedstonewall01.dds|0.375",
+  "O|textures/dungeons/ridgedstonewall02.dds|0.5",
+  "O|textures/dungeons/ridgedstonewall02.dds|0.75",
+  "T|textures/dungeons/ridgedstone01.dds|textures/dungeons/ridgedstonewall01.dds",
+  "T|textures/dungeons/ridgedstonefloor01.dds|textures/dungeons/ridgedstonewall02.dds"
  ]
 }

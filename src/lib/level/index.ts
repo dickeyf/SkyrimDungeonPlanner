@@ -7,3 +7,4 @@ export * from './save';
 export * from './store';
 export * from './summary';
 export * from './vanillaCheck';
+export * from './vanillaTextures';

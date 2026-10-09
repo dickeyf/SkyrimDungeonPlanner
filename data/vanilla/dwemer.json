@@ -8544,5 +8544,26 @@
    ],
    "count": 3
   }
+ ],
+ "breaks": [
+  "O|textures/dungeons/dwemerruins/dwerockdesigns01.dds|0.25",
+  "O|textures/dungeons/dwemerruins/dwerockdesigns01.dds|0.5",
+  "O|textures/dungeons/dwemerruins/dwestonefloor04.dds|0.125",
+  "O|textures/dungeons/dwemerruins/dwestonefloor04.dds|0.25",
+  "O|textures/dungeons/dwemerruins/dwestonefloor04.dds|0.375",
+  "O|textures/dungeons/dwemerruins/dwestonefloor04.dds|0.5",
+  "O|textures/dungeons/dwemerruins/dwestonefloor04.dds|0.625",
+  "O|textures/dungeons/dwemerruins/dwestonefloor04.dds|0.875",
+  "O|textures/dungeons/dwemerruins/dwestonefloor04.dds|1",
+  "O|textures/dungeons/dwemerruins/dwestonefloor04.dds|1.25",
+  "O|textures/dungeons/dwemerruins/dwestonefloor04.dds|1.375",
+  "O|textures/dungeons/dwemerruins/dwestonefloor04.dds|1.75",
+  "O|textures/dungeons/dwemerruins/dwestonefloor04.dds|2",
+  "O|textures/dungeons/dwemerruins/dwestonefloor04.dds|2.625",
+  "O|textures/dungeons/dwemerruins/dwestonewall01.dds|0.375",
+  "O|textures/dungeons/dwemerruins/dwestonewall01.dds|0.5",
+  "O|textures/dungeons/dwemerruins/dwestonewall01.dds|0.625",
+  "T|textures/dungeons/dwemerruins/dwerockdesigns01.dds|textures/dungeons/dwemerruins/dwestonefloor04.dds",
+  "T|textures/dungeons/dwemerruins/dwestonefloor04.dds|textures/dungeons/dwemerruins/dwestonewall01.dds"
  ]
 }

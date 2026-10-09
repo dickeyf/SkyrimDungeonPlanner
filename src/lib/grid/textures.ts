@@ -58,6 +58,21 @@ export const DEFAULT_TEXTURE_OPTIONS: TextureOptions = {
 
 export type BreakCause = 'texture' | 'offset';
 
+/**
+ * What a break looks like, apart from where it is (V5 step 3c): two textures side by side, or a
+ * texture whose coordinates jump by an offset (to an eighth of a repeat). The game's junctions
+ * show a few such signatures everywhere (5 to 22 per kit) and look right: a break with one of
+ * them does not show. Why the offset is kept: a texture shifted by an unusual amount (a room
+ * piece turned the wrong way round) stays flagged.
+ */
+export function breakSignature(
+  b: Pick<TextureBreak, 'cause' | 'texture' | 'other' | 'offset'>,
+): string {
+  return b.cause === 'texture'
+    ? `T|${[b.texture, b.other ?? ''].sort().join('|')}`
+    : `O|${b.texture}|${Math.round(b.offset * 8) / 8}`;
+}
+
 export interface TextureBreak {
   cause: BreakCause;
   /** Texture of the opening's piece, and of the facing piece when it differs. */

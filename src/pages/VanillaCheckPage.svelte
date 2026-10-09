@@ -21,7 +21,14 @@
   import { MIN_VANILLA_COUNT, serializeVanillaPairs } from '$lib/catalogue/vanillaPairs';
   import { vanillaPairsOf } from '$lib/session/vanillaPairs';
   import { acceptedOverlaps } from '$lib/grid/overlaps';
-  import { EspLevelStore, checkVanillaCells, type VanillaReport } from '$lib/level';
+  import {
+    EspLevelStore,
+    checkVanillaCells,
+    gameBreakSignatures,
+    type VanillaReport,
+  } from '$lib/level';
+  import { modelArchivePath } from '$lib/format/esp/stat';
+  import { NifFile, mergeShapes } from '$lib/format/nif';
   import { annotationStore } from '$lib/session/annotationStore.svelte';
   import { catalogueStore as store } from '$lib/session/catalogueStore.svelte';
   import { session } from '$lib/session/session.svelte';
@@ -36,6 +43,8 @@
   /** Judge with the committed pairs of the game (V4 step 9b), or without them. */
   let usePairs = $state(true);
   let saveMessage = $state('');
+  /** The master read by the last run, to find the game's texture breaks when saving. */
+  let checked: { level: EspLevelStore; kit: string } | null = null;
 
   /** The project checkout to write into (dev only), asked once and remembered. */
   async function projectFolder(): Promise<FileSystemDirectoryHandle | null> {
@@ -93,13 +102,36 @@
       const project = await projectFolder();
       if (!project) return;
       const pairs = report.seen.filter((p) => p.count >= MIN_VANILLA_COUNT);
+      // and the texture breaks the game shows everywhere (V5 step 3c), from the same CELLs
+      const kit = store.kit;
+      const analysis = store.analysisOf(kit);
+      const index = await store.meshIndex();
+      if (!analysis || !index || !checked || checked.kit !== reportKit)
+        throw new Error('run the check again first');
+      const catalogue = applyAnnotations(
+        analysis.catalogue,
+        annotationStore.currentOf(kit.kit),
+      ).catalogue;
+      const breaks = await gameBreakSignatures(
+        checked.level,
+        catalogue,
+        async (model) => {
+          const read = await index.read(modelArchivePath(model)).catch(() => undefined);
+          return read ? mergeShapes(NifFile.parse(read.bytes), { skipAlpha: true }) : null;
+        },
+        {
+          min: MIN_VANILLA_COUNT,
+          minTiles,
+          onProgress: (done, total) => (saveMessage = `texture breaks: ${done} / ${total}`),
+        },
+      );
       const path = await writeProjectFile(
         project,
         'data/vanilla',
         `${reportKit.toLowerCase()}.json`,
-        serializeVanillaPairs({ version: 1, kit: reportKit, master, pairs }),
+        serializeVanillaPairs({ version: 1, kit: reportKit, master, pairs, breaks }),
       );
-      saveMessage = `${pairs.length} pairs written to ${path}: review and commit it with git (reload the page to use them).`;
+      saveMessage = `${pairs.length} pairs and ${breaks.length} texture break signatures written to ${path}: review and commit it with git (reload the page to use them).`;
     } catch (e) {
       saveMessage = `Not saved: ${(e as Error).message}`;
     }
@@ -131,6 +163,7 @@
       const file = await session.view.overlay.resolveFile(master);
       if (!file) throw new Error(`${master} not found in the Data view`);
       const level = EspLevelStore.parse(await readAll(file.file), master);
+      checked = { level, kit: kit.kit };
       report = await checkVanillaCells(level, catalogue, geometry, {
         minTiles,
         onProgress: (done, total, cell) => (progress = `${done} / ${total} ${cell}`),
