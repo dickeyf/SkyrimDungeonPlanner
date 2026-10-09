@@ -169,6 +169,16 @@ module, pivots, faces and collision are measured before anything is built on the
   validated (the game uses them), and offered by the assistant where their openings fit.
 - **Done when**: the six halls are in the catalogue, the Vanilla check reads them in the game's
   Imperial CELLs without new mismatches, and the user builds a hall that rises 64 in game.
+- **Result (8 Oct 2026)**: `computeFootprint` takes the kit's fine step: an opening off the module
+  but on the fine step gets a fractional level (0.5, -0.5) or a fractional cell across its face
+  (the spacer's far end half a cell in); levels are counted from the opening nearest a whole
+  level (the first try counted from the lowest one and put `64D01`'s upper end half a level
+  off: 17 more mismatches, found by the Vanilla check); the piece occupies the whole levels
+  between its openings. The six halls fit and are validated (`imperial.json`); every other
+  footprint of the three kits is unchanged, byte for byte. Vanilla check, Imperial: open faces
+  488 to 440, mismatches 245 to 255 (the ten new ones against neighbours the game itself shifts
+  by free amounts, (-16, 0, -48), (32, 48, 16)); the game's pairs 853 to 896. Left: building a
+  hall that rises 64 in game.
 
 ### Step 4 – A Dwemer test dungeon
 - **Why**: as for the Nordic kit (V4 step 10), building is where the analysis is really tested:

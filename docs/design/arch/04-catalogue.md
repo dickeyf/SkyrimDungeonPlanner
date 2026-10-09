@@ -79,6 +79,14 @@ opening can be denser than its rim). A plane is an **opening** when its vertices
 - **Opening cells, level and inset**: the cells an opening covers along its side; its level
   (`round(zMin / zModule)`); its **inset**, how far its plane lies inside the cell boundary.
   Two facing openings stand `insetA + insetB` apart.
+- **Off the module, on the fine step** (V5 step 3b): with the kit's fine step (D70), an opening
+  half a level up or down (`ImpHall1Way64U01`, `...64D01`), or a piece half a module long
+  (`ImpHall1Way64Short01`), is no longer rejected: its level, or its cell across the face, is a
+  fraction (0.5), so the piece that follows sits half a level or half a cell on, as the fine
+  grid allows. The levels are then counted from the opening nearest a whole level (the end on
+  the grid); the piece occupies the whole levels between its openings. Why: the game uses these
+  six Imperial halls 73 times, and V1's 128 grid could not hold them; set aside: a finer cell
+  (16 units) for every piece, which would multiply the cells by 64.
 
 ### Face profiles (`profiles.ts`)
 

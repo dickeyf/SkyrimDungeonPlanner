@@ -91,7 +91,8 @@ NPC follows the player through it in game. V2.**
 - [ ] The Nordic families left out at V4 (temple, pits, shafts, platforms, bridges, chambers)
 - [ ] Help for a designer new to a kit: sets for a wide face, the piece that closes one
 - [x] Kit pieces validated from what the game uses, snow and ice variants included (8 Oct 2026)
-- [ ] The Imperial halls that rise 64 (`ImpHall1Way64U01`...), on the fine grid (step 3b)
+- [x] The Imperial halls that rise 64 (`ImpHall1Way64U01`...), on the fine grid (step 3b, 8 Oct
+  2026; the test in game left)
 
 ## Toward 1.0.0
 - [ ] A kit at another scale: Markarth's interiors are built with the Dwemer kit at 0.75 (or

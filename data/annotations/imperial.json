@@ -86,7 +86,7 @@
       "walkable": "reviewed"
     },
     "ImpHall1Way64D01": {
-      "exclude": "-Y opening rise 64 is an ambiguous level for z-module 128"
+      "validated": true
     },
     "ImpHall1Way64L01": {
       "validated": true,
@@ -97,10 +97,10 @@
       "walkable": "reviewed"
     },
     "ImpHall1Way64Short01": {
-      "exclude": "Y openings at -32, 32 are not on a 128 grid"
+      "validated": true
     },
     "ImpHall1Way64U01": {
-      "exclude": "+Y opening rise 64 is an ambiguous level for z-module 128"
+      "validated": true
     },
     "ImpHall2Way01": {
       "validated": true,
@@ -175,7 +175,7 @@
       "walkable": "reviewed"
     },
     "ImpLHall1Way64D01": {
-      "exclude": "-Y opening rise 64 is an ambiguous level for z-module 128"
+      "validated": true
     },
     "ImpLHall1Way64L01": {
       "validated": true,
@@ -186,10 +186,10 @@
       "walkable": "reviewed"
     },
     "ImpLHall1Way64Short01": {
-      "exclude": "Y openings at -32, 32 are not on a 128 grid"
+      "validated": true
     },
     "ImpLHall1Way64U01": {
-      "exclude": "+Y opening rise 64 is an ambiguous level for z-module 128"
+      "validated": true
     },
     "ImpLHall2Way01": {
       "validated": true,

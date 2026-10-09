@@ -66,13 +66,25 @@ export function overlappedCells(lo: number, hi: number, module: number): number[
   return cells.length ? cells : [first];
 }
 
+/** Nearest multiple of `step`. */
+const toStep = (v: number, step: number) => Math.round(v / step) * step + 0;
+
 export function computeFootprint(
   g: WeldedGeometry,
   openings: Opening[],
   module: number,
   zModule: number,
+  /**
+   * The kit's fine step (D70), V5 step 3b: an opening off the module but on the fine step (a
+   * hall rising half a level, a spacer half a module long, `ImpHall1Way64U01`,
+   * `ImpHall1Way64Short01`) gets a fractional level or position instead of leaving the piece
+   * out; the piece that follows sits shifted by that fraction, as the fine grid allows.
+   */
+  fine?: { xy: number; z: number },
 ): Footprint {
   const notes: string[] = [];
+  /** Per axis, opening planes off the module but on the fine step: their cell, fractional. */
+  const fineAxis: [boolean, boolean] = [false, false];
   const phase: [number, number] = [0, 0];
   const raw: [number[], number[]] = [[], []];
   // the grid is set by the openings at the piece's floor: a doorway higher up (a gallery on a
@@ -91,7 +103,10 @@ export function computeFootprint(
       .map((o) => (low.length ? (low.includes(o) ? o.plane : NaN) : o.plane))
       .filter((p) => !Number.isNaN(p));
     const { phase: ph, ok } = gridPhase(planes, [g.min[axis], g.max[axis]], module);
-    if (!ok)
+    const onFine =
+      !ok && !!fine && planes.every((p) => Math.abs(p - ph - toStep(p - ph, fine.xy)) <= GRID_TOL);
+    if (onFine) fineAxis[axis] = true;
+    else if (!ok)
       notes.push(
         `${axis === 0 ? 'X' : 'Y'} openings at ${[...new Set(planes)].join(', ')} are not on a ${module} grid`,
       );
@@ -104,24 +119,59 @@ export function computeFootprint(
   const openingInsets: number[] = [];
   const openingCells: CellIndex[][] = [];
   const floorZ = openings.length ? Math.min(...openings.map((o) => o.zMin)) : 0;
+  // an opening between two levels is placed from the opening nearest a whole level (the one on
+  // the grid: a hall going down 64 has its upper end on the grid, its lower end half a level down)
+  const offset = (o: Opening) => Math.abs(o.zMin / zModule - Math.round(o.zMin / zModule));
+  const ref = openings.length
+    ? openings.reduce((a, b) => (offset(b) < offset(a) ? b : a))
+    : undefined;
+  const between = (o: Opening) => {
+    const rise = (o.zMin - floorZ) / zModule;
+    return Math.abs(rise - Math.round(rise)) > 1 / 3;
+  };
+  const onFineLevels =
+    !!fine &&
+    !!ref &&
+    openings.some(between) &&
+    openings.every((o) => {
+      const r = (o.zMin - ref.zMin) / zModule;
+      return Math.abs(r - toStep(r, fine.z / zModule)) * zModule <= GRID_TOL;
+    });
   for (const o of openings) {
     const rise = (o.zMin - floorZ) / zModule;
-    if (Math.abs(rise - Math.round(rise)) > 1 / 3)
+    if (onFineLevels)
+      openingLevels.push(
+        Math.round(ref!.zMin / zModule) + toStep((o.zMin - ref!.zMin) / zModule, fine!.z / zModule),
+      );
+    else if (Math.abs(rise - Math.round(rise)) <= 1 / 3)
+      openingLevels.push(Math.round(o.zMin / zModule));
+    else {
       notes.push(
         `${o.dir} opening rise ${(o.zMin - floorZ).toFixed(0)} is an ambiguous level for z-module ${zModule}`,
       );
-    openingLevels.push(Math.round(o.zMin / zModule));
+      openingLevels.push(Math.round(o.zMin / zModule));
+    }
     const cellsOnAxis = raw[o.axis];
+    // on a fine axis the opening's cell is where its plane is, a fraction of a module
+    const fineCell = fineAxis[o.axis]
+      ? toStep((o.plane - phase[o.axis]) / module, fine!.xy / module) - (o.sign > 0 ? 1 : 0)
+      : undefined;
     const boundary =
       phase[o.axis] +
-      (o.sign > 0 ? cellsOnAxis[cellsOnAxis.length - 1]! + 1 : cellsOnAxis[0]!) * module;
+      (fineCell !== undefined
+        ? fineCell + (o.sign > 0 ? 1 : 0)
+        : o.sign > 0
+          ? cellsOnAxis[cellsOnAxis.length - 1]! + 1
+          : cellsOnAxis[0]!) *
+        module;
     openingInsets.push(o.sign > 0 ? boundary - o.plane : o.plane - boundary);
     const along = overlappedCells(
       o.spanMin - phase[o.other],
       o.spanMax - phase[o.other],
       module,
     ).map((c) => c - min[o.other]);
-    const across = o.sign > 0 ? raw[o.axis].length - 1 : 0;
+    const across =
+      fineCell !== undefined ? fineCell - min[o.axis] : o.sign > 0 ? raw[o.axis].length - 1 : 0;
     const level = openingLevels[openingLevels.length - 1]!;
     openingCells.push(
       along.map((c) => (o.axis === 0 ? [across, c, level] : [c, across, level]) as CellIndex),
@@ -131,7 +181,10 @@ export function computeFootprint(
 
   const levels = openingLevels.length ? openingLevels : [0];
   const cells: CellIndex[] = [];
-  for (let k = Math.min(...levels); k <= Math.max(...levels); k++) {
+  // the whole levels between the openings (a hall rising half a level stays on its level)
+  const lo = Math.ceil(Math.min(...levels) - 1e-9);
+  const hi = Math.max(lo, Math.floor(Math.max(...levels) + 1e-9));
+  for (let k = lo; k <= hi; k++) {
     for (const i of raw[0]) for (const j of raw[1]) cells.push([i - min[0], j - min[1], k]);
   }
 

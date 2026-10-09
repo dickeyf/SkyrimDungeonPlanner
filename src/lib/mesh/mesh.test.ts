@@ -65,6 +65,20 @@ describe('footprint', () => {
     expect(fj.cells.length).toBe(6);
     expect(fj.pivot).toEqual([256, 128, 0]);
   });
+
+  it('takes a spacer half a module long on the fine step, its far end half a cell in (V5)', () => {
+    // ImpHall1Way64Short01: openings at y -32 and +32, off the 128 grid
+    const g = weldMesh(corridorMesh({ y0: -32, y1: 32 }));
+    expect(computeFootprint(g, findOpenings(g), MODULE, MODULE).fits).toBe(false);
+    const fp = computeFootprint(g, findOpenings(g), MODULE, MODULE, { xy: 16, z: 16 });
+    expect(fp.fits).toBe(true);
+    expect(fp.openingInsets).toEqual([0, 0]);
+    // the -Y end on the cell's edge, the +Y end half a cell in: what follows sits half a cell on
+    expect(fp.openingCells.map((cells) => cells.map((c) => c[1]))).toEqual([
+      [0, 0],
+      [-0.5, -0.5],
+    ]);
+  });
 });
 
 describe('profiles and signatures', () => {
