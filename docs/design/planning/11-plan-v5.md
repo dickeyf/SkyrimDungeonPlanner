@@ -244,6 +244,20 @@ together, and never edited.
 - **Done when**: each family is in, or out with its reason, and the Nordic test cells still
   check clean.
 
+### Step 8b – Half-cell occupancy (only if needed)
+- **Why**: found at step 3b: a cell is 128, and `ImpHall1Way64Short01` (and its large variant)
+  is 64 long; before a hall's -Y face it would fill the upper half of the cell before, which the
+  grid counts as the hall's own cell, so it is offered after a +Y face only. Placed from the
+  other end of the hall, it can still be used.
+- **What**: occupancy at half a cell where a piece is half a cell long or high (occupied cells,
+  conflicts, open faces), the whole cells unchanged.
+- **When**: if the Nordic families of step 8 bring more pieces off the module, with them;
+  otherwise at the end of V5, and before phase E, which leans on the occupancy most. Why then:
+  the change costs about the same now or later, but each feature built on the occupancy in
+  between would be reviewed again; today only these two spacers need it.
+- **Done when**: `64Short01` is offered on both sides of a hall, and every other footprint and
+  junction of the three kits is unchanged.
+
 ## Phase E – Help for a designer new to a kit
 
 ### Step 9 – Sets for a wide face, and the piece that closes one
