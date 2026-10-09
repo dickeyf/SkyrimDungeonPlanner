@@ -184,7 +184,12 @@ export function computeFootprint(
   // the whole levels between the openings (a hall rising half a level stays on its level)
   const lo = Math.ceil(Math.min(...levels) - 1e-9);
   const hi = Math.max(lo, Math.floor(Math.max(...levels) + 1e-9));
-  for (let k = lo; k <= hi; k++) {
+  const slices = new Set<number>();
+  for (let k = lo; k <= hi; k++) slices.add(k);
+  // and the half levels of its openings: placed by its other end, a hall going down 64 sits half
+  // a level up, and the cell in front of each opening must still be its own (V5 step 3b)
+  for (const l of levels) if (!Number.isInteger(l)) slices.add(l);
+  for (const k of [...slices].sort((a, b) => a - b)) {
     for (const i of raw[0]) for (const j of raw[1]) cells.push([i - min[0], j - min[1], k]);
   }
 

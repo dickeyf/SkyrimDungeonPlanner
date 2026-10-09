@@ -179,6 +179,15 @@ module, pivots, faces and collision are measured before anything is built on the
   488 to 440, mismatches 245 to 255 (the ten new ones against neighbours the game itself shifts
   by free amounts, (-16, 0, -48), (32, 48, 16)); the game's pairs 853 to 896. Left: building a
   hall that rises 64 in game.
+- **First test (8 Oct 2026)**: `64U01` works; `64D01` placed by its lower end showed both
+  junctions open: placed half a level up, its cells rounded to the level above, so the hall it
+  joins saw nothing in front of it. A piece now also occupies the half levels of its openings,
+  besides the whole levels between them: checked with the real pieces, `64D01` and `64U01` join
+  exactly from either end. **Limit found**: `64Short01` (64 long) is offered after a hall's +Y
+  face only: before a -Y face it would fill the upper half of the cell before, which the
+  rounding counts as the hall's own cell (a conflict), and turned round it shows its other
+  profile, 5 units off (a seam). A cell is 128; a piece half a cell long needs half-cell
+  occupancy, a change to the whole grid (occupancy, conflicts, open faces).
 
 ### Step 4 – A Dwemer test dungeon
 - **Why**: as for the Nordic kit (V4 step 10), building is where the analysis is really tested:
