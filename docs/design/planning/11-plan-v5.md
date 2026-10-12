@@ -259,6 +259,16 @@ together, and never edited.
   records.
 - **Done when**: the categories of the test cells match what the CK shows, every reference has
   one, and none is lost on save.
+- **Result (12 Oct 2026)**: `objectCategory` and `indexPluginBases` (`level/objects.ts`), the
+  base index of the working plugin and its masters (`editorStore.baseIndex()`, 1.1 s for
+  Skyrim.esm and the four DLCs, about 37,600 bases). The test cells hold tiles only, so it was
+  checked on furnished game interiors: the Sleeping Giant Inn (481 references) and Bthardamz
+  (1,963) sort into furniture, containers, lights, clutter, activators, markers, doors, sounds
+  and decals as the CK shows them; two rules found there: a FURN named `...Marker` (a spot to
+  lean or sit) and an ACTI without a model (a trigger) are invisible, so markers. Every
+  reference gets a category (`other` for a base not found); nothing is written, so nothing can
+  be lost on save. Not yet: the actors placed as ACHR, which the level store does not list
+  (only REFRs): step 6 or 7.
 
 ### Step 6 – Show, fade, hide and lock by category
 - **Why**: the objects, drawn over the tiles, get in the way; the user wants each kind visible,

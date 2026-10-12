@@ -8,3 +8,4 @@ export * from './store';
 export * from './summary';
 export * from './vanillaCheck';
 export * from './vanillaTextures';
+export * from './objects';

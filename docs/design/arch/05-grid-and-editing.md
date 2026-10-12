@@ -36,6 +36,20 @@ fraction, so tiles of the same shift share their indices and every grid computat
 before among them. Levels are the floor of the Z index. Why not 16-unit cells: a small hall
 would go from 4 cells to 2,048, and every occupancy and junction computation with it.
 
+## The other objects of a cell (`level/objects.ts`, V5, D71)
+
+Every reference that is not a tile gets a **category** from its base record:
+`objectCategory(base)` maps the record type (FURN furniture, CONT container, LIGH light, ACTI
+activator, DOOR door, SOUN sound, TXST decal, NPC\_ actor, IDLM marker...) and sorts the STATs
+into markers (by EditorID or model: `XMarker`, `RoomMarker`, `BlackPlane01`) and clutter. The
+invisible ones go with the markers: furniture markers (a FURN named `...Marker`, a spot to lean
+or sit) and triggers (an ACTI without a model). The bases come from `indexPluginBases`: per
+plugin, the top groups of the record types a reference may point at, by FormKey, with type,
+EditorID and model; `editorStore.baseIndex()` reads the working plugin's masters once per Data
+view (about a second for Skyrim.esm and the DLCs) and the plugin itself last, its overrides
+winning. Checked on the game's own interiors (the Sleeping Giant Inn, Bthardamz): the
+categories match what the Creation Kit shows.
+
 ## Layout and editing (`grid/edit.ts`)
 
 A **layout** is an immutable map of tiles (`key`, piece, cell, rotation, `own`, and for

@@ -12,6 +12,8 @@ import type { LevelEdit } from '$lib/level';
 import {
   EspLevelStore,
   createPluginFile,
+  indexPluginBases,
+  type BaseInfo,
   loadCell,
   mastersFor,
   savePlugin,
@@ -34,6 +36,8 @@ import {
   zStringOf,
 } from '$lib/format/esp';
 import { MeshCache } from '$lib/render';
+import { BufferRangeSource, FileRangeSource } from '$lib/format/bsa';
+import type { FormKey } from '$lib/catalogue/types';
 import { ArchiveIndex, type Layer, type OverlayFileInfo } from '$lib/vfs';
 
 interface MasterInfo {
@@ -185,6 +189,46 @@ class EditorStore {
       this.message = `added cell ${editorId} to ${info.name}; backup ${result.backup}`;
     });
     if (key) await this.openCell(key);
+  }
+
+  private mastersBases: {
+    view: unknown;
+    byName: Record<string, Promise<Map<FormKey, BaseInfo>>>;
+  } | null = null;
+
+  /**
+   * The base records the working plugin's references may point at (V5 step 5): its masters'
+   * (indexed once per Data view, about a second for Skyrim.esm and the DLCs) then its own,
+   * which override them. The objects' categories and models come from it.
+   */
+  async baseIndex(): Promise<Map<FormKey, BaseInfo>> {
+    const view = session.view;
+    const store = this.store;
+    // a result handed out, not reactive state
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
+    const out = new Map<FormKey, BaseInfo>();
+    if (!view || !store) return out;
+    if (this.mastersBases?.view !== view) this.mastersBases = { view, byName: {} };
+    const byName = this.mastersBases.byName;
+    for (const name of store.masters) {
+      let bases = byName[name];
+      if (!bases) {
+        bases = view.overlay
+          .resolveFile(name)
+          .then(async (found) =>
+            found ? indexPluginBases(await FileRangeSource.open(found.file), name) : new Map(),
+          );
+        byName[name] = bases;
+      }
+      for (const [k, v] of await bases) out.set(k, v);
+    }
+    if (store instanceof EspLevelStore)
+      for (const [k, v] of await indexPluginBases(
+        new BufferRangeSource(store.serialize()),
+        store.name,
+      ))
+        out.set(k, v);
+    return out;
   }
 
   /** Mesh cache for the current Data view; rebuilt when the view (profile) changes. */
