@@ -241,6 +241,8 @@ module, pivots, faces and collision are measured before anything is built on the
   analysed with the old code; restarting the dev server with `--force` fixed it (version 17
   for the analyses made meanwhile). Lesson: when the browser and Node disagree on the same
   code, check what the dev server serves first.
+- **Done (12 Oct 2026)**: a Dwemer cell on two levels built with the assistant, its NavMesh
+  baked, written and finalized in the app; in game an NPC follows the player everywhere.
 
 ## Phase C – The other objects of a cell (D71, D72)
 
