@@ -50,6 +50,8 @@ export interface SceneObject {
   pickable: boolean;
   /** The grid levels (Z slices) it spans, lowest and highest (V3). */
   levels?: [number, number];
+  /** What an object that is not a tile is (V5, `objectCategory`): shown by its category. */
+  category?: string;
 }
 
 /** How the levels below the active one are drawn (V3, D3). */
@@ -145,6 +147,8 @@ export class CellScene {
   private readonly byKey = new Map<string, Mesh>();
   private readonly selected = new Set<Mesh>();
   private opaqueDisplay: OpaqueDisplay = 'visible';
+  /** Per object category (V5): how its objects are drawn, else `opaqueDisplay`. */
+  private categoryDisplay: Readonly<Record<string, OpaqueDisplay>> = {};
   private frame = 0;
   private readonly observer: ResizeObserver;
   private downAt: { x: number; y: number } | null = null;
@@ -509,6 +513,7 @@ export class CellScene {
           modelPath: o.modelPath,
           plain: mesh.geometry,
           levels: o.levels,
+          category: o.category,
         };
         this.styleMesh(mesh);
         if (this.textures) void this.applyTexture(mesh);
@@ -569,6 +574,7 @@ export class CellScene {
         plain,
         tex,
         levels: o.levels,
+        category: o.category,
       };
       this.styleMesh(mesh);
       if (this.textures && changed) void this.applyTexture(mesh);
@@ -634,6 +640,13 @@ export class CellScene {
     this.requestRender();
   }
 
+  /** How the objects of each category are drawn (V5 step 6); a category not listed: visible. */
+  setCategoryDisplay(byCategory: Readonly<Record<string, OpaqueDisplay>>): void {
+    this.categoryDisplay = byCategory;
+    for (const child of this.objects.children) this.styleMesh(child as Mesh);
+    this.requestRender();
+  }
+
   /**
    * Show one level (V3 step 5): what lies above it is hidden in the top-down view, what lies
    * below dimmed or hidden; a piece spanning several levels shows on each. Null shows all.
@@ -650,11 +663,13 @@ export class CellScene {
    * unless `allLevels` (the inset), the active level.
    */
   private styleMesh(mesh: Mesh, allLevels = false): void {
-    const { color, pickable, levels } = mesh.userData as {
+    const { color, pickable, levels, category } = mesh.userData as {
       color: string;
       pickable: boolean;
       levels?: [number, number];
+      category?: string;
     };
+    const display = category ? (this.categoryDisplay[category] ?? 'visible') : this.opaqueDisplay;
     let place: 'on' | 'above' | 'below' = 'on';
     if (!allLevels && this.level !== null && levels) {
       if (levels[0] > this.level) place = 'above';
@@ -670,7 +685,7 @@ export class CellScene {
       mesh.visible = true;
       return;
     }
-    const faded = !pickable && this.opaqueDisplay === 'faded';
+    const faded = !pickable && display === 'faded';
     const opacity = faded ? 0.12 : place === 'below' ? 0.3 : 1;
     const tex = this.textures
       ? (mesh.userData.tex as { texture: string; alpha: boolean }[] | undefined)
@@ -678,7 +693,7 @@ export class CellScene {
     mesh.material = tex
       ? tex.map((r) => this.texMaterial(r.texture, r.alpha, opacity))
       : this.material(color, opacity);
-    mesh.visible = pickable || this.opaqueDisplay !== 'hidden';
+    mesh.visible = pickable || display !== 'hidden';
   }
 
   /** Highlight the tiles of `keys` (the selection), and only them. */

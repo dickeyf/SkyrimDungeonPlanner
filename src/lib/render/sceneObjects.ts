@@ -23,6 +23,8 @@ export function sceneObjects(
   loaded: LoadedCell,
   catalogue: Catalogue,
   models: ReadonlyMap<FormKey, string>,
+  /** Base FormKey -> category of the objects that are not tiles (V5 step 5). */
+  categories: ReadonlyMap<FormKey, string> = new Map(),
 ): SceneObject[] {
   const pieces = new Map(catalogue.pieces.map((p) => [p.formKey, p]));
   const own = new Map(loaded.refs.map((r) => [r.key, r.own]));
@@ -50,6 +52,7 @@ export function sceneObjects(
       color: CATEGORY_COLORS.opaque,
       pickable: false,
       levels: levelOf(o.ref.pos[2], loaded.grid.anchor),
+      category: categories.get(o.ref.base) ?? 'other',
     });
   }
   return out;
@@ -115,6 +118,7 @@ export function layoutObjects(
   loaded: LoadedCell,
   catalogue: Catalogue,
   models: ReadonlyMap<FormKey, string>,
+  categories: ReadonlyMap<FormKey, string> = new Map(),
 ): SceneObject[] {
   const pieces = new Map(catalogue.pieces.map((p) => [p.formKey, p]));
   const out: SceneObject[] = [];
@@ -122,5 +126,8 @@ export function layoutObjects(
     const piece = pieces.get(tile.piece);
     if (piece) out.push(tileObject(tile, piece, loaded.grid.anchor));
   }
-  return [...out, ...sceneObjects(loaded, catalogue, models).filter((o) => !o.pickable)];
+  return [
+    ...out,
+    ...sceneObjects(loaded, catalogue, models, categories).filter((o) => !o.pickable),
+  ];
 }

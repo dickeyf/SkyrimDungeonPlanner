@@ -8,6 +8,7 @@ export const PREF_KEYS = {
   opaqueDisplay: 'opaqueDisplay',
   insetOpen: 'insetOpen',
   textured: 'textured',
+  objectDisplay: 'objectDisplay',
 } as const;
 
 /** Last cell opened in a plugin, remembered per plugin. */

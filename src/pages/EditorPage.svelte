@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { objectCategory, type BaseInfo } from '$lib/level/objects';
   /**
    * Steps 13-14: edit a cell's tiles. Pure logic lives in $lib/grid (edit, assist); this page
    * wires it to the scene (pointer events), the keyboard, the piece palette and the contextual
@@ -212,17 +213,26 @@
   const pieces = $derived(piecesByFormKey(catalogue));
   const anchor = $derived(ed.loaded?.grid.anchor);
   const layout = $derived(history?.present ?? null);
+  /** The base records of the plugin and its masters (V5 step 5): models and categories. */
+  let bases = $state.raw<ReadonlyMap<FormKey, BaseInfo>>(new Map());
+  $effect(() => {
+    void ed.loaded?.cell;
+    void ed.store;
+    void ed.baseIndex().then((m) => (bases = m));
+  });
   const models = $derived(
-    new Map(
-      KITS.flatMap((k) => catalogueStore.statsOf(k)?.stats ?? []).map((st) => [
-        st.formKey,
-        st.model,
-      ]),
-    ),
+    new Map([
+      ...KITS.flatMap((k) => catalogueStore.statsOf(k)?.stats ?? []).map(
+        (st) => [st.formKey, st.model] as const,
+      ),
+      // every other object with its own model, instead of a marker (V5 step 6)
+      ...[...bases].flatMap(([k, b]) => (b.model ? [[k, b.model] as const] : [])),
+    ]),
   );
+  const categories = $derived(new Map([...bases].map(([k, b]) => [k, objectCategory(b)] as const)));
   const objects = $derived(
     layout && ed.loaded && historyFor === ed.loaded
-      ? layoutObjects(layout, ed.loaded, catalogue, models)
+      ? layoutObjects(layout, ed.loaded, catalogue, models, categories)
       : [],
   );
   const grid = $derived.by(() => {

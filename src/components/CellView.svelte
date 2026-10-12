@@ -19,6 +19,8 @@
   } from '$lib/render';
   import type { ArchiveIndex } from '$lib/vfs';
   import { PREF_KEYS, getPref, setPref } from '$lib/fs';
+  import { objectDisplay } from '$lib/editor/objectDisplay.svelte';
+  import { OBJECT_CATEGORIES } from '$lib/level/objects';
 
   let {
     objects,
@@ -62,9 +64,6 @@
   let canvas: HTMLCanvasElement;
   let scene = $state.raw<CellScene | null>(null);
   let status = $state('');
-  let opaque = $state<OpaqueDisplay>(
-    (getPref(PREF_KEYS.opaqueDisplay) as OpaqueDisplay | undefined) ?? 'faded',
-  );
   let fitted = '';
   /** The textured view (V3, D66): off by default, remembered. */
   let textured = $state(getPref(PREF_KEYS.textured) === '1');
@@ -235,8 +234,7 @@
   });
 
   $effect(() => {
-    scene?.setOpaqueDisplay(opaque);
-    setPref(PREF_KEYS.opaqueDisplay, opaque);
+    scene?.setCategoryDisplay(objectDisplay.display);
   });
 </script>
 
@@ -281,18 +279,61 @@
     <span>{status}</span>
     <button onclick={() => scene?.fit()}>Fit</button>
     {#if textures}<label><input type="checkbox" bind:checked={textured} /> Textures</label>{/if}
-    <label>
-      Other objects
-      <select bind:value={opaque}>
-        <option value="visible">visible</option>
-        <option value="faded">faded</option>
-        <option value="hidden">hidden</option>
-      </select>
-    </label>
+    <details class="objects">
+      <summary>Objects</summary>
+      <table>
+        <tbody>
+          {#each OBJECT_CATEGORIES as c (c)}
+            <tr>
+              <td>{c}</td>
+              <td>
+                <select
+                  value={objectDisplay.settings[c].display}
+                  onchange={(e) =>
+                    objectDisplay.set(c, {
+                      display: e.currentTarget.value as OpaqueDisplay,
+                    })}
+                >
+                  <option value="visible">visible</option>
+                  <option value="faded">faded</option>
+                  <option value="hidden">hidden</option>
+                </select>
+              </td>
+              <td>
+                <label title="Can be selected and moved with the tiles"
+                  ><input
+                    type="checkbox"
+                    checked={objectDisplay.settings[c].selectable}
+                    onchange={(e) => objectDisplay.set(c, { selectable: e.currentTarget.checked })}
+                  /> selectable</label
+                >
+              </td>
+            </tr>
+          {/each}
+        </tbody>
+      </table>
+    </details>
   </div>
 </div>
 
 <style>
+  .objects {
+    position: relative;
+  }
+  .objects table {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 5;
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.3rem 0.5rem;
+    white-space: nowrap;
+  }
+  .objects td {
+    padding: 0.1rem 0.4rem;
+  }
   .view {
     position: relative;
     height: 78vh;
