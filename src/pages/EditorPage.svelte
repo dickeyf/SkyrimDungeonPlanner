@@ -127,7 +127,8 @@
   /** Shift+drag: the selection rectangle, from where the drag started to the pointer. */
   let box = $state.raw<{ from: Vec3; to: Vec3 } | null>(null);
   /** Dragging a selection of several tiles: where the drag started and the cell offset now. */
-  let groupDrag = $state.raw<{ grab: CellIndex; delta: CellIndex } | null>(null);
+  /** A group being dragged: the element grabbed, where, and the offset so far. */
+  let groupDrag = $state.raw<{ key: string; grab: CellIndex; delta: CellIndex } | null>(null);
   let message = $state('');
   let filter = $state('');
   let category = $state<PieceCategory | 'all'>('all');
@@ -1341,7 +1342,7 @@
   }
 
   const groupMove = $derived(
-    groupDrag && layout && (groupDrag.delta[0] || groupDrag.delta[1])
+    groupDrag && layout && (groupDrag.delta[0] || groupDrag.delta[1] || groupDrag.delta[2])
       ? moveTiles(layout, pieces, ed.selection, groupDrag.delta, anchor?.module)
       : null,
   );
@@ -1551,6 +1552,52 @@
     return true;
   }
 
+  /**
+   * The offset of a dragged group: the grid step under the pointer, unless the tile grabbed
+   * snaps onto an open face as it would alone, in height too (half levels included, V5 step
+   * 7): the whole group then follows it. A group never turns, so a snap that would is ignored.
+   */
+  function groupDelta(key: string, grab: CellIndex, now: CellIndex): CellIndex {
+    const plain: CellIndex = [quant(now[0] - grab[0]), quant(now[1] - grab[1]), 0];
+    const tile = layout?.tiles.get(key);
+    if (!layout || !anchor || !tile) return plain;
+    const piece = pieces.get(tile.piece)!;
+    let rest = layout;
+    for (const k of ed.selection) if (rest.tiles.has(k)) rest = withoutTile(rest, k);
+    const cells = footprintCells(
+      piece,
+      [tile.cell[0] + plain[0], tile.cell[1] + plain[1], tile.cell[2]],
+      tile.rotation,
+    );
+    const centre: Vec3 = [
+      anchor.origin[0] +
+        ((Math.min(...cells.map((c) => c[0])) + Math.max(...cells.map((c) => c[0])) + 1) / 2) *
+          anchor.module.xy,
+      anchor.origin[1] +
+        ((Math.min(...cells.map((c) => c[1])) + Math.max(...cells.map((c) => c[1])) + 1) / 2) *
+          anchor.module.xy,
+      0,
+    ];
+    const snapped = snapPlacement({
+      world: centre,
+      anchor,
+      layout: rest,
+      pieces,
+      types,
+      piece: tile.piece,
+      rotation: tile.rotation,
+      opens: openFaces(rest, pieces),
+      geometry,
+      ...(fineSearch ? { fine: fineSearch } : {}),
+    });
+    if (!snapped || snapped.rotation !== tile.rotation) return plain;
+    return [
+      snapped.cell[0] - tile.cell[0] + 0,
+      snapped.cell[1] - tile.cell[1] + 0,
+      snapped.cell[2] - tile.cell[2] + 0,
+    ];
+  }
+
   /** The point under the pointer in cells, not rounded (moves are rounded to the step). */
   const cellUnder = (w: Vec3): CellIndex => [
     (w[0] - anchor!.origin[0]) / anchor!.module.xy,
@@ -1702,7 +1749,7 @@
       }
       if (!info.key || !ed.selection.includes(info.key)) return false;
       if (ed.selection.length > 1) {
-        groupDrag = { grab: cellUnder(info.world), delta: [0, 0, 0] };
+        groupDrag = { key: info.key, grab: cellUnder(info.world), delta: [0, 0, 0] };
         return true;
       }
       const object = layout.objects?.get(info.key);
@@ -1723,10 +1770,7 @@
         box = { ...box, to: info.world };
       } else if (groupDrag) {
         const now = cellUnder(info.world);
-        groupDrag = {
-          ...groupDrag,
-          delta: [quant(now[0] - groupDrag.grab[0]), quant(now[1] - groupDrag.grab[1]), 0],
-        };
+        groupDrag = { ...groupDrag, delta: groupDelta(groupDrag.key, groupDrag.grab, now) };
       } else if (objectDrag) {
         // an object moves by the snapping step, from where it was (V5 step 7)
         const step = snapStep || anchor.module.xy;

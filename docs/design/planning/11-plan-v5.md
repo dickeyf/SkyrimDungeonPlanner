@@ -301,6 +301,18 @@ together, and never edited.
   room is the same gesture.
 - **Done when**: the criterion's furnished room moves in the tool with its contents and stays
   right in the CK and in game, and a group snaps onto an open face in height as a tile does.
+- **Progress (12 Oct 2026)**: the layout holds the cell's other objects (`Layout.objects`, from
+  the grid's opaque references, with owner and origin); `moveTiles` moves the selected objects
+  by the same offset (in units of the module), `removeTiles` removes them, `placeObject` moves or
+  turns one; `changes` lists the objects moved and removed, saved as `move` and `remove` edits
+  (the store already moved any own reference and refuses a master's, D22). The editor draws the
+  objects where the layout has them; the own ones of the categories ticked "selectable" and not
+  hidden are picked by a click, Shift+click, the rectangle (on the shown level) and Ctrl+A; one
+  object is dragged by the snapping step, turned by a quarter (R), deleted (Del). Checked by the
+  user: a furnished room selected and moved with its contents, saved, right in the CK and in
+  game. Then the group snap: the tile grabbed snaps onto an open face as it would alone, in
+  height too, and the whole group follows it (`groupDelta`); a snap that would turn it is
+  ignored, a group never turns. Left: R23 (the links a move breaks).
 
 ## Phase D – The Nordic families left out
 
