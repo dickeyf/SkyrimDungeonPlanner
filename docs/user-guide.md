@@ -55,7 +55,9 @@ Once set up, the app opens the editor directly.
 - **Toolbar**: the cell of the plugin (choosing one opens it; the last cell you opened in each
   plugin reopens automatically), _New cell..._, _Undo_ / _Redo_, **Save** (with the number of
   unsaved changes; hover it for the details), _Reload plugin_.
-- **Scene**: the cell seen from above, on the kits' 128-unit grid (see [The grid](#the-grid)). Drag to pan, use the wheel to zoom,
+- **Scene**: the cell seen from above, on the kits' 128-unit grid (see [The grid](#the-grid)).
+  The other objects of the cell (furniture, lights, markers...) are drawn with their meshes;
+  the **Objects** panel over the view shows, fades or hides each category. Drag to pan, use the wheel to zoom,
   _Fit_ to frame the whole cell. Pieces are coloured by category: halls, rooms, doors. _Other
   objects_ (lights, clutter, markers, pieces outside the kit) can be shown, faded or hidden:
   they are never changed.

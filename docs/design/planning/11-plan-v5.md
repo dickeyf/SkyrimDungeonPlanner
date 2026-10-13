@@ -278,6 +278,12 @@ together, and never edited.
   too), markers with a small symbol, lights with their radius on demand.
 - **Done when**: the user can bring out only the lights, or hide the clutter, in a furnished
   test cell.
+- **Done (12 Oct 2026)**: an "Objects" panel over the view replaces the single "Other objects"
+  choice: per category, visible, faded or hidden, and "selectable" (for step 7), remembered per
+  browser (`editor/objectDisplay.svelte.ts`; markers and sounds start faded, invisible in game);
+  the scene draws each object by its category (`CellScene.setCategoryDisplay`), with its own
+  model from the base index instead of a marker. Checked by the user on a Dwemer cell furnished
+  in the CK. The light radius on demand is left for later.
 
 ### Step 7 – Select and move objects with the tiles
 - **Why**: the friction itself: moving a furnished room.
