@@ -52,6 +52,8 @@ export interface SceneObject {
   levels?: [number, number];
   /** What an object that is not a tile is (V5, `objectCategory`): shown by its category. */
   category?: string;
+  /** An object that is not a tile but may be picked, to be selected and moved (V5 step 7). */
+  selectable?: boolean;
 }
 
 /** How the levels below the active one are drawn (V3, D3). */
@@ -514,6 +516,7 @@ export class CellScene {
           plain: mesh.geometry,
           levels: o.levels,
           category: o.category,
+          selectable: o.selectable,
         };
         this.styleMesh(mesh);
         if (this.textures) void this.applyTexture(mesh);
@@ -575,6 +578,7 @@ export class CellScene {
         tex,
         levels: o.levels,
         category: o.category,
+        selectable: o.selectable,
       };
       this.styleMesh(mesh);
       if (this.textures && changed) void this.applyTexture(mesh);
@@ -893,7 +897,7 @@ export class CellScene {
     // only the active level's pieces are picked, not the dimmed ones below
     const hit = hits.find(
       (h) =>
-        (h.object as Object3D).userData.pickable &&
+        ((h.object as Object3D).userData.pickable || h.object.userData.selectable) &&
         h.object.visible &&
         h.object.userData.place !== 'below',
     );

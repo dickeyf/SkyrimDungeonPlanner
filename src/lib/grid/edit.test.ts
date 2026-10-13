@@ -15,6 +15,7 @@ import {
   removeTile,
   removeTiles,
   moveTiles,
+  placeObject,
   rotateTile,
   tileWorldPlacement,
   turnedPlacement,
@@ -219,5 +220,67 @@ describe('history', () => {
     h = commit(h, b.layout);
     expect(h.future).toEqual([]);
     expect(undo(historyOf(l0))).toEqual(historyOf(l0));
+  });
+});
+
+describe('the other objects of a cell (V5 step 7)', () => {
+  /** A hall, an own chair in it and a master's lamp. */
+  function furnished(): Layout {
+    const refs = [
+      ref('H', 'Hall', [128, 128, -512]),
+      ref('C', 'Chair', [100, 90, -500]),
+      ref('L', 'Lamp', [200, 50, -400]),
+    ];
+    const grid = deriveGrid(refs, PIECES, { module: 128, zModule: 128 });
+    return layoutFromGrid(
+      grid,
+      new Map([
+        ['H', true],
+        ['C', true],
+        ['L', false],
+      ]),
+    );
+  }
+  const MODULE = { xy: 128, z: 128 };
+
+  it('keeps the objects that are not tiles, with their owner and origin', () => {
+    const l = furnished();
+    expect([...l.tiles.keys()]).toEqual(['H']);
+    expect(l.objects?.get('C')).toMatchObject({ base: 'Chair', own: true, pos: [100, 90, -500] });
+    expect(l.objects?.get('L')?.own).toBe(false);
+  });
+
+  it('moves a group of tiles and objects by the same offset, and saves the objects moved', () => {
+    const l = furnished();
+    const r = moveTiles(l, PIECES, ['H', 'C'], [1, 0, 0], MODULE);
+    if (!r.ok) throw new Error(r.reason);
+    expect(r.layout.objects?.get('C')?.pos).toEqual([228, 90, -500]);
+    expect(r.layout.tiles.get('H')?.cell[0]).toBe(l.tiles.get('H')!.cell[0] + 1);
+    const c = changes(l, r.layout);
+    expect(c.movedObjects?.map((o) => o.key)).toEqual(['C']);
+    expect(changeCount(c)).toBe(2);
+    // a tile edit keeps the objects
+    const turned = rotateTile(r.layout, PIECES, 'H', 1);
+    if (!turned.ok) throw new Error(turned.reason);
+    expect(turned.layout.objects?.get('C')?.pos).toEqual([228, 90, -500]);
+  });
+
+  it('moves, turns and removes an own object, never one of a master', () => {
+    const l = furnished();
+    const moved = placeObject(l, 'C', [0, 0, -500], [0, 0, Math.PI / 2]);
+    if (!moved.ok) throw new Error(moved.reason);
+    expect(changes(l, moved.layout).movedObjects?.[0]?.rot).toEqual([0, 0, Math.PI / 2]);
+    expect(placeObject(l, 'L', [0, 0, 0], [0, 0, 0])).toEqual({ ok: false, reason: 'read-only' });
+    expect(moveTiles(l, PIECES, ['L'], [1, 0, 0], MODULE)).toEqual({
+      ok: false,
+      reason: 'read-only',
+    });
+    const gone = removeTiles(l, ['C']);
+    if (!gone.ok) throw new Error(gone.reason);
+    expect(changes(l, gone.layout).removedObjects?.map((o) => o.key)).toEqual(['C']);
+    // back at its origin, an object is unchanged
+    const back = placeObject(moved.layout, 'C', [100, 90, -500], [0, 0, 0]);
+    if (!back.ok) throw new Error(back.reason);
+    expect(changeCount(changes(l, back.layout))).toBe(0);
   });
 });

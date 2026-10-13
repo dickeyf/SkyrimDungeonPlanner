@@ -112,13 +112,18 @@ export function tileObject(
   };
 }
 
-/** Everything to draw while editing: the layout's tiles plus the cell's non-tile objects. */
+/**
+ * Everything to draw while editing: the layout's tiles plus the cell's other objects, where the
+ * layout has them now (V5 step 7). `selectable` says which categories may be picked: the own
+ * objects of those categories are.
+ */
 export function layoutObjects(
   layout: Layout,
   loaded: LoadedCell,
   catalogue: Catalogue,
   models: ReadonlyMap<FormKey, string>,
   categories: ReadonlyMap<FormKey, string> = new Map(),
+  selectable: (category: string) => boolean = () => false,
 ): SceneObject[] {
   const pieces = new Map(catalogue.pieces.map((p) => [p.formKey, p]));
   const out: SceneObject[] = [];
@@ -126,8 +131,26 @@ export function layoutObjects(
     const piece = pieces.get(tile.piece);
     if (piece) out.push(tileObject(tile, piece, loaded.grid.anchor));
   }
-  return [
-    ...out,
-    ...sceneObjects(loaded, catalogue, models, categories).filter((o) => !o.pickable),
-  ];
+  if (!layout.objects)
+    return [
+      ...out,
+      ...sceneObjects(loaded, catalogue, models, categories).filter((o) => !o.pickable),
+    ];
+  for (const o of layout.objects.values()) {
+    const model = models.get(o.base) ?? pieces.get(o.base)?.model;
+    const category = categories.get(o.base) ?? 'other';
+    out.push({
+      key: o.key,
+      modelPath: model ? modelArchivePath(model) : undefined,
+      pos: o.pos,
+      rot: o.rot,
+      scale: o.scale,
+      color: CATEGORY_COLORS.opaque,
+      pickable: false,
+      levels: levelOf(o.pos[2], loaded.grid.anchor),
+      category,
+      selectable: o.own && selectable(category),
+    });
+  }
+  return out;
 }

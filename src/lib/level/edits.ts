@@ -34,5 +34,14 @@ export function editsFromChanges(
     ...changes.removed.map((t): LevelEdit => ({ kind: 'remove', ref: t.key })),
     ...changes.moved.map((t): LevelEdit => ({ kind: 'move', ref: t.key, ...placement(t) })),
     ...changes.added.map((t): LevelEdit => ({ kind: 'add', base: t.piece, ...placement(t) })),
+    // the other objects (V5 step 7): moved or removed, at their own position and angles
+    ...(changes.removedObjects ?? []).map((o): LevelEdit => ({ kind: 'remove', ref: o.key })),
+    ...(changes.movedObjects ?? []).map((o): LevelEdit => ({
+      kind: 'move',
+      ref: o.key,
+      pos: o.pos,
+      rot: o.rot,
+      scale: o.scale,
+    })),
   ];
 }

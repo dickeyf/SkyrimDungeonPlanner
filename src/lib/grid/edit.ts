@@ -31,11 +31,31 @@ export interface EditTile {
   origin?: { ref: PlacedRef; cell: CellIndex; rotation: Rotation };
 }
 
+/**
+ * An object of the cell that is not a tile (V5 step 7, D71): furniture, a light, a marker...
+ * placed freely; the editor moves the working plugin's own ones with the tiles.
+ */
+export interface LayoutObject {
+  /** REFR FormKey. */
+  key: string;
+  base: FormKey;
+  pos: Vec3;
+  /** Euler angles in radians, as stored. */
+  rot: Vec3;
+  scale: number;
+  /** Belongs to the working plugin; a master's object cannot be edited (D22). */
+  own: boolean;
+  /** As loaded: an object back at its origin is unchanged. */
+  origin: { pos: Vec3; rot: Vec3 };
+}
+
 export interface Layout {
   tiles: ReadonlyMap<string, EditTile>;
   nextNew: number;
   /** Piece pairs allowed to share cells in one relative placement (annotations). */
   accepted?: AcceptedOverlaps;
+  /** The cell's other objects (V5 step 7), by key. */
+  objects?: ReadonlyMap<string, LayoutObject>;
 }
 
 export type EditFailure =
@@ -65,7 +85,20 @@ export function layoutFromGrid(
       origin: { ref: t.ref, cell: t.cell, rotation: t.rotation },
     });
   }
-  return { tiles, nextNew: 1, accepted };
+  const objects = new Map<string, LayoutObject>();
+  for (const o of grid.opaque) {
+    const key = o.ref.refFormKey;
+    objects.set(key, {
+      key,
+      base: o.ref.base,
+      pos: o.ref.pos,
+      rot: o.ref.rot,
+      scale: o.ref.scale,
+      own: own.get(key) ?? false,
+      origin: { pos: o.ref.pos, rot: o.ref.rot },
+    });
+  }
+  return { tiles, nextNew: 1, accepted, objects };
 }
 
 /** Cells occupied by a piece placed at `cell` with `rotation`. */
@@ -101,7 +134,7 @@ export function conflictsFor(
 function withTile(layout: Layout, tile: EditTile, nextNew = layout.nextNew): Layout {
   const tiles = new Map(layout.tiles);
   tiles.set(tile.key, tile);
-  return { tiles, nextNew, accepted: layout.accepted };
+  return { ...layout, tiles, nextNew };
 }
 
 export function addTile(
@@ -160,7 +193,7 @@ export function placeTile(
 export function withoutTile(layout: Layout, key: string): Layout {
   const tiles = new Map(layout.tiles);
   tiles.delete(key);
-  return { tiles, nextNew: layout.nextNew, accepted: layout.accepted };
+  return { ...layout, tiles };
 }
 
 export function moveTile(layout: Layout, pieces: Pieces, key: string, cell: CellIndex): EditResult {
@@ -212,23 +245,32 @@ export function removeTile(layout: Layout, key: string): EditResult {
   if (!tile.own) return { ok: false, reason: 'read-only' };
   const tiles = new Map(layout.tiles);
   tiles.delete(key);
-  return { ok: true, key, layout: { tiles, nextNew: layout.nextNew, accepted: layout.accepted } };
+  return { ok: true, key, layout: { ...layout, tiles } };
 }
 
 /** Delete several tiles at once (one undo step); refused if any belongs to a master. */
 export function removeTiles(layout: Layout, keys: readonly string[]): EditResult {
   const tiles = new Map(layout.tiles);
+  const objects = new Map(layout.objects ?? []);
   for (const key of keys) {
     const tile = layout.tiles.get(key);
-    if (!tile) return { ok: false, reason: 'missing' };
-    if (!tile.own) return { ok: false, reason: 'read-only' };
+    const object = layout.objects?.get(key);
+    if (!tile && !object) return { ok: false, reason: 'missing' };
+    if (!(tile ?? object)!.own) return { ok: false, reason: 'read-only' };
     tiles.delete(key);
+    objects.delete(key);
   }
-  return {
-    ok: true,
-    key: keys[0] ?? '',
-    layout: { tiles, nextNew: layout.nextNew, accepted: layout.accepted },
-  };
+  return { ok: true, key: keys[0] ?? '', layout: { ...layout, tiles, objects } };
+}
+
+/** Move and turn one object of the cell (V5 step 7); a master's object is refused (D22). */
+export function placeObject(layout: Layout, key: string, pos: Vec3, rot: Vec3): EditResult {
+  const object = layout.objects?.get(key);
+  if (!object) return { ok: false, reason: 'missing' };
+  if (!object.own) return { ok: false, reason: 'read-only' };
+  const objects = new Map(layout.objects);
+  objects.set(key, { ...object, pos, rot });
+  return { ok: true, key, layout: { ...layout, objects } };
 }
 
 /**
@@ -241,13 +283,28 @@ export function moveTiles(
   pieces: Pieces,
   keys: readonly string[],
   delta: CellIndex,
+  /** The grid module: the selected objects move by `delta` cells of it (V5 step 7). */
+  module?: { xy: number; z: number },
 ): EditResult {
   const moving = new Set(keys);
   const rest = new Map([...layout.tiles].filter(([k]) => !moving.has(k)));
-  const staying: Layout = { tiles: rest, nextNew: layout.nextNew, accepted: layout.accepted };
+  const staying: Layout = { ...layout, tiles: rest };
   const tiles = new Map(layout.tiles);
+  const objects = new Map(layout.objects ?? []);
   const conflicts: CellIndex[] = [];
   for (const key of keys) {
+    const object = layout.objects?.get(key);
+    if (object) {
+      if (!object.own) return { ok: false, reason: 'read-only' };
+      if (!module) return { ok: false, reason: 'missing' };
+      const pos: Vec3 = [
+        object.pos[0] + delta[0] * module.xy,
+        object.pos[1] + delta[1] * module.xy,
+        object.pos[2] + delta[2] * module.z,
+      ];
+      objects.set(key, { ...object, pos });
+      continue;
+    }
     const tile = layout.tiles.get(key);
     if (!tile) return { ok: false, reason: 'missing' };
     if (!tile.own) return { ok: false, reason: 'read-only' };
@@ -264,11 +321,7 @@ export function moveTiles(
     tiles.set(key, { ...tile, cell });
   }
   if (conflicts.length) return { ok: false, reason: 'conflict', cells: conflicts };
-  return {
-    ok: true,
-    key: keys[0] ?? '',
-    layout: { tiles, nextNew: layout.nextNew, accepted: layout.accepted },
-  };
+  return { ok: true, key: keys[0] ?? '', layout: { ...layout, tiles, objects } };
 }
 
 export function isMoved(tile: EditTile): boolean {
@@ -331,7 +384,12 @@ export interface LayoutChanges {
   added: EditTile[];
   moved: EditTile[];
   removed: EditTile[];
+  /** The cell's other objects moved or turned, and removed (V5 step 7). */
+  movedObjects?: LayoutObject[];
+  removedObjects?: LayoutObject[];
 }
+
+const samePlace = (a: Vec3, b: Vec3) => a.every((v, i) => Math.abs(v - b[i]!) < 1e-4);
 
 export function changes(original: Layout, current: Layout): LayoutChanges {
   const added: EditTile[] = [];
@@ -341,11 +399,23 @@ export function changes(original: Layout, current: Layout): LayoutChanges {
     else if (isMoved(tile)) moved.push(tile);
   }
   const removed = [...original.tiles.values()].filter((t) => !current.tiles.has(t.key));
-  return { added, moved, removed };
+  const movedObjects = [...(current.objects?.values() ?? [])].filter(
+    (o) => !samePlace(o.pos, o.origin.pos) || !samePlace(o.rot, o.origin.rot),
+  );
+  const removedObjects = [...(original.objects?.values() ?? [])].filter(
+    (o) => !current.objects?.has(o.key),
+  );
+  return { added, moved, removed, movedObjects, removedObjects };
 }
 
 export function changeCount(c: LayoutChanges): number {
-  return c.added.length + c.moved.length + c.removed.length;
+  return (
+    c.added.length +
+    c.moved.length +
+    c.removed.length +
+    (c.movedObjects?.length ?? 0) +
+    (c.removedObjects?.length ?? 0)
+  );
 }
 
 /** Undo/redo over immutable layouts. */

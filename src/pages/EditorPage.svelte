@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { objectCategory, type BaseInfo } from '$lib/level/objects';
+  import { objectCategory, type BaseInfo, type ObjectCategory } from '$lib/level/objects';
+  import { objectDisplay } from '$lib/editor/objectDisplay.svelte';
   /**
    * Steps 13-14: edit a cell's tiles. Pure logic lives in $lib/grid (edit, assist); this page
    * wires it to the scene (pointer events), the keyboard, the piece palette and the contextual
@@ -66,6 +67,7 @@
     removeTile,
     removeTiles,
     moveTiles,
+    placeObject,
     tileWorldPlacement,
     rotateTile,
     sharedCells,
@@ -230,11 +232,16 @@
     ]),
   );
   const categories = $derived(new Map([...bases].map(([k, b]) => [k, objectCategory(b)] as const)));
-  const objects = $derived(
-    layout && ed.loaded && historyFor === ed.loaded
-      ? layoutObjects(layout, ed.loaded, catalogue, models, categories)
-      : [],
-  );
+  const objects = $derived.by(() => {
+    if (!layout || !ed.loaded || historyFor !== ed.loaded) return [];
+    // an object being dragged is drawn where it would land
+    const o = objectDrag && layout.objects?.get(objectDrag.key);
+    const moved = o ? placeObject(layout, o.key, objectDrag!.to, o.rot) : null;
+    const shown = moved?.ok ? moved.layout : layout;
+    return layoutObjects(shown, ed.loaded, catalogue, models, categories, (c) =>
+      objectSelectable(c),
+    );
+  });
   const grid = $derived.by(() => {
     const g = ed.loaded ? sceneGrid(ed.loaded, 12) : null;
     if (!g) return null;
@@ -253,6 +260,21 @@
   const summary = $derived(ed.loaded ? summarizeCell(ed.loaded, pieces) : null);
   const pending = $derived(original && layout ? changes(original, layout) : null);
   const selectedTile = $derived(ed.selected ? layout?.tiles.get(ed.selected) : undefined);
+  /** The selected object that is not a tile (V5 step 7). */
+  const selectedObject = $derived(ed.selected ? layout?.objects?.get(ed.selected) : undefined);
+  /** Objects of a category may be selected when it is selectable and not hidden (V5 step 7). */
+  function objectSelectable(category: string): boolean {
+    const s = objectDisplay.settings[category as ObjectCategory];
+    return !!s && s.selectable && s.display !== 'hidden';
+  }
+  /** The own objects one may select, of the selectable categories. */
+  const selectableObjects = $derived(
+    [...(layout?.objects?.values() ?? [])].filter(
+      (o) => o.own && objectSelectable(categories.get(o.base) ?? 'other'),
+    ),
+  );
+  /** One object dragged on its own: where it was grabbed, and its position then. */
+  let objectDrag = $state.raw<{ key: string; grab: Vec3; from: Vec3; to: Vec3 } | null>(null);
 
   // ---- the contextual grid (V4 step 7, D70) ---------------------------------------------------
   /** The snapping step in units: the module by default; finer steps for shifted pieces. */
@@ -1320,7 +1342,7 @@
 
   const groupMove = $derived(
     groupDrag && layout && (groupDrag.delta[0] || groupDrag.delta[1])
-      ? moveTiles(layout, pieces, ed.selection, groupDrag.delta)
+      ? moveTiles(layout, pieces, ed.selection, groupDrag.delta, anchor?.module)
       : null,
   );
   /** The selection rectangle and, while a group is dragged, where its tiles would land. */
@@ -1358,12 +1380,23 @@
     const x1 = Math.max(a[0], b[0]);
     const y0 = Math.min(a[1], b[1]);
     const y1 = Math.max(a[1], b[1]);
-    return [...layout.tiles.keys()].filter((key) =>
-      tileCells(key).some((c) => {
-        const r = cellBox(c);
-        return r.max[0] > x0 && r.min[0] < x1 && r.max[1] > y0 && r.min[1] < y1;
-      }),
-    );
+    return [
+      ...[...layout.tiles.keys()].filter((key) =>
+        tileCells(key).some((c) => {
+          const r = cellBox(c);
+          return r.max[0] > x0 && r.min[0] < x1 && r.max[1] > y0 && r.min[1] < y1;
+        }),
+      ),
+      // and the selectable objects standing within it (V5 step 7)
+      ...selectableObjects
+        .filter((o) => o.pos[0] > x0 && o.pos[0] < x1 && o.pos[1] > y0 && o.pos[1] < y1)
+        .filter(
+          (o) =>
+            activeLevel === null ||
+            Math.floor((o.pos[2] - anchor!.origin[2]) / anchor!.module.z) === activeLevel,
+        )
+        .map((o) => o.key),
+    ];
   }
 
   function toggleSelected(key: string): void {
@@ -1672,6 +1705,12 @@
         groupDrag = { grab: cellUnder(info.world), delta: [0, 0, 0] };
         return true;
       }
+      const object = layout.objects?.get(info.key);
+      if (object) {
+        if (!object.own) return false;
+        objectDrag = { key: object.key, grab: info.world, from: object.pos, to: object.pos };
+        return true;
+      }
       const tile = layout.tiles.get(info.key);
       if (!tile?.own) return false;
       const grab = cellUnder(info.world);
@@ -1687,6 +1726,16 @@
         groupDrag = {
           ...groupDrag,
           delta: [quant(now[0] - groupDrag.grab[0]), quant(now[1] - groupDrag.grab[1]), 0],
+        };
+      } else if (objectDrag) {
+        // an object moves by the snapping step, from where it was (V5 step 7)
+        const step = snapStep || anchor.module.xy;
+        const d = [0, 1].map(
+          (i) => Math.round((info.world[i]! - objectDrag!.grab[i]!) / step) * step,
+        );
+        objectDrag = {
+          ...objectDrag,
+          to: [objectDrag.from[0] + d[0]!, objectDrag.from[1] + d[1]!, objectDrag.from[2]],
         };
       } else if (placing) {
         const { cell, rotation } = placementAt(info.world);
@@ -1762,6 +1811,13 @@
         groupDrag = null;
         return;
       }
+      if (objectDrag) {
+        const o = layout?.objects?.get(objectDrag.key);
+        if (layout && o && objectDrag.to.some((v, i) => v !== objectDrag!.from[i]))
+          apply(placeObject(layout, o.key, objectDrag.to, o.rot), 'Move');
+        objectDrag = null;
+        return;
+      }
       if (drag && layout) {
         const tile = layout.tiles.get(drag.key)!;
         const same =
@@ -1827,13 +1883,21 @@
   }
 
   function rotateSelected(turns: 1 | -1): void {
-    if (layout && ed.selected) apply(rotateTile(layout, pieces, ed.selected, turns), 'Rotation');
+    if (!layout || !ed.selected) return;
+    const o = layout.objects?.get(ed.selected);
+    if (o) {
+      // an object turns by a quarter about Z, its other angles kept (V5 step 7)
+      const rot: Vec3 = [o.rot[0], o.rot[1], o.rot[2] + (turns * Math.PI) / 2];
+      apply(placeObject(layout, o.key, o.pos, rot), 'Rotation');
+      return;
+    }
+    apply(rotateTile(layout, pieces, ed.selected, turns), 'Rotation');
   }
 
   function deleteSelected(): void {
     if (!layout || ed.selection.length === 0) return;
     const r =
-      ed.selection.length === 1
+      ed.selection.length === 1 && layout.tiles.has(ed.selection[0]!)
         ? removeTile(layout, ed.selection[0]!)
         : removeTiles(layout, ed.selection);
     if (apply(r, 'Deletion')) ed.selection = [];
@@ -1878,7 +1942,7 @@
       history = redo(history);
       ghost = null;
     } else if ((e.ctrlKey || e.metaKey) && key === 'a') {
-      ed.selection = layout ? [...layout.tiles.keys()] : [];
+      ed.selection = layout ? [...layout.tiles.keys(), ...selectableObjects.map((o) => o.key)] : [];
     } else if (key === 'r') {
       const turns = e.shiftKey ? -1 : 1;
       if (placing) {
@@ -2160,13 +2224,30 @@
                 {/each}
               </ul>
             {:else if ed.selection.length > 1}
-              <b>{ed.selection.length} tiles selected</b><br />
+              <b
+                >{ed.selection.filter((k) => layout?.tiles.has(k)).length} tiles, {ed.selection.filter(
+                  (k) => layout?.objects?.has(k),
+                ).length} objects selected</b
+              ><br />
               <button onclick={deleteSelected}>Delete (Del)</button>
               <button onclick={() => (ed.selection = [])}>Clear selection (Esc)</button>
               <div class="hint">
                 Drag one of them to move them all. Shift+click adds or removes a tile, Shift+drag
                 adds the tiles within a rectangle, Ctrl+A selects every tile.
               </div>
+            {:else if selectedObject}
+              <b>{bases.get(selectedObject.base)?.editorId ?? selectedObject.base}</b>
+              ({categories.get(selectedObject.base) ?? 'other'})<br />
+              {#if selectedObject.own}
+                <button onclick={() => rotateSelected(1)}>Rotate (R)</button>
+                <button onclick={deleteSelected}>Delete (Del)</button>
+                <div class="hint">
+                  Drag the selected object to move it, by the snapping step (G); R turns it by a
+                  quarter.
+                </div>
+              {:else}
+                <span class="hint">Master object: read-only.</span>
+              {/if}
             {:else if selectedTile}
               <b>{pieces.get(selectedTile.piece)?.editorId}</b>
               {selectedTile.origin ? '' : '(new)'}<br />
