@@ -323,7 +323,8 @@ together, and never edited.
   D22); a master's door is named in the save message. A selected group also turns (R, asked by
   the user to test the doors): about the middle of its tiles' footprints rounded to a cell
   corner, so every footprint lands on whole cells; objects turn about the same point
-  (`rotateTiles`). Left: the user's test of a moved load door in game.
+  (`rotateTiles`). **Done (14 Oct 2026)**: a moved load door tested by the user in game, the
+  door leading to it lands in front of it.
 
 ## Phase D – The Nordic families left out
 
