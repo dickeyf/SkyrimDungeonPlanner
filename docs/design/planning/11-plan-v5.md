@@ -312,7 +312,16 @@ together, and never edited.
   user: a furnished room selected and moved with its contents, saved, right in the CK and in
   game. Then the group snap: the tile grabbed snaps onto an open face as it would alone, in
   height too, and the whole group follows it (`groupDelta`); a snap that would turn it is
-  ignored, a group never turns. Left: R23 (the links a move breaks).
+  ignored, a group never turns. Then every edge tile of the group is tried, not only the one
+  grabbed (a door at the far end of the group did not snap), keeping its rotation; the snap
+  nearest the pointer's offset wins. Checked by the user (`ImpLHallDoorB01` onto
+  `ImpRoomDoorB03`).
+- **R23 (14 Oct 2026)**: measured by the user on the moved room: linked references and enable
+  parents hold (they name FormIDs); the NavMesh stays behind, accepted (deleted and filled again
+  in the CK, linked to the next hall by hand: a later fix). A load door's teleport: at save, the
+  doors leading to a moved door get their `XTEL` arrival moved and turned with it (own doors,
+  D22); a master's door is named in the save message. Left: the user's test of a moved load
+  door in game.
 
 ## Phase D – The Nordic families left out
 

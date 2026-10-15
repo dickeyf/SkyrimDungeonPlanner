@@ -67,9 +67,11 @@ export interface LevelStore {
   readNavMeshes(cell: FormKey): Promise<LevelNavMesh[]>;
   /**
    * Apply edits to a cell in memory, all or nothing: every edit is checked (own references
-   * only, known bases) before any is applied. Returns the keys of the added references.
+   * only, known bases) before any is applied. Returns the keys of the added references. A
+   * moved load door takes the arrival of the doors leading to it along (R23); what could not
+   * follow is pushed to `notes`.
    */
-  applyEdits(cell: FormKey, edits: readonly LevelEdit[]): Promise<FormKey[]>;
+  applyEdits(cell: FormKey, edits: readonly LevelEdit[], notes?: string[]): Promise<FormKey[]>;
   /**
    * Finalize the cell's NavMeshes (door links, NAVI entries; no cover), as the Creation Kit
    * does. `masterNavi` is asked only when the plugin has no NAVI yet.

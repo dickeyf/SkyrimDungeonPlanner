@@ -20,6 +20,17 @@ grid placement of the moved tile, **add** with the piece's base FormKey and its 
 cell, it belongs to the plugin itself, the base's plugin is one of its masters); only then are
 they applied, so a refused edit leaves the plugin untouched.
 
+**A moved load door (R23, V5 step 7)**: the door leading to it holds the arrival in front of it
+in its `XTEL`, in absolute coordinates. After the moves, every REFR of the plugin whose `XTEL`
+leads to a moved reference gets its arrival moved and turned with it (`followPlacement`: the
+offset from the old door turns by the door's change of Z angle, a clockwise heading, and follows
+it). Only the plugin's own doors are written (D22). A master's door, overridden here or not in
+the plugin at all, is left as it is and named in a note of the save message, to set again in
+the Creation Kit. The moved door's own `XTEL` does not change: its destination did not move.
+Why here and not in the editor: the partner door may be in any cell of the plugin, and the
+store is what sees them all. Set aside: writing an override of a master's door (D22 keeps the
+tool off master records; one door is quick to fix by hand).
+
 ## Safe saving (`level/save.ts`, V5, D47)
 
 ```mermaid

@@ -17,6 +17,28 @@ import { findSubrecord, recordSubrecords, type Subrecord } from '../format/esp/s
 import { BinaryWriter } from '../binary/BinaryWriter';
 import { finalizeCell } from '../navmesh/finalize';
 
+interface Placement {
+  pos: Vec3;
+  rot: Vec3;
+}
+
+/**
+ * Where a placement tied to a reference goes when the reference moves from `from` to `to`:
+ * its offset turns by the Z angle the reference turned (a clockwise heading) and follows it.
+ */
+export function followPlacement(p: Placement, from: Placement, to: Placement): Placement {
+  const turn = to.rot[2] - from.rot[2];
+  const c = Math.cos(turn);
+  const s = Math.sin(turn);
+  const x = p.pos[0] - from.pos[0];
+  const y = p.pos[1] - from.pos[1];
+  const z = (((p.rot[2] + turn) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+  return {
+    pos: [to.pos[0] + x * c + y * s, to.pos[1] - x * s + y * c, to.pos[2] + p.pos[2] - from.pos[2]],
+    rot: [p.rot[0], p.rot[1], z],
+  };
+}
+
 export class EspLevelStore implements LevelStore {
   private cells: Map<FormKey, CellEntry> | null = null;
 
@@ -86,7 +108,11 @@ export class EspLevelStore implements LevelStore {
     }));
   }
 
-  async applyEdits(cell: FormKey, edits: readonly LevelEdit[]): Promise<FormKey[]> {
+  async applyEdits(
+    cell: FormKey,
+    edits: readonly LevelEdit[],
+    notes?: string[],
+  ): Promise<FormKey[]> {
     const entry = (await this.cellMap()).get(cell);
     if (!entry) throw new Error(`cell ${cell} is not an interior cell of ${this.name}`);
     const refs = new Map(
@@ -120,14 +146,18 @@ export class EspLevelStore implements LevelStore {
         throw new Error(`reference ${edit.ref} belongs to a master and is not edited (D22)`);
     }
     const added: FormKey[] = [];
+    const moved = new Map<number, { from: Placement; to: Placement }>();
     for (const edit of edits) {
       if (edit.kind === 'navmesh') {
         if (edit.navm && !edit.nav) this.plugin.deleteNavm(entry, navms.get(edit.navm)!);
         else if (edit.navm) await this.plugin.setNavm(navms.get(edit.navm)!, edit.nav!);
         else added.push(this.formKey(this.plugin.addNavm(entry, edit.nav!).formId));
       } else if (edit.kind === 'remove') this.plugin.deleteRefr(entry, refs.get(edit.ref)!);
-      else if (edit.kind === 'move') this.plugin.moveRefr(refs.get(edit.ref)!, edit);
-      else {
+      else if (edit.kind === 'move') {
+        const ref = refs.get(edit.ref)!;
+        moved.set(ref.record.formId, { from: ref.info, to: edit });
+        this.plugin.moveRefr(ref, edit);
+      } else {
         const record = this.plugin.addRefr(entry, {
           base: fromFormKey(edit.base, masters, name),
           pos: edit.pos,
@@ -137,7 +167,54 @@ export class EspLevelStore implements LevelStore {
         added.push(this.formKey(record.formId));
       }
     }
+    await this.followMovedDoors(moved, notes);
     return added;
+  }
+
+  /**
+   * The doors leading to a moved door (R23): their XTEL arrival sits in front of it, so it
+   * moves and turns with it. Only the plugin's own doors are written (D22); a master's door
+   * or an override is left as it is and noted, to fix in the Creation Kit.
+   */
+  private async followMovedDoors(
+    moved: ReadonlyMap<number, { from: Placement; to: Placement }>,
+    notes?: string[],
+  ): Promise<void> {
+    if (!moved.size) return;
+    const own = this.plugin.ownIndex;
+    const leadsTo = new Map<number, number>();
+    const followed = new Set<number>();
+    for (const record of this.plugin.recordsOfType('REFR')) {
+      const xtel = findSubrecord(await recordSubrecords(record), 'XTEL');
+      if (!xtel || xtel.data.byteLength < 28) continue;
+      const v = new DataView(xtel.data.buffer, xtel.data.byteOffset, xtel.data.byteLength);
+      const to = v.getUint32(0, true);
+      if (moved.has(record.formId)) leadsTo.set(record.formId, to);
+      const move = moved.get(to);
+      if (!move) continue;
+      followed.add(record.formId);
+      if (formIdIndex(record.formId) !== own) {
+        notes?.push(
+          `door ${this.formKey(record.formId)} leads to a moved door but is not this plugin's own: ` +
+            'set its teleport again in the Creation Kit',
+        );
+        continue;
+      }
+      const f = (i: number) => v.getFloat32(4 + i * 4, true);
+      const arrival = followPlacement(
+        { pos: [f(0), f(1), f(2)], rot: [f(3), f(4), f(5)] },
+        move.from,
+        move.to,
+      );
+      await this.plugin.setTeleportArrival(record, arrival.pos, arrival.rot);
+    }
+    // a master's door not overridden here is not in the plugin at all
+    for (const [door, to] of leadsTo)
+      if (!followed.has(to))
+        notes?.push(
+          `moved door ${this.formKey(door)} leads to ${this.formKey(to)}, which is not in this ` +
+            "plugin: set that door's teleport again in the Creation Kit",
+        );
   }
 
   async finalize(

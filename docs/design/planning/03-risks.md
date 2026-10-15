@@ -271,7 +271,13 @@ Objects other than tiles carry links the tool never wrote: a door's teleport des
 other door's `XTEL`), enable parents, linked references, patrol paths, a light's place in a
 room's bounds. Moving them may leave such links pointing at the old place. V5 step 7: measure
 which links a move breaks in the test cells, update the ones the tool can (the teleport), flag
-the others.
+the others. **Measured (14 Oct 2026)**: the user moved a whole furnished room (wall torches,
+lights, a furniture activator, a door and an XMarker, all with linked references) and saved:
+everything right in the CK and in game. Linked references and enable parents point at FormIDs,
+not places, so they hold. Only the NavMesh stays behind, which is accepted: the old one is
+deleted in the CK and Fill rebuilds it well; linking it to the next hall's NavMesh by hand is
+a small fix left for later. The teleport is handled at save: the arrival of the doors leading
+to a moved door follows it (own doors), a master's door is noted (arch 07).
 
 ### R8 – Ambition
 The full plan is very ambitious. Mitigation: narrow V1 (one kit, one Z, no NavMesh), structures designed broad, proofs of concept first. **So far**: V1 was built and released as 0.1.0 in four days (21–24 Sep 2026), every blocker for V1 proven first.

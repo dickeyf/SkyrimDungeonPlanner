@@ -318,7 +318,8 @@ class EditorStore {
       if ('requestPermission' in dir && !(await ensureAccess(dir, 'readwrite')))
         throw new Error(`write access to ${info.layer.name} was refused`);
       const store = EspLevelStore.parse(await readAll(info.handle), info.name);
-      await store.applyEdits(cell, edits);
+      const notes: string[] = [];
+      await store.applyEdits(cell, edits, notes);
       const result = await savePlugin({
         dir: info.layer.dir,
         name: info.name,
@@ -342,7 +343,8 @@ class EditorStore {
       this.message =
         `saved ${info.name}: ${[tiles, navmesh].filter(Boolean).join('; ')}; backup ${result.backup} ` +
         `(in ${info.layer.name}). Reload the plugin in the Creation Kit before editing it there` +
-        (navmesh ? ', then Finalize the NavMesh (door links, cover).' : '.');
+        (navmesh ? ', then Finalize the NavMesh (door links, cover).' : '.') +
+        notes.map((n) => ` Note: ${n}.`).join('');
       ok = true;
     });
     return ok;

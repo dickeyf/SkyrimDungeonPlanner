@@ -401,6 +401,23 @@ export class Plugin {
     record.flags &= ~RecordFlags.compressed;
   }
 
+  /**
+   * Set an own door reference's arrival (XTEL position and angles, V5 step 7): the door it
+   * leads to and the flags are kept. A compressed record is written back uncompressed.
+   */
+  async setTeleportArrival(record: EspRecord, pos: RefrInfo['pos'], rot: RefrInfo['rot']) {
+    this.assertOwn(record);
+    const subs = await recordSubrecords(record);
+    const at = subs.findIndex((x) => x.type === 'XTEL');
+    if (at === -1) throw new Error('reference without XTEL');
+    const data = subs[at]!.data.slice();
+    const v = new DataView(data.buffer, data.byteOffset, data.byteLength);
+    [...pos, ...rot].forEach((x, i) => v.setFloat32(4 + i * 4, x, true));
+    subs[at] = { type: 'XTEL', data };
+    record.data = writeSubrecords(subs);
+    record.flags &= ~RecordFlags.compressed;
+  }
+
   /** Move/rescale an existing REFR (must belong to this plugin's own records, D22). */
   moveRefr(
     ref: RefEntry,
