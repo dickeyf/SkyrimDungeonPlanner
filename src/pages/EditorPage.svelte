@@ -1553,49 +1553,68 @@
   }
 
   /**
-   * The offset of a dragged group: the grid step under the pointer, unless the tile grabbed
-   * snaps onto an open face as it would alone, in height too (half levels included, V5 step
-   * 7): the whole group then follows it. A group never turns, so a snap that would is ignored.
+   * The offset of a dragged group: the grid step under the pointer, unless one of the group's
+   * tiles with an open face snaps onto an open face of the rest as it would alone, in height
+   * too (half levels included, V5 step 7): the whole group then follows it. Every edge tile is
+   * tried, not only the one grabbed (a door at the far end of the group must snap too); the
+   * snap nearest the pointer's offset wins. A group never turns, so only snaps that keep each
+   * tile's rotation count.
    */
   function groupDelta(key: string, grab: CellIndex, now: CellIndex): CellIndex {
     const plain: CellIndex = [quant(now[0] - grab[0]), quant(now[1] - grab[1]), 0];
-    const tile = layout?.tiles.get(key);
-    if (!layout || !anchor || !tile) return plain;
-    const piece = pieces.get(tile.piece)!;
+    if (!layout || !anchor || !layout.tiles.has(key)) return plain;
     let rest = layout;
     for (const k of ed.selection) if (rest.tiles.has(k)) rest = withoutTile(rest, k);
-    const cells = footprintCells(
-      piece,
-      [tile.cell[0] + plain[0], tile.cell[1] + plain[1], tile.cell[2]],
-      tile.rotation,
-    );
-    const centre: Vec3 = [
-      anchor.origin[0] +
-        ((Math.min(...cells.map((c) => c[0])) + Math.max(...cells.map((c) => c[0])) + 1) / 2) *
-          anchor.module.xy,
-      anchor.origin[1] +
-        ((Math.min(...cells.map((c) => c[1])) + Math.max(...cells.map((c) => c[1])) + 1) / 2) *
-          anchor.module.xy,
-      0,
-    ];
-    const snapped = snapPlacement({
-      world: centre,
-      anchor,
-      layout: rest,
-      pieces,
-      types,
-      piece: tile.piece,
-      rotation: tile.rotation,
-      opens: openFaces(rest, pieces),
-      geometry,
-      ...(fineSearch ? { fine: fineSearch } : {}),
-    });
-    if (!snapped || snapped.rotation !== tile.rotation) return plain;
-    return [
-      snapped.cell[0] - tile.cell[0] + 0,
-      snapped.cell[1] - tile.cell[1] + 0,
-      snapped.cell[2] - tile.cell[2] + 0,
-    ];
+    const group: Layout = {
+      ...layout,
+      tiles: new Map([...layout.tiles].filter(([k]) => ed.selection.includes(k))),
+    };
+    const edge = new Set(openFaces(group, pieces).map((f) => f.tile));
+    const opens = openFaces(rest, pieces);
+    if (!opens.length) return plain;
+    const m = anchor.module.xy;
+    let best: { delta: CellIndex; score: number } | null = null;
+    for (const k of edge) {
+      const tile = layout.tiles.get(k)!;
+      const piece = pieces.get(tile.piece);
+      if (!piece) continue;
+      const cells = footprintCells(
+        piece,
+        [tile.cell[0] + plain[0], tile.cell[1] + plain[1], tile.cell[2]],
+        tile.rotation,
+      );
+      const centre: Vec3 = [
+        anchor.origin[0] +
+          ((Math.min(...cells.map((c) => c[0])) + Math.max(...cells.map((c) => c[0])) + 1) / 2) *
+            m,
+        anchor.origin[1] +
+          ((Math.min(...cells.map((c) => c[1])) + Math.max(...cells.map((c) => c[1])) + 1) / 2) *
+            m,
+        0,
+      ];
+      const snapped = snapPlacement({
+        world: centre,
+        anchor,
+        layout: rest,
+        pieces,
+        types,
+        piece: tile.piece,
+        rotation: tile.rotation,
+        keepRotation: true,
+        opens,
+        geometry,
+        ...(fineSearch ? { fine: fineSearch } : {}),
+      });
+      if (!snapped) continue;
+      const delta: CellIndex = [
+        snapped.cell[0] - tile.cell[0] + 0,
+        snapped.cell[1] - tile.cell[1] + 0,
+        snapped.cell[2] - tile.cell[2] + 0,
+      ];
+      const score = Math.hypot(delta[0] - plain[0], delta[1] - plain[1]);
+      if (!best || score < best.score) best = { delta, score };
+    }
+    return best?.delta ?? plain;
   }
 
   /** The point under the pointer in cells, not rounded (moves are rounded to the step). */

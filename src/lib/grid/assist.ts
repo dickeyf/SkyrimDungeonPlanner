@@ -676,6 +676,8 @@ export function snapPlacement(options: {
   opens: readonly OpenFace[];
   geometry?: JointGeometry;
   fine?: { step: number; reach: number };
+  /** Only placements at `rotation` (a dragged group never turns). */
+  keepRotation?: boolean;
 }): { cell: CellIndex; rotation: Rotation } | null {
   const { world, anchor, layout, pieces, types, rotation, geometry } = options;
   const piece = pieces.get(options.piece);
@@ -703,6 +705,7 @@ export function snapPlacement(options: {
       geometry,
     );
     for (const c of fits) {
+      if (options.keepRotation && c.rotation !== rotation) continue;
       // the chosen rotation wins over a slightly closer placement turned otherwise
       const score =
         distance(footprintCells(piece, c.cell, c.rotation)) + (c.rotation === rotation ? 0 : m);
