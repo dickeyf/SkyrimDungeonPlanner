@@ -70,6 +70,7 @@
     placeObject,
     tileWorldPlacement,
     rotateTile,
+    rotateTiles,
     sharedCells,
     snapPlacement,
     surroundings,
@@ -1585,11 +1586,9 @@
       );
       const centre: Vec3 = [
         anchor.origin[0] +
-          ((Math.min(...cells.map((c) => c[0])) + Math.max(...cells.map((c) => c[0])) + 1) / 2) *
-            m,
+          ((Math.min(...cells.map((c) => c[0])) + Math.max(...cells.map((c) => c[0])) + 1) / 2) * m,
         anchor.origin[1] +
-          ((Math.min(...cells.map((c) => c[1])) + Math.max(...cells.map((c) => c[1])) + 1) / 2) *
-            m,
+          ((Math.min(...cells.map((c) => c[1])) + Math.max(...cells.map((c) => c[1])) + 1) / 2) * m,
         0,
       ];
       const snapped = snapPlacement({
@@ -1946,7 +1945,13 @@
   }
 
   function rotateSelected(turns: 1 | -1): void {
-    if (!layout || !ed.selected) return;
+    if (!layout) return;
+    if (ed.selection.length > 1) {
+      // a group turns as one, about its middle (V5 step 7)
+      if (anchor) apply(rotateTiles(layout, pieces, ed.selection, turns, anchor), 'Rotation');
+      return;
+    }
+    if (!ed.selected) return;
     const o = layout.objects?.get(ed.selected);
     if (o) {
       // an object turns by a quarter about Z, its other angles kept (V5 step 7)
@@ -2292,11 +2297,13 @@
                   (k) => layout?.objects?.has(k),
                 ).length} objects selected</b
               ><br />
+              <button onclick={() => rotateSelected(1)}>Rotate (R)</button>
               <button onclick={deleteSelected}>Delete (Del)</button>
               <button onclick={() => (ed.selection = [])}>Clear selection (Esc)</button>
               <div class="hint">
-                Drag one of them to move them all. Shift+click adds or removes a tile, Shift+drag
-                adds the tiles within a rectangle, Ctrl+A selects every tile.
+                Drag one of them to move them all; R turns them all about their middle. Shift+click
+                adds or removes a tile, Shift+drag adds the tiles within a rectangle, Ctrl+A selects
+                every tile.
               </div>
             {:else if selectedObject}
               <b>{bases.get(selectedObject.base)?.editorId ?? selectedObject.base}</b>

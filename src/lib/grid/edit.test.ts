@@ -8,6 +8,7 @@ import {
   changes,
   commit,
   historyOf,
+  footprintCells,
   layoutFromGrid,
   moveTile,
   placeTile,
@@ -17,6 +18,7 @@ import {
   moveTiles,
   placeObject,
   rotateTile,
+  rotateTiles,
   tileWorldPlacement,
   turnedPlacement,
   undo,
@@ -248,6 +250,27 @@ describe('the other objects of a cell (V5 step 7)', () => {
     expect([...l.tiles.keys()]).toEqual(['H']);
     expect(l.objects?.get('C')).toMatchObject({ base: 'Chair', own: true, pos: [100, 90, -500] });
     expect(l.objects?.get('L')?.own).toBe(false);
+  });
+
+  it('turns a group of tiles and objects about its middle', () => {
+    const l = furnished();
+    const r = rotateTiles(l, PIECES, ['H', 'C'], 1, ANCHOR);
+    if (!r.ok) throw new Error(r.reason);
+    // the 2x2 hall turns in place about its middle
+    const h = r.layout.tiles.get('H')!;
+    expect(h.rotation).toBe(1);
+    expect(
+      footprintCells(HALL, h.cell, h.rotation)
+        .map((c) => c.join())
+        .sort(),
+    ).toEqual(['0,0,0', '0,1,0', '1,0,0', '1,1,0']);
+    const c = r.layout.objects!.get('C')!;
+    // (100, 90) about (128, 128), a quarter counter-clockwise; the heading turns with it
+    expect(c.pos[0]).toBeCloseTo(166);
+    expect(c.pos[1]).toBeCloseTo(100);
+    expect(c.pos[2]).toBe(-500);
+    expect(c.rot[2]).toBeCloseTo((3 * Math.PI) / 2);
+    expect(rotateTiles(l, PIECES, ['H', 'L'], 1, ANCHOR)).toMatchObject({ reason: 'read-only' });
   });
 
   it('moves a group of tiles and objects by the same offset, and saves the objects moved', () => {

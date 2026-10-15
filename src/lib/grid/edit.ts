@@ -324,6 +324,90 @@ export function moveTiles(
   return { ok: true, key: keys[0] ?? '', layout: { ...layout, tiles, objects } };
 }
 
+/**
+ * Turn several tiles and objects together by a quarter turn (`turns` > 0: counter-clockwise,
+ * as a tile's rotation), about the middle of the tiles' footprints rounded to a cell corner,
+ * so every footprint lands on whole cells again (V5 step 7). Objects turn about the same point
+ * and their heading turns with them. Refused as `moveTiles` is (a master's tile or object, a
+ * tile left in place in the way).
+ */
+export function rotateTiles(
+  layout: Layout,
+  pieces: Pieces,
+  keys: readonly string[],
+  turns: 1 | -1,
+  anchor: { origin: Vec3; module: { xy: number } },
+): EditResult {
+  const moving = new Set(keys);
+  const staying: Layout = {
+    ...layout,
+    tiles: new Map([...layout.tiles].filter(([k]) => !moving.has(k))),
+  };
+  const all = keys.flatMap((k) => {
+    const t = layout.tiles.get(k);
+    const p = t && pieces.get(t.piece);
+    return p ? footprintCells(p, t.cell, t.rotation) : [];
+  });
+  if (!all.length) return { ok: false, reason: 'missing' };
+  const pivot = [0, 1].map((a) =>
+    Math.round((Math.min(...all.map((c) => c[a]!)) + Math.max(...all.map((c) => c[a]!)) + 1) / 2),
+  ) as [number, number];
+  // a point turned about the pivot, in cell units
+  const turn = (x: number, y: number): [number, number] =>
+    turns > 0
+      ? [pivot[0] - (y - pivot[1]), pivot[1] + (x - pivot[0])]
+      : [pivot[0] + (y - pivot[1]), pivot[1] - (x - pivot[0])];
+  const tiles = new Map(layout.tiles);
+  const objects = new Map(layout.objects ?? []);
+  const conflicts: CellIndex[] = [];
+  const m = anchor.module.xy;
+  for (const key of keys) {
+    const object = layout.objects?.get(key);
+    if (object) {
+      if (!object.own) return { ok: false, reason: 'read-only' };
+      const [x, y] = turn(
+        (object.pos[0] - anchor.origin[0]) / m,
+        (object.pos[1] - anchor.origin[1]) / m,
+      );
+      // a counter-clockwise turn lowers Skyrim's heading (clockwise)
+      const z = object.rot[2] - (turns * Math.PI) / 2;
+      objects.set(key, {
+        ...object,
+        pos: [anchor.origin[0] + x * m, anchor.origin[1] + y * m, object.pos[2]],
+        rot: [object.rot[0], object.rot[1], ((z % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI)],
+      });
+      continue;
+    }
+    const tile = layout.tiles.get(key);
+    if (!tile) return { ok: false, reason: 'missing' };
+    if (!tile.own) return { ok: false, reason: 'read-only' };
+    const piece = pieces.get(tile.piece);
+    if (!piece) return { ok: false, reason: 'unknown-piece' };
+    const rotation = normalizeRotation(tile.rotation + turns);
+    // the old footprint's box corners turned: their min is the new footprint's min corner
+    const corners = footprintCells(piece, tile.cell, tile.rotation).flatMap((c) => [
+      turn(c[0], c[1]),
+      turn(c[0] + 1, c[1] + 1),
+    ]);
+    const at0 = minCorner(footprintCells(piece, [0, 0, 0], rotation));
+    const cell: CellIndex = [
+      Math.min(...corners.map((c) => c[0])) - at0[0] + 0,
+      Math.min(...corners.map((c) => c[1])) - at0[1] + 0,
+      tile.cell[2],
+    ];
+    conflicts.push(
+      ...conflictsFor(staying, pieces, footprintCells(piece, cell, rotation), undefined, {
+        piece: tile.piece,
+        cell,
+        rotation,
+      }),
+    );
+    tiles.set(key, { ...tile, cell, rotation });
+  }
+  if (conflicts.length) return { ok: false, reason: 'conflict', cells: conflicts };
+  return { ok: true, key: keys[0] ?? '', layout: { ...layout, tiles, objects } };
+}
+
 export function isMoved(tile: EditTile): boolean {
   return (
     !!tile.origin &&

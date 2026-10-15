@@ -320,8 +320,10 @@ together, and never edited.
   parents hold (they name FormIDs); the NavMesh stays behind, accepted (deleted and filled again
   in the CK, linked to the next hall by hand: a later fix). A load door's teleport: at save, the
   doors leading to a moved door get their `XTEL` arrival moved and turned with it (own doors,
-  D22); a master's door is named in the save message. Left: the user's test of a moved load
-  door in game.
+  D22); a master's door is named in the save message. A selected group also turns (R, asked by
+  the user to test the doors): about the middle of its tiles' footprints rounded to a cell
+  corner, so every footprint lands on whole cells; objects turn about the same point
+  (`rotateTiles`). Left: the user's test of a moved load door in game.
 
 ## Phase D – The Nordic families left out
 
