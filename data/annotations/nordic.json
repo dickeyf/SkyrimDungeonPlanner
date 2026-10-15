@@ -49,6 +49,78 @@
     }
   ],
   "pieces": {
+    "NorAnteChamber01": {
+      "validated": true
+    },
+    "NorAnteChamber01a": {
+      "validated": true
+    },
+    "NorBridgeCageEndCap01": {
+      "validated": true
+    },
+    "NorBridgePitWallFront01": {
+      "validated": true
+    },
+    "NorBridgePitWallFront01ExSm02": {
+      "validated": true
+    },
+    "NorBridgePitWallFront01ice": {
+      "validated": true
+    },
+    "NorBridgePitWallFront02": {
+      "validated": true
+    },
+    "NorBridgePitWallFront02ExSm02": {
+      "validated": true
+    },
+    "NorBridgePitWallFront02ice": {
+      "validated": true
+    },
+    "NorBridgePitWallFront03": {
+      "exclude": "not used by the game (1 in Skyrim.esm's CELLs)"
+    },
+    "NorBridgePitWallSide01": {
+      "validated": true
+    },
+    "NorBridgePitWallSide01ExSm02": {
+      "validated": true
+    },
+    "NorBridgePitWallSide02": {
+      "validated": true
+    },
+    "NorBridgePitWallSide02ExSm02": {
+      "exclude": "not used by the game (0 in Skyrim.esm's CELLs)"
+    },
+    "NorBridgePitWallSide03": {
+      "exclude": "not used by the game (1 in Skyrim.esm's CELLs)"
+    },
+    "NorBridgeRmBgWallFront02ExSm02": {
+      "validated": true
+    },
+    "NorBridgeRmBgWallFront02ExSm02Ice": {
+      "validated": true
+    },
+    "NorBridgeRmBgWallFrontExSm01": {
+      "validated": true
+    },
+    "NorBridgeRmBgWallFrontExSm02": {
+      "validated": true
+    },
+    "NorBridgeRmBgWallFrontExSm02_HeavySN": {
+      "validated": true
+    },
+    "NorBridgeRmBgWallFrontExSm02ice": {
+      "validated": true
+    },
+    "NorBridgeRmBgWallSide02ExSm02": {
+      "validated": true
+    },
+    "NorBridgeRmBgWallSideExSm01": {
+      "validated": true
+    },
+    "NorBridgeRmBgWallSideExSm02": {
+      "validated": true
+    },
     "NorCatHallBg1way01": {
       "validated": true,
       "walkable": "reviewed"
@@ -176,6 +248,15 @@
     "NorCatHallSm4way02": {
       "validated": true,
       "walkable": "reviewed"
+    },
+    "NorChamberCustom01": {
+      "validated": true
+    },
+    "NorChamberCustom02": {
+      "validated": true
+    },
+    "NorChamberRitual01": {
+      "validated": true
     },
     "NorExSmFree01": {
       "validated": true,
@@ -321,6 +402,15 @@
       "validated": true,
       "walkable": "reviewed"
     },
+    "NorHallOfStories01": {
+      "validated": true
+    },
+    "NorHallOfStoriesArch01": {
+      "validated": true
+    },
+    "NorHallOfStoriesEndExBg01": {
+      "validated": true
+    },
     "NorHallSm1way01": {
       "validated": true,
       "walkable": "reviewed"
@@ -408,6 +498,78 @@
     "NorHallSm4way01": {
       "validated": true,
       "walkable": "reviewed"
+    },
+    "NorPitCorInL01": {
+      "validated": true
+    },
+    "NorPitCorInR01": {
+      "validated": true
+    },
+    "NorPitCorOutL01": {
+      "validated": true
+    },
+    "NorPitCorOutR01": {
+      "validated": true
+    },
+    "NorPitMid01": {
+      "validated": true
+    },
+    "NorPitWallFront01": {
+      "validated": true
+    },
+    "NorPitWallFront01ice": {
+      "validated": true
+    },
+    "NorPitWallFront02": {
+      "validated": true
+    },
+    "NorPitWallFrontStairs01": {
+      "validated": true
+    },
+    "NorPitWallFrontStairs02": {
+      "validated": true
+    },
+    "NorPitWallFrontToRmBgFrontL01": {
+      "validated": true
+    },
+    "NorPitWallFrontToRmBgFrontL01ice": {
+      "validated": true
+    },
+    "NorPitWallFrontToRmBgFrontR01": {
+      "validated": true
+    },
+    "NorPitWallFrontToRmBgFrontR01ice": {
+      "validated": true
+    },
+    "NorPitWallFrontToRmBgSideL01": {
+      "validated": true
+    },
+    "NorPitWallFrontToRmBgSideR01": {
+      "validated": true
+    },
+    "NorPitWallSide01": {
+      "validated": true
+    },
+    "NorPitWallSide02": {
+      "validated": true
+    },
+    "NorPitWallSideStairs01": {
+      "validated": true
+    },
+    "NorPitWallSideStairs02": {
+      "validated": true
+    },
+    "NorPitWallSideToRmBgFrontL01": {
+      "validated": true
+    },
+    "NorPitWallSideToRmBgFrontR01": {
+      "validated": true
+    },
+    "NorPitWallSideToRmBgSideL01": {
+      "validated": true
+    },
+    "NorPitWallSideToRmBgSideR01": {
+      "validated": true
     },
     "NorRmBgCorInL01": {
       "validated": true,
@@ -796,6 +958,45 @@
     "NorSecRmSmWallSideExSm02": {
       "validated": true,
       "walkable": "reviewed"
+    },
+    "NorTmpHallBg1wayCover01": {
+      "validated": true
+    },
+    "NorTmpHallBg1wayEntrance01": {
+      "validated": true
+    },
+    "NorTmpHallBg1wayEntrance01Ice": {
+      "validated": true
+    },
+    "NorTmpHallBg1wayShadowCap01": {
+      "validated": true
+    },
+    "NorTmpHallBg1wayShadowCap02": {
+      "validated": true
+    },
+    "NorTmpHallBg1wayShadowCapEx01": {
+      "validated": true
+    },
+    "NorTmpHallBg1wayStairsDown01": {
+      "validated": true
+    },
+    "NorTmpHallBg1wayStairsUp01": {
+      "validated": true
+    },
+    "NorTmpHallBg1wayToHallBg01": {
+      "validated": true
+    },
+    "NorTmpHallBg1wayWall01": {
+      "validated": true
+    },
+    "NorTmpHallBg1wayWall02": {
+      "validated": true
+    },
+    "NorTmpHallBg1wayWall02Ice": {
+      "validated": true
+    },
+    "NorTmpHallBg1wayWall03": {
+      "validated": true
     }
   }
 }

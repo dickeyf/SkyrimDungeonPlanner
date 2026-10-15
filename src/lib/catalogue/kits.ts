@@ -57,6 +57,12 @@ export const NORDIC_KIT: KitDefinition = {
     secretpass: 'hall',
     smrooms: 'room',
     bgrooms: 'room',
+    // V5 step 8: on the 128 grid and used by the game's CELLs; shafts (stacked by their top
+    // and bottom, which the grid does not join) and platforms (set pieces) stay out
+    temple: 'hall',
+    pits: 'room',
+    bridges: 'room',
+    chambers: 'room',
   },
 };
 

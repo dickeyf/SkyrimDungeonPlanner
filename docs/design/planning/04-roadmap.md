@@ -86,9 +86,10 @@ NPC follows the player through it in game. V2.**
 - [x] R22 collision and floors (8 Oct 2026: all read; the review at step 3)
 - [x] Kit definition, annotations from what the game uses, game pairs (8 Oct 2026)
 - [x] A Dwemer test dungeon (12 Oct 2026)
-- [ ] The other objects of a cell: categories, show / fade / hide / lock, selected and moved
-  with the tiles (D71, D72, R23)
-- [ ] The Nordic families left out at V4 (temple, pits, shafts, platforms, bridges, chambers)
+- [x] The other objects of a cell: categories, show / fade / hide / lock, selected and moved
+  with the tiles (D71, D72, R23) (14 Oct 2026)
+- [ ] The Nordic families left out at V4: temple, pits, bridges and chambers taken; shafts and
+  platforms left out with their reason (step 8, the test in the tool left)
 - [ ] Help for a designer new to a kit: sets for a wide face, the piece that closes one
 - [x] Kit pieces validated from what the game uses, snow and ice variants included (8 Oct 2026)
 - [x] The Imperial halls that rise 64 (`ImpHall1Way64U01`...), on the fine grid (step 3b, 8 Oct
@@ -104,8 +105,8 @@ NPC follows the player through it in game. V2.**
 Every interior kit of the base `.esm` files (Nordic, Dwemer, caves...), with the deep junction
 check (R16) and texture continuity, Z levels (phase 4). See D63.
 - [ ] The sub-folders left out of each kit's tiles, judged one by one (on the grid or not,
-  openings that join the kit's halls): Nordic `temple`, `pits`, `shafts`, `platforms`,
-  `bridges`, `chambers` (set aside at V4 step 1, planned in V5); Imperial, the structural pieces outside
+  openings that join the kit's halls): Nordic done at V5 step 8 (`shafts` and `platforms`
+  out); Imperial, the structural pieces outside
   `smallhall`, `largehall`, `smallroom` and `largeroom`, and the pieces left out by name
   (pillars, braces, beams...). Not in V4.
 - [ ] Openings toward another piece of the world: pieces such as Nordic `NorExSmFree01` (a

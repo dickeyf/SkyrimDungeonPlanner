@@ -336,6 +336,28 @@ together, and never edited.
   left as objects (now editable, phase C), with the reason.
 - **Done when**: each family is in, or out with its reason, and the Nordic test cells still
   check clean.
+- **Result (14 Oct 2026, the analysis and the Vanilla check on Skyrim.esm's 98 Nordic CELLs)**:
+  every piece of the six families sits on the 128 grid (phase 0, but one arch at 64).
+  - **In**: `pits` (24 of 34 pieces have openings; `NorPitMid01` placed 223 times), `bridges`
+    (the 22 with openings are pit and big room walls, `NorBridgePitWall...`; the 49 others,
+    spans and cages, have none and stay objects), `temple` (13 of 21: 1024 wide, 2,560 to 3,800
+    long, placed in the main sections; its 8 flat floors without opening stay out), `chambers`
+    (8 of 14: the Hall of Stories, the ritual chambers; the word walls are objects). Validated
+    from the game as at step 3 (placed at least twice, snow and ice variants with their base):
+    67 new pieces, 3 excluded as unused (`NorBridgePitWallFront03`, `...Side02ExSm02`,
+    `...Side03`). The verdicts of the pieces already in the kit are kept: run again on the whole
+    kit, 6 of them would have dropped to one placement, the pits now taking cells their
+    sections counted; the user's earlier validation stands.
+  - **Out**: `shafts`: a shaft is stacked by its bottom, middles and top, which the grid does
+    not join (openings are horizontal); only its doorway middles have openings, so a shaft
+    could not be built. `platforms`: set pieces standing in the big chambers; their stairs'
+    openings (96 wide) meet no kit piece, and the game places them outside its grid sections.
+  - **The game's CELLs**, before and after: open faces 3,593 to 1,503 (the pits close what the
+    check saw as open), seams 5 to 350 (pit walls against the "ToRmBg" transitions, openings
+    135 against 208: the game's own junctions, now game pairs), mismatches 533 to 777 (the pit
+    corners against `NorRmSmMid01`, the game's own as well; the worst are older: the small
+    rooms' damaged walls). Game pairs 2,195 to 3,287, texture break signatures 20 to 25.
+  - Step 8b is not needed for them: no piece of these families is off by half a cell.
 
 ### Step 8b – Half-cell occupancy (only if needed)
 - **Why**: found at step 3b: a cell is 128, and `ImpHall1Way64Short01` (and its large variant)
