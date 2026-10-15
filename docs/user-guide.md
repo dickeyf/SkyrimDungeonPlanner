@@ -217,8 +217,9 @@ button folds the view away; **Camera** brings it back. **floor level N** shows t
 floor under the camera: click it to show that level. Click the camera view to walk with the
 keyboard: **W** / **S** forward and back (the top-down view follows, the camera at its centre),
 **A** / **D** turn, **Shift** faster (a yellow frame shows
-the view has the keys; click elsewhere to give them back). A piece being placed or moved shows
-there as well.
+the view has the keys; click elsewhere to give them back). Hold the **middle button** in the
+camera view and drag to look around: up and down tilt the head, left and right turn. A piece
+being placed or moved shows there as well.
 
 ## Saving and the Creation Kit
 

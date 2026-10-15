@@ -96,7 +96,7 @@
       const y = y0 + Math.cos(heading) * step;
       // a little above the floor under the camera: up a ramp, down a step, not through a ceiling
       const floor = move ? scene.floorAt(x, y, z0 + 64) : undefined;
-      eye = { heading, pos: [x, y, floor === undefined ? z0 : floor + EYE_HEIGHT] };
+      eye = { ...eye, heading, pos: [x, y, floor === undefined ? z0 : floor + EYE_HEIGHT] };
       // walking keeps the camera at the centre of the top-down view, as in the game
       if (move) scene.centreOn(x, y);
     }
@@ -124,6 +124,35 @@
     held = [];
     cancelAnimationFrame(walkFrame);
     walkFrame = 0;
+  }
+
+  // ---- looking around with the middle button held in the inset (up, down, left, right) ----
+  /** Radians per pixel dragged; looking up or down stops short of straight up or down. */
+  const LOOK_SPEED = 0.005;
+  const MAX_PITCH = (85 * Math.PI) / 180;
+  let looking: number | null = null;
+
+  function lookStart(e: PointerEvent): void {
+    insetBox?.focus();
+    if (e.button !== 1 || !eye) return;
+    looking = e.pointerId;
+    insetBox?.setPointerCapture(e.pointerId);
+    e.preventDefault();
+  }
+
+  function lookMove(e: PointerEvent): void {
+    if (looking !== e.pointerId || !eye) return;
+    const pitch = Math.max(
+      -MAX_PITCH,
+      Math.min(MAX_PITCH, (eye.pitch ?? 0) - e.movementY * LOOK_SPEED),
+    );
+    eye = { ...eye, heading: eye.heading + e.movementX * LOOK_SPEED, pitch };
+  }
+
+  function lookEnd(e: PointerEvent): void {
+    if (looking !== e.pointerId) return;
+    looking = null;
+    if (insetBox?.hasPointerCapture(e.pointerId)) insetBox.releasePointerCapture(e.pointerId);
   }
 
   /** The level of the floor under the camera, if any. */
@@ -247,8 +276,12 @@
     bind:this={insetBox}
     tabindex={insetOpen ? 0 : -1}
     role="application"
-    aria-label="Camera view: W and S walk, A and D turn"
-    onpointerdown={() => insetBox?.focus()}
+    aria-label="Camera view: W and S walk, A and D turn, the middle button held looks around"
+    onpointerdown={lookStart}
+    onpointermove={lookMove}
+    onpointerup={lookEnd}
+    onpointercancel={lookEnd}
+    onauxclick={(e) => e.preventDefault()}
     onkeydown={(e) => walkKey(e, true)}
     onkeyup={(e) => walkKey(e, false)}
     onblur={stopWalking}

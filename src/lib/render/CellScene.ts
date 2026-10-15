@@ -113,6 +113,8 @@ export interface GridSpec {
 export interface Eye {
   pos: Vec3;
   heading: number;
+  /** Looking up (> 0) or down, radians; level when absent. */
+  pitch?: number;
 }
 
 /** Eye level above the floor, in game units (a standing character's eyes). */
@@ -382,7 +384,11 @@ export class CellScene {
       this.eyeShape.rotation.set(0, 0, -eye.heading);
       const [x, y, z] = eye.pos;
       this.eyeCamera.position.set(x, y, z);
-      this.eyeCamera.lookAt(new Vector3(x + Math.sin(eye.heading), y + Math.cos(eye.heading), z));
+      const p = eye.pitch ?? 0;
+      const h = Math.cos(p);
+      this.eyeCamera.lookAt(
+        new Vector3(x + Math.sin(eye.heading) * h, y + Math.cos(eye.heading) * h, z + Math.sin(p)),
+      );
     }
     this.requestRender();
   }
