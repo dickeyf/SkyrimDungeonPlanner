@@ -31,7 +31,8 @@ export async function loadKitStats(
   const found = await overlay.resolveFile(master);
   if (!found) throw new Error(`${master} not found in the Data view`);
   const file = await found.file.getFile();
-  const cacheKey = `kitstats:${kit.kit}:${master}:${file.size}:${file.lastModified}`;
+  // the kit's definition is in the key: a family added to the kit (V5 step 8) must be read
+  const cacheKey = `kitstats:${kit.kit}:${definitionStamp(kit)}:${master}:${file.size}:${file.lastModified}`;
   if (options.useCache !== false) {
     const cached = await kvGet<{ stats: KitStat[]; totalStats: number }>(cacheKey);
     if (cached) {
@@ -61,4 +62,12 @@ export async function loadKitStats(
     elapsedMs: performance.now() - started,
     cacheKey,
   };
+}
+
+/** A short hash of a kit's definition (FNV-1a over its JSON). */
+function definitionStamp(kit: KitDefinition): string {
+  const text = JSON.stringify(kit);
+  let h = 2166136261;
+  for (let i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 16777619);
+  return (h >>> 0).toString(36);
 }
