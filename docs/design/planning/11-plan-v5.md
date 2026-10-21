@@ -358,6 +358,10 @@ together, and never edited.
     corners against `NorRmSmMid01`, the game's own as well; the worst are older: the small
     rooms' damaged walls). Game pairs 2,195 to 3,287, texture break signatures 20 to 25.
   - Step 8b is not needed for them: no piece of these families is off by half a cell.
+  - **Open (20 Oct 2026)**: the assistant's recall on temple and chambers is 19 % (53 % without
+    the pieces the game stacks on others: `Cover`, `ShadowCap`, the Hall of Stories arch). The
+    user chose to treat stacked pieces as structure, not objects; the study ("strata", all kits,
+    with its measurements) is in [12-strata-design.md](12-strata-design.md).
 
 ### Step 8b – Half-cell occupancy (only if needed)
 - **Why**: found at step 3b: a cell is 128, and `ImpHall1Way64Short01` (and its large variant)

@@ -1,0 +1,101 @@
+// Throwaway: pieces the game puts inside or on top of others (real bounds), Nordic, Dwemer, caves.
+import { it } from 'vitest';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { BsaArchive, BufferRangeSource, normalizeArchivePath } from './lib/format/bsa';
+import { decodeStat, modelArchivePath, type StatInfo } from './lib/format/esp/stat';
+import { NifFile, collisionMesh } from './lib/format/nif';
+import { EspLevelStore } from './lib/level/espStore';
+
+const DATA = 'C:/games/Game Root/Data';
+const KITS = ['nordic', 'dwemer', 'caves'];
+
+it('ns', async () => {
+  const bsas = await Promise.all(['Skyrim - Meshes0.bsa', 'Skyrim - Meshes1.bsa'].map(async (n) => BsaArchive.open(new BufferRangeSource(new Uint8Array(readFileSync(`${DATA}/${n}`))))));
+  const read = async (p: string) => { const key = normalizeArchivePath(p); for (const b of bsas) if (b.get(key)) return b.read(key); return undefined; };
+  const store = EspLevelStore.parse(new Uint8Array(readFileSync(`${DATA}/Skyrim.esm`)), 'Skyrim.esm');
+  type P = StatInfo & { kit: string; fam: string; walk?: boolean };
+  const stats = new Map<string, P>();
+  const prefixes = new Map<string, number>();
+  for (const r of store.plugin.recordsOfType('STAT')) {
+    const s = await decodeStat(r);
+    const path = modelArchivePath(s.model).split('/');
+    if (path[1] === 'dungeons') prefixes.set(path[2]!, (prefixes.get(path[2]!) ?? 0) + 1);
+    if (path[1] !== 'dungeons' || !KITS.includes(path[2]!) || !s.bounds) continue;
+    const dx = s.bounds.max[0] - s.bounds.min[0], dy = s.bounds.max[1] - s.bounds.min[1];
+    if (Math.max(dx, dy) < 96) continue; // clutter
+    stats.set(`0x${s.formId.toString(16).padStart(8, '0').toUpperCase()}:Skyrim.esm`, { ...s, kit: path[2]!, fam: path.length > 4 ? path[3]! : '-' });
+  }
+  const walkable = async (p: P) => {
+    if (p.walk !== undefined) return p.walk;
+    p.walk = false;
+    try {
+      const bytes = await read(modelArchivePath(p.model));
+      const c = bytes && collisionMesh(NifFile.parse(bytes));
+      if (c) {
+        let area = 0;
+        const v = c.positions;
+        for (let t = 0; t < c.indices.length; t += 3) {
+          const [a, b, d] = [c.indices[t]! * 3, c.indices[t + 1]! * 3, c.indices[t + 2]! * 3];
+          const ux = v[b]! - v[a]!, uy = v[b + 1]! - v[a + 1]!, uz = v[b + 2]! - v[a + 2]!;
+          const wx = v[d]! - v[a]!, wy = v[d + 1]! - v[a + 1]!, wz = v[d + 2]! - v[a + 2]!;
+          const nx = uy * wz - uz * wy, ny = uz * wx - ux * wz, nz = ux * wy - uy * wx;
+          const len = Math.hypot(nx, ny, nz);
+          if (len > 0 && nz / len > 0.7) area += len / 2;
+        }
+        p.walk = area > 64 * 64;
+      }
+    } catch { /* unreadable */ }
+    return p.walk;
+  };
+  type Box = { min: number[]; max: number[] };
+  const world = (p: P, pos: readonly number[], rot: readonly number[], scale: number): Box & { tilt: boolean } => {
+    const h = rot[2]!, c = Math.cos(h), s = Math.sin(h);
+    const xs: number[] = [], ys: number[] = [];
+    for (const x of [p.bounds!.min[0], p.bounds!.max[0]]) for (const y of [p.bounds!.min[1], p.bounds!.max[1]]) {
+      xs.push(pos[0]! + scale * (x * c + y * s)); ys.push(pos[1]! + scale * (-x * s + y * c));
+    }
+    return { min: [Math.min(...xs), Math.min(...ys), pos[2]! + scale * p.bounds!.min[2]], max: [Math.max(...xs), Math.max(...ys), pos[2]! + scale * p.bounds!.max[2]], tilt: Math.abs(rot[0]!) > 0.05 || Math.abs(rot[1]!) > 0.05 };
+  };
+  const vol = (b: Box) => (b.max[0]! - b.min[0]!) * (b.max[1]! - b.min[1]!) * Math.max(1, b.max[2]! - b.min[2]!);
+  const area = (b: Box) => (b.max[0]! - b.min[0]!) * (b.max[1]! - b.min[1]!);
+  const ix = (a: Box, b: Box, axis: number) => Math.max(0, Math.min(a.max[axis]!, b.max[axis]!) - Math.max(a.min[axis]!, b.min[axis]!));
+  const classes = new Map<string, Map<string, number>>(); // kit|class -> famPair -> n
+  const pieces = new Map<string, Map<string, number>>(); // kit|class -> piecePair -> n
+  const refsSeen = new Map<string, number>();
+  const add = (m: Map<string, Map<string, number>>, k: string, sub: string) => { const e = m.get(k) ?? new Map(); e.set(sub, (e.get(sub) ?? 0) + 1); m.set(k, e); };
+  for (const cell of await store.listCells()) {
+    const refs = (await store.readRefs(cell.key)).filter((r) => stats.has(r.base)).map((r) => { const p = stats.get(r.base)!; return { p, box: world(p, r.pos, r.rot, r.scale) }; });
+    for (const r of refs) refsSeen.set(r.p.kit, (refsSeen.get(r.p.kit) ?? 0) + 1);
+    for (let i = 0; i < refs.length; i++) for (let j = i + 1; j < refs.length; j++) {
+      let [A, B] = [refs[i]!, refs[j]!];
+      if (vol(B.box) > vol(A.box)) [A, B] = [B, A];
+      if (A.p.kit !== B.p.kit) continue;
+      const ox = ix(A.box, B.box, 0), oy = ix(A.box, B.box, 1), oz = ix(A.box, B.box, 2);
+      if (ox < 16 || oy < 16 || oz < 16) continue;
+      const inPlan = (ox * oy) / area(B.box); // share of the small piece's plan under the big one
+      const planRatio = area(B.box) / area(A.box);
+      const zIn = oz / Math.max(1, B.box.max[2]! - B.box.min[2]!);
+      let cls: string;
+      if (inPlan > 0.8 && planRatio > 0.6 && zIn > 0.5) cls = 'layer (same footprint)';
+      else if (inPlan > 0.8 && zIn > 0.8 && planRatio < 0.6) {
+        const lifted = B.box.min[2]! - A.box.min[2]! > 96;
+        cls = (await walkable(B.p)) ? (lifted ? 'nested, walkable, raised (walkway/balcony)' : 'nested, walkable, on the floor') : 'nested, not walkable (dressing)';
+      } else if (inPlan > 0.3) cls = 'partial overlap';
+      else continue;
+      const k = `${A.p.kit}|${cls}`;
+      add(classes, k, `${A.p.fam} > ${B.p.fam}`);
+      add(pieces, k, `${A.p.editorId} > ${B.p.editorId}`);
+    }
+  }
+  const out: string[] = [`dungeons/* STAT counts: ${[...prefixes].sort((a, b) => b[1] - a[1]).map(([k, n]) => `${k} ${n}`).join(', ')}`];
+  for (const kit of KITS) {
+    out.push('', `# ${kit}: ${[...stats.values()].filter((p) => p.kit === kit).length} pieces, ${refsSeen.get(kit) ?? 0} refs`);
+    for (const [k, fams] of [...classes].filter(([k]) => k.startsWith(kit + '|'))) {
+      const total = [...fams.values()].reduce((a, b) => a + b, 0);
+      out.push(`## ${k.split('|')[1]}: ${total} pairs`);
+      out.push('  families: ' + [...fams].sort((a, b) => b[1] - a[1]).slice(0, 12).map(([f, n]) => `${f} ${n}`).join('; '));
+      for (const [pp, n] of [...pieces.get(k)!].sort((a, b) => b[1] - a[1]).slice(0, 12)) out.push(`  ${n} ${pp}`);
+    }
+  }
+  writeFileSync(process.env.DIAG_OUT!, out.join('\n'));
+}, 3600000);

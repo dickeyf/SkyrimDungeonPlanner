@@ -1,0 +1,60 @@
+// Throwaway: the pieces the game stacks (shared grid cells), per kit.
+import { it } from 'vitest';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { BsaArchive, BufferRangeSource, normalizeArchivePath } from './lib/format/bsa';
+import { decodeStat } from './lib/format/esp/stat';
+import { extractKitStats } from './lib/catalogue/extract';
+import { analyseKit } from './lib/catalogue/analyze';
+import { DWEMER_KIT, IMPERIAL_KIT, NORDIC_KIT } from './lib/catalogue/kits';
+import { applyAnnotations, parseAnnotations } from './lib/catalogue/annotations';
+import { EspLevelStore } from './lib/level/espStore';
+import { footprintCells, layoutFromGrid } from './lib/grid/edit';
+import { deriveGrid } from './lib/grid/derive';
+import { relativePlacement } from './lib/grid/overlaps';
+import type { ArchiveIndex } from './lib/vfs/archiveIndex';
+
+const DATA = 'C:/games/Game Root/Data';
+
+it('ly', async () => {
+  const bsas = await Promise.all(['Skyrim - Meshes0.bsa', 'Skyrim - Meshes1.bsa'].map(async (n) => BsaArchive.open(new BufferRangeSource(new Uint8Array(readFileSync(`${DATA}/${n}`))))));
+  const index = { read: async (p: string) => { const key = normalizeArchivePath(p); for (const b of bsas) if (b.get(key)) return { bytes: await b.read(key), source: 'bsa' }; return undefined; } } as unknown as ArchiveIndex;
+  const store = EspLevelStore.parse(new Uint8Array(readFileSync(`${DATA}/Skyrim.esm`)), 'Skyrim.esm');
+  const raw = [];
+  for (const r of store.plugin.recordsOfType('STAT')) raw.push(await decodeStat(r));
+  const out: string[] = [];
+  for (const kit of [IMPERIAL_KIT, NORDIC_KIT, DWEMER_KIT]) {
+    const analysis = await analyseKit(extractKitStats(raw, kit, 'Skyrim.esm'), kit, index);
+    const catalogue = applyAnnotations(analysis.catalogue, parseAnnotations(JSON.parse(readFileSync(`data/annotations/${kit.kit.toLowerCase()}.json`, 'utf8')))).catalogue;
+    const valid = new Map(catalogue.pieces.filter((p) => p.review.validated).map((p) => [p.formKey, p]));
+    const id = (k: string) => valid.get(k)!.editorId;
+    const pairs = new Map<string, { n: number; share: number }>();
+    let tiles = 0, stacked = new Set<string>();
+    for (const cell of await store.listCells()) {
+      const refs = (await store.readRefs(cell.key)).filter((r) => valid.has(r.base)).map((r) => ({ refFormKey: r.key, base: r.base, pos: r.pos, rot: r.rot, scale: r.scale }));
+      if (refs.length < 15) continue;
+      const grid = deriveGrid(refs, valid, { module: kit.module.xy!, zModule: kit.module.z!, ...(kit.fineStep ? { fineStep: kit.fineStep } : {}) });
+      const layout = layoutFromGrid(grid, new Map());
+      const list = [...layout.tiles.values()];
+      tiles += list.length;
+      const fp = list.map((t) => new Set(footprintCells(valid.get(t.piece)!, t.cell, t.rotation).map((c) => c.join(','))));
+      for (let i = 0; i < list.length; i++) for (let j = i + 1; j < list.length; j++) {
+        let shared = 0;
+        for (const c of fp[j]!) if (fp[i]!.has(c)) shared++;
+        if (!shared) continue;
+        const [a, b, fa, fb] = id(list[i]!.piece) <= id(list[j]!.piece) ? [list[i]!, list[j]!, fp[i]!, fp[j]!] : [list[j]!, list[i]!, fp[j]!, fp[i]!];
+        const rel = relativePlacement(a, b);
+        const share = shared / Math.min(fa.size, fb.size);
+        const k = `${id(a.piece)} + ${id(b.piece)} r${rel.rotation} @${rel.offset.join(',')}`;
+        const e = pairs.get(k) ?? { n: 0, share };
+        e.n++;
+        pairs.set(k, e);
+        stacked.add(`${cell.key}|${list[i]!.key}`); stacked.add(`${cell.key}|${list[j]!.key}`);
+      }
+    }
+    const rows = [...pairs].filter(([, e]) => e.n >= 2).sort((x, y) => y[1].n - x[1].n);
+    const big = rows.filter(([, e]) => e.share >= 0.5);
+    out.push(`## ${kit.kit}: ${tiles} tiles, ${stacked.size} share cells; ${rows.length} pairs seen twice+ (${big.length} sharing half or more of the smaller piece)`);
+    for (const [k, e] of rows.slice(0, 45)) out.push(`${e.n} ${k} share ${(e.share * 100).toFixed(0)}%`);
+  }
+  writeFileSync(process.env.DIAG_OUT!, out.join('\n'));
+}, 3600000);

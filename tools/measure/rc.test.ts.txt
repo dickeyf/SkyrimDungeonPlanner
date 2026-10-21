@@ -1,0 +1,91 @@
+// Throwaway (V5 step 8): does the assistant offer what the game puts next to a piece of a family?
+import { it } from 'vitest';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { BsaArchive, BufferRangeSource, normalizeArchivePath } from './lib/format/bsa';
+import { decodeStat } from './lib/format/esp/stat';
+import { extractKitStats } from './lib/catalogue/extract';
+import { analyseKit } from './lib/catalogue/analyze';
+import { NORDIC_KIT } from './lib/catalogue/kits';
+import { applyAnnotations, parseAnnotations } from './lib/catalogue/annotations';
+import { parseVanillaPairs } from './lib/catalogue/vanillaPairs';
+import { EspLevelStore } from './lib/level/espStore';
+import { footprintCells, layoutFromGrid, withoutTile } from './lib/grid/edit';
+import { deriveGrid } from './lib/grid/derive';
+import { candidatesFor, checkCandidates, gameCandidates, jointsOfTile, openFaces, type JointGeometry } from './lib/grid/assist';
+import { acceptedOverlaps } from './lib/grid/overlaps';
+import type { ArchiveIndex } from './lib/vfs/archiveIndex';
+
+const DATA = 'C:/games/Game Root/Data';
+const FAMILY = new RegExp(process.env.FAMILY ?? '^(NorTmp|NorAnteChamber|NorChamber|NorHallOfStories)');
+
+it('rc', async () => {
+  const kit = NORDIC_KIT;
+  const bsas = await Promise.all(['Skyrim - Meshes0.bsa', 'Skyrim - Meshes1.bsa'].map(async (n) => BsaArchive.open(new BufferRangeSource(new Uint8Array(readFileSync(`${DATA}/${n}`))))));
+  const index = { read: async (p: string) => { const key = normalizeArchivePath(p); for (const b of bsas) if (b.get(key)) return { bytes: await b.read(key), source: 'bsa' }; return undefined; } } as unknown as ArchiveIndex;
+  const store = EspLevelStore.parse(new Uint8Array(readFileSync(`${DATA}/Skyrim.esm`)), 'Skyrim.esm');
+  const raw = [];
+  for (const r of store.plugin.recordsOfType('STAT')) raw.push(await decodeStat(r));
+  const analysis = await analyseKit(extractKitStats(raw, kit, 'Skyrim.esm'), kit, index);
+  const catalogue = applyAnnotations(analysis.catalogue, parseAnnotations(JSON.parse(readFileSync('data/annotations/nordic.json', 'utf8')))).catalogue;
+  const all = new Map(catalogue.pieces.map((p) => [p.formKey, p]));
+  const LAYER = new RegExp(process.env.LAYER ?? "^$");
+  const valid = new Map([...all].filter(([, p]) => p.review.validated && !LAYER.test(p.editorId)));
+  const types = new Map(catalogue.connectionTypes.map((t) => [t.id, t]));
+  const profiles = new Map(analysis.faces.map((f) => [`${f.piece}:${f.opening.dir}`, f.profile]));
+  const pairs = parseVanillaPairs(JSON.parse(readFileSync('data/vanilla/nordic.json', 'utf8'))).pairs;
+  const geometry = { module: { xy: 128, z: 128 }, profileOf: (k: string, dir: string) => profiles.get(`${all.get(k)?.editorId}:${dir}`), vanilla: acceptedOverlaps(pairs) } as unknown as JointGeometry;
+  const id = (k: string) => all.get(k)!.editorId;
+  const stat = new Map<string, { n: number; ok: number; why: Map<string, number> }>();
+  const seen = new Set<string>();
+  const stacks = new Map<string, number>();
+  for (const cell of await store.listCells()) {
+    const refs = (await store.readRefs(cell.key)).filter((r) => valid.has(r.base)).map((r) => ({ refFormKey: r.key, base: r.base, pos: r.pos, rot: r.rot, scale: r.scale }));
+    if (refs.length < 15) continue;
+    const grid = deriveGrid(refs, valid, { module: 128, zModule: 128, fineStep: kit.fineStep! });
+    const layout = layoutFromGrid(grid, new Map());
+    for (const a of layout.tiles.values()) {
+      if (!FAMILY.test(id(a.piece))) continue;
+      const ac = new Set(footprintCells(all.get(a.piece)!, a.cell, a.rotation).map((c) => c.join(',')));
+      for (const b of layout.tiles.values()) {
+        if (b.key <= a.key) continue;
+        const shared = footprintCells(all.get(b.piece)!, b.cell, b.rotation).filter((c) => ac.has(c.join(','))).length;
+        if (shared) { const k = `STACK ${id(a.piece)}:${a.rotation} + ${id(b.piece)}:${b.rotation} at ${b.cell.map((v, i) => v - a.cell[i]!).join(',')} shared ${shared}`; stacks.set(k, (stacks.get(k) ?? 0) + 1); }
+      }
+    }
+    for (const a of layout.tiles.values()) {
+      const pa = all.get(a.piece)!;
+      for (const j of jointsOfTile(layout, all, types, a.key, geometry)) {
+        if (j.tile !== a.key) continue;
+        for (const bKey of j.against) {
+          const b = layout.tiles.get(bKey);
+          if (!b) continue;
+          if (!FAMILY.test(pa.editorId) && !FAMILY.test(id(b.piece))) continue;
+          const sig = `${id(a.piece)}:${a.rotation}|${id(b.piece)}:${b.rotation}:${b.cell.map((v, i) => v - a.cell[i]!).join(',')}`;
+          if (seen.has(sig)) continue;
+          seen.add(sig);
+          const rest = withoutTile(layout, bKey);
+          const bCells = new Set(footprintCells(all.get(b.piece)!, b.cell, b.rotation).map((c) => c.join(',')));
+          const faces = openFaces(rest, all).filter((f) => f.tile === a.key && f.outside.some((c) => bCells.has(c.join(','))));
+          let found = false;
+          let reason = faces.length ? 'not offered' : 'no open face';
+          for (const f of faces) {
+            const raw = [...candidatesFor(f, rest, valid, types, { step: 0.125, reach: 3 }), ...gameCandidates(f, rest, valid, pairs)];
+            const same = raw.filter((c) => c.piece === b.piece && c.rotation === b.rotation && c.cell.every((v, i) => Math.abs(v - b.cell[i]!) < 1e-6));
+            if (!same.length) continue;
+            if (checkCandidates(same, rest, all, types, geometry).length) { found = true; break; }
+            reason = 'dropped by the check: ' + jointsOfTile({ ...rest, tiles: new Map([...rest.tiles, [bKey, b]]) }, all, types, bKey, geometry).filter((x) => x.fit !== 'exact' && x.fit !== 'included').map((x) => x.fit).join(',');
+          }
+          const k = `${id(a.piece)} -> ${id(b.piece)}`;
+          const e = stat.get(k) ?? { n: 0, ok: 0, why: new Map() };
+          e.n++;
+          if (found) e.ok++;
+          else e.why.set(reason, (e.why.get(reason) ?? 0) + 1);
+          stat.set(k, e);
+        }
+      }
+    }
+  }
+  const rows = [...stat].sort((x, y) => (y[1].n - y[1].ok) - (x[1].n - x[1].ok));
+  const tot = rows.reduce((s, [, e]) => s + e.n, 0), ok = rows.reduce((s, [, e]) => s + e.ok, 0);
+  writeFileSync(process.env.DIAG_OUT!, [...[...stacks].sort((x, y) => y[1] - x[1]).slice(0, 40).map(([k, n]) => `${n} ${k}`), `offered ${ok} of ${tot} distinct junctions`, ...rows.map(([k, e]) => `${e.ok}/${e.n} ${k} ${[...e.why].map(([w, n]) => `${w}x${n}`).join('; ')}`)].join('\n'));
+}, 3600000);

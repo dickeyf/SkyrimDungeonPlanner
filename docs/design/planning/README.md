@@ -21,3 +21,5 @@ The design notes written while planning and building the tool, in reading order:
 11. [V5 plan](11-plan-v5.md): the V5 steps (release 0.5.0): the Dwemer kit, the other objects of
     a cell (shown by category, moved with the tiles), the Nordic families left out, help for a
     designer new to a kit.
+12. [Strata design](12-strata-design.md): pieces the game stacks in the same space (layers,
+    walkways inside large rooms), under study: the idea, the reasons and the measurements.
